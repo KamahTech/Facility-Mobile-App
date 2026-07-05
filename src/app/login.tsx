@@ -256,7 +256,7 @@ export default function LoginScreen() {
               <Pressable
                 onPress={handleGoogleLogin}
                 disabled={loading}
-                className="flex-row min-h-14 items-center justify-center rounded-lg border border-border bg-card px-5 active:opacity-85"
+                className="min-h-14 items-center justify-center rounded-lg border border-border bg-card px-5 active:opacity-85"
               >
                 <AppText className="text-center text-base font-semibold text-card-foreground">
                   {t("auth.loginWithGoogle")}
@@ -267,7 +267,7 @@ export default function LoginScreen() {
               <Pressable
                 onPress={handleAppleLogin}
                 disabled={loading}
-                className="flex-row min-h-14 items-center justify-center rounded-lg bg-black px-5 active:opacity-85"
+                className="min-h-14 items-center justify-center rounded-lg bg-black px-5 active:opacity-85"
               >
                 <AppText className="text-center text-base font-semibold text-white">
                   {t("auth.loginWithApple")}

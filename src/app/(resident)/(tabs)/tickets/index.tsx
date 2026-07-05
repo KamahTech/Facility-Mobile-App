@@ -16,9 +16,10 @@ import { useThemeToken } from "@/hooks/use-theme-token";
 import { useRequestsStore, type RequestStatus } from "@/stores/requests-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
+import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 
 export default function ResidentTicketsScreen() {
-  const { t } = useI18n();
+  const { t, direction } = useI18n();
   const insets = useSafeAreaInsets();
   const { resolvedTheme } = useTheme();
   const mutedColor = useThemeToken("--muted-foreground");
@@ -203,7 +204,7 @@ export default function ResidentTicketsScreen() {
             contentContainerStyle={{
               paddingHorizontal: 20,
               paddingVertical: 12,
-              flexDirection: "row",
+              ...getDirectionalRowStyle(direction),
             }}
             className="w-full max-w-xl self-center"
           >

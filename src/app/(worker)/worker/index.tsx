@@ -18,9 +18,10 @@ import { useThemeToken } from "@/hooks/use-theme-token";
 import { useRequestsStore } from "@/stores/requests-store";
 import { useUserStore } from "@/stores/user-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
+import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 
 export default function WorkerHomeScreen() {
-  const { t } = useI18n();
+  const { t, direction } = useI18n();
   const insets = useSafeAreaInsets();
   const { resolvedTheme } = useTheme();
   const navigation = useNavigation();
@@ -190,7 +191,7 @@ export default function WorkerHomeScreen() {
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingVertical: 12,
-            flexDirection: "row",
+            ...getDirectionalRowStyle(direction),
           }}
           className="w-full max-w-xl self-center"
         >

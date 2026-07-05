@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useMemo, useState } from "react";
 import { DevSettings, I18nManager, Platform } from "react-native";
+import * as Updates from "expo-updates";
 
 import { languages, type LanguageCode } from "@/constants/languages";
 import { translations, type TranslationKey } from "@/constants/translations";
@@ -26,6 +27,20 @@ export const I18nContext = createContext<I18nContextValue | null>(null);
 type I18nProviderProps = {
   children: React.ReactNode;
 };
+
+async function reloadAppForDirectionChange() {
+  if (__DEV__) {
+    DevSettings.reload();
+    return;
+  }
+
+  try {
+    await Updates.reloadAsync();
+  } catch (error) {
+    console.error("Failed to reload app after RTL direction change", error);
+    DevSettings.reload();
+  }
+}
 
 export function I18nProvider({ children }: I18nProviderProps) {
   const [languagePreference, setLanguagePreference] = useState<LanguagePreference>("system");
@@ -69,9 +84,9 @@ export function I18nProvider({ children }: I18nProviderProps) {
     if (I18nManager.isRTL !== isRTL) {
       I18nManager.forceRTL(isRTL);
 
-      // Automatically reload the bundle to apply native RTL layout changes
+      // Native RTL changes take effect only after the app reloads.
       setTimeout(() => {
-        DevSettings.reload();
+        void reloadAppForDirectionChange();
       }, 100);
     }
   }, [resolvedLanguage, hasLoadedStoredLanguage]);

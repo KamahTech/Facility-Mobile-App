@@ -82,11 +82,11 @@ export default function ServicesScreen() {
         </View>
 
         {svc.claimReference && (
-          <View className="flex-row items-center justify-end gap-1 mt-1">
+          <AppRow className="items-center justify-end gap-1 mt-1">
             <AppText className="text-xs text-muted-foreground text-start">
               {svc.claimReference}
             </AppText>
-          </View>
+          </AppRow>
         )}
       </View>
     );

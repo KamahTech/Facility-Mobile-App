@@ -8,9 +8,11 @@ import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { ScrollAnimationProvider, useScrollAnimation } from "@/providers/scroll-animation-provider";
+import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 
 function CollapsibleTabBar({ state, descriptors, navigation }: any) {
   const { tabBarTranslateY } = useScrollAnimation();
+  const { direction } = useI18n();
   const { width } = useWindowDimensions();
 
   const card = useThemeToken("--card");
@@ -41,7 +43,7 @@ function CollapsibleTabBar({ state, descriptors, navigation }: any) {
           borderWidth: 1,
           borderColor: border,
           backgroundColor: card,
-          flexDirection: "row",
+          ...getDirectionalRowStyle(direction),
           alignItems: "center",
           justifyContent: "space-around",
           paddingHorizontal: 8,

@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppChevron } from "@/components/app-chevron";
+import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -63,8 +64,8 @@ export function FullscreenImageViewer({
         </ScrollView>
 
         {/* WhatsApp-Style Top Header Bar */}
-        <View 
-          className="absolute top-0 inset-x-0 bg-black/60 flex-row items-center justify-between px-5 z-20 border-b border-white/5"
+        <AppRow
+          className="absolute top-0 inset-x-0 bg-black/60 items-center justify-between px-5 z-20 border-b border-white/5"
           style={{ 
             paddingTop: Math.max(insets.top, 12),
             paddingBottom: 12,
@@ -95,7 +96,7 @@ export function FullscreenImageViewer({
           >
             <AppIcon name="download" size={20} colorToken="--primary-foreground" />
           </Pressable>
-        </View>
+        </AppRow>
       </View>
     </Modal>
   );

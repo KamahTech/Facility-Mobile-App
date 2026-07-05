@@ -79,7 +79,7 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
 
         {/* Due Text Label Row */}
         <AppRow
-          className="flex-row items-center gap-1.5"
+          className="items-center gap-1.5"
           style={{
             alignSelf: isRTL ? "flex-end" : "flex-start",
           }}

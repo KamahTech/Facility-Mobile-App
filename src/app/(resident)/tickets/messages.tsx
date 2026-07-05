@@ -235,7 +235,7 @@ export default function ResidentTicketMessagesScreen() {
       >
         {/* Selected Photo Preview */}
         {selectedPhoto && (
-          <View className="px-4 pt-3 flex-row max-w-xl self-center w-full">
+          <AppRow className="px-4 pt-3 max-w-xl self-center w-full">
             <View className="w-20 h-20 rounded-xl border border-border bg-muted overflow-hidden relative">
               <Pressable
                 onPress={() => {
@@ -257,10 +257,10 @@ export default function ResidentTicketMessagesScreen() {
                 <AppIcon name="trash" size={10} colorToken="--primary-foreground" />
               </Pressable>
             </View>
-          </View>
+          </AppRow>
         )}
 
-        <View className="w-full max-w-xl self-center px-4 py-3 flex-row items-center gap-3">
+        <AppRow className="w-full max-w-xl self-center px-4 py-3 items-center gap-3">
           <Pressable
             onPress={handlePickImage}
             accessibilityLabel={t("worker.mediaSourceCamera")}
@@ -297,7 +297,7 @@ export default function ResidentTicketMessagesScreen() {
               <AppIcon name="send" size={16} colorToken="--primary-foreground" />
             )}
           </Pressable>
-        </View>
+        </AppRow>
       </View>
 
       <MediaSourceSheet

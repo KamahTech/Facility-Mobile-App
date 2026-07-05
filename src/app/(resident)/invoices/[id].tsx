@@ -276,27 +276,31 @@ export default function InvoiceDetailsScreen() {
                 </AppText>
               </Pressable>
             ) : (
-              <View className="flex-row gap-3">
+              <AppRow className="gap-3">
                 <Pressable
                   onPress={handleComingSoon}
-                  className="flex-1 bg-card border border-border py-4 rounded-2xl flex-row items-center justify-center gap-2 active:opacity-90"
+                  className="flex-1 bg-card border border-border py-4 rounded-2xl items-center justify-center active:opacity-90"
                 >
-                  <AppIcon name="invoices" size={16} colorToken="--foreground" />
-                  <AppText className="text-foreground font-bold text-sm">
-                    {t("invoices.downloadReceipt")}
-                  </AppText>
+                  <AppRow className="items-center justify-center gap-2">
+                    <AppIcon name="invoices" size={16} colorToken="--foreground" />
+                    <AppText className="text-foreground font-bold text-sm">
+                      {t("invoices.downloadReceipt")}
+                    </AppText>
+                  </AppRow>
                 </Pressable>
 
                 <Pressable
                   onPress={handleComingSoon}
-                  className="flex-1 bg-card border border-border py-4 rounded-2xl flex-row items-center justify-center gap-2 active:opacity-90"
+                  className="flex-1 bg-card border border-border py-4 rounded-2xl items-center justify-center active:opacity-90"
                 >
-                  <AppIcon name="linkUnit" size={16} colorToken="--foreground" />
-                  <AppText className="text-foreground font-bold text-sm">
-                    {t("invoices.shareInvoice")}
-                  </AppText>
+                  <AppRow className="items-center justify-center gap-2">
+                    <AppIcon name="linkUnit" size={16} colorToken="--foreground" />
+                    <AppText className="text-foreground font-bold text-sm">
+                      {t("invoices.shareInvoice")}
+                    </AppText>
+                  </AppRow>
                 </Pressable>
-              </View>
+              </AppRow>
             )}
           </View>
 

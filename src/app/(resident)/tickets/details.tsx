@@ -284,26 +284,28 @@ export default function ResidentTicketDetailsScreen() {
                 params: { id: request.id },
               } as Href);
             }}
-            className="w-full min-h-14 items-center justify-between rounded-xl bg-background border border-border px-5 py-4 active:opacity-80 flex-row"
+            className="w-full min-h-14 rounded-xl bg-background border border-border px-5 py-4 active:opacity-80"
           >
-            <AppRow className="items-center gap-3">
-              <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
-                <AppIcon name="tickets" size={16} color={primaryColor} />
-              </View>
-              <AppText className="text-base font-bold text-foreground">
-                {t("tickets.comments")}
-              </AppText>
-            </AppRow>
-            
-            <AppRow className="items-center gap-2">
-              {request.comments.length > 0 && (
-                <View className="bg-primary px-2.5 py-0.5 rounded-full">
-                  <AppText className="text-xs font-bold text-primary-foreground">
-                    {request.comments.length}
-                  </AppText>
+            <AppRow className="items-center justify-between">
+              <AppRow className="items-center gap-3">
+                <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
+                  <AppIcon name="tickets" size={16} color={primaryColor} />
                 </View>
-              )}
-              <AppChevron size={14} color={mutedToken} />
+                <AppText className="text-base font-bold text-foreground">
+                  {t("tickets.comments")}
+                </AppText>
+              </AppRow>
+
+              <AppRow className="items-center gap-2">
+                {request.comments.length > 0 && (
+                  <View className="bg-primary px-2.5 py-0.5 rounded-full">
+                    <AppText className="text-xs font-bold text-primary-foreground">
+                      {request.comments.length}
+                    </AppText>
+                  </View>
+                )}
+                <AppChevron size={14} color={mutedToken} />
+              </AppRow>
             </AppRow>
           </Pressable>
         </View>

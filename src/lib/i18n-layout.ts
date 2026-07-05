@@ -65,10 +65,10 @@ export function getLogicalEndStyle(
   value: number
 ): LogicalEdgeStyle {
   if (property === "padding") {
-    return direction === "rtl" ? { paddingEnd: value } : { paddingStart: value };
+    return { paddingEnd: value };
   }
 
-  return direction === "rtl" ? { end: value } : { start: value };
+  return { end: value };
 }
 
 export function getLogicalStartStyle(
@@ -77,8 +77,8 @@ export function getLogicalStartStyle(
   value: number
 ): LogicalEdgeStyle {
   if (property === "padding") {
-    return direction === "rtl" ? { paddingStart: value } : { paddingEnd: value };
+    return { paddingStart: value };
   }
 
-  return direction === "rtl" ? { start: value } : { end: value };
+  return { start: value };
 }

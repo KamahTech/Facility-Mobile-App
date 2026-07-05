@@ -159,7 +159,7 @@ export default function OwnerUnitsScreen() {
               </View>
 
               {/* Grid of Paid, Unpaid, Overdue */}
-              <View className="flex-row gap-2.5">
+              <AppRow className="gap-2.5">
                 <View className="flex-1 p-3 rounded-2xl bg-emerald-50/10 dark:bg-emerald-950/10 border border-emerald-100/20 items-center">
                   <AppText className="text-[10px] text-muted-foreground font-semibold text-center mb-1">
                     {t("ownerFinancials.paidAmount")}
@@ -186,7 +186,7 @@ export default function OwnerUnitsScreen() {
                     {formatCurrency(statement.totalSummary.overdueAmount)}
                   </AppText>
                 </View>
-              </View>
+              </AppRow>
             </View>
           )}
 
@@ -194,28 +194,32 @@ export default function OwnerUnitsScreen() {
           <View className="flex-col gap-3 mt-2">
             <Pressable
               onPress={() => router.push("/profile/claims" as Href)}
-              className="w-full flex-row items-center justify-between p-4 bg-card border border-border rounded-2xl active:opacity-75"
+              className="w-full p-4 bg-card border border-border rounded-2xl active:opacity-75"
             >
-              <AppRow className="items-center gap-3">
-                <View className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-950/20 items-center justify-center">
-                  <AppIcon name="tickets" size={18} color="#EA580C" />
-                </View>
-                <AppText className="text-sm font-bold text-foreground">{t("claims.title")}</AppText>
+              <AppRow className="items-center justify-between">
+                <AppRow className="items-center gap-3">
+                  <View className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-950/20 items-center justify-center">
+                    <AppIcon name="tickets" size={18} color="#EA580C" />
+                  </View>
+                  <AppText className="text-sm font-bold text-foreground">{t("claims.title")}</AppText>
+                </AppRow>
+                <AppIcon name="chevronRight" size={16} color={mutedForeground} />
               </AppRow>
-              <AppIcon name="chevronRight" size={16} color={mutedForeground} />
             </Pressable>
 
             <Pressable
               onPress={() => router.push("/profile/services" as Href)}
-              className="w-full flex-row items-center justify-between p-4 bg-card border border-border rounded-2xl active:opacity-75"
+              className="w-full p-4 bg-card border border-border rounded-2xl active:opacity-75"
             >
-              <AppRow className="items-center gap-3">
-                <View className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/20 items-center justify-center">
-                  <AppIcon name="requestService" size={18} color="#2563EB" />
-                </View>
-                <AppText className="text-sm font-bold text-foreground">{t("ownerFinancials.serviceCost")}</AppText>
+              <AppRow className="items-center justify-between">
+                <AppRow className="items-center gap-3">
+                  <View className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/20 items-center justify-center">
+                    <AppIcon name="requestService" size={18} color="#2563EB" />
+                  </View>
+                  <AppText className="text-sm font-bold text-foreground">{t("ownerFinancials.serviceCost")}</AppText>
+                </AppRow>
+                <AppIcon name="chevronRight" size={16} color={mutedForeground} />
               </AppRow>
-              <AppIcon name="chevronRight" size={16} color={mutedForeground} />
             </Pressable>
           </View>
 
