@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ScreenHeader } from "@/components/screen-header";
 import { SettingOptionCard } from "@/components/setting-option-card";
 import { AppText } from "@/components/app-text";
-import { LanguagePreferenceOptions } from "@/components/language-preference-options";
 import { themeOptions } from "@/constants/theme";
 import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "@/hooks/use-theme";
@@ -61,12 +60,6 @@ export default function ResidentProfileSettingsScreen() {
             />
           ))}
         </View>
-
-        <AppText className="text-start text-xs font-bold text-muted-foreground uppercase tracking-wider mt-8 mb-3">
-          {t("profile.language")}
-        </AppText>
-
-        <LanguagePreferenceOptions />
       </ScrollView>
     </View>
   );

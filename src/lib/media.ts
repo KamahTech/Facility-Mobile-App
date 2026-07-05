@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system";
 
 export type EncodedImage = {
   data: string;
@@ -12,13 +12,12 @@ export function getFileNameFromUri(uri: string, fallback = "photo.jpg") {
 }
 
 export async function encodeImageUri(uri: string): Promise<EncodedImage> {
-  const data = await FileSystem.readAsStringAsync(uri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
+  const file = new File(uri);
+  const data = await file.base64();
 
   return {
     data,
-    name: getFileNameFromUri(uri),
+    name: file.name || getFileNameFromUri(uri),
     mimetype: "image/jpeg",
   };
 }

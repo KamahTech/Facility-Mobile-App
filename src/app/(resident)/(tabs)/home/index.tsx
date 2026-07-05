@@ -19,6 +19,7 @@ import { useInvoicesStore } from "@/stores/invoices-store";
 import { useUserStore } from "@/stores/user-store";
 import { useCommunityStore } from "@/stores/community-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
+import { getProfileImageSource } from "@/lib/image-source";
 
 const johnDoeAvatar = require("@/assets/temp/john-doe-avatar.png");
 
@@ -35,6 +36,10 @@ export default function ResidentHomeScreen() {
   const { fetchInvoices, invoices } = useInvoicesStore();
   const { fetchUpdates } = useCommunityStore({ enableUpdates: true });
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
+  const avatarSource = React.useMemo(
+    () => getProfileImageSource(profile?.profileImageUrl, johnDoeAvatar),
+    [profile?.profileImageUrl],
+  );
 
   const loadData = React.useCallback(async () => {
     try {
@@ -175,7 +180,7 @@ export default function ResidentHomeScreen() {
         className="px-5 sm:px-8"
       >
         <HomeHeader
-          avatarSource={johnDoeAvatar}
+          avatarSource={avatarSource}
           onNotificationPress={() => router.push("/notifications" as Href)}
           onAvatarPress={logoutSheet.present}
           onLogoPress={scrollToTop}
@@ -189,7 +194,7 @@ export default function ResidentHomeScreen() {
         onConfirm={handleLogout}
         userName={profile?.name || ""}
         userRole={t("auth.residentTitle")}
-        avatarSource={johnDoeAvatar}
+        avatarSource={avatarSource}
       />
     </View>
   );

@@ -13,6 +13,7 @@ import { ScreenHeader } from "@/components/screen-header";
 import { type TranslationKey } from "@/constants/translations";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
+import { getBackendImageSource } from "@/lib/image-source";
 import { useCommunityStore, type CommunityPoll } from "@/stores/community-store";
 
 export default function PostDetailsScreen() {
@@ -36,6 +37,7 @@ export default function PostDetailsScreen() {
   });
 
   const item = detailQuery.data || listItem;
+  const imageSource = item?.type === "news" ? getBackendImageSource(item.imageUrl) : undefined;
 
   const handleBack = () => {
     router.back();
@@ -130,7 +132,7 @@ export default function PostDetailsScreen() {
               {/* News Post Image */}
               <View className="w-full h-56 rounded-3xl overflow-hidden bg-muted shadow-sm">
                 <Image
-                  source={{ uri: item.imageUrl }}
+                  source={imageSource}
                   style={StyleSheet.absoluteFill}
                   contentFit="cover"
                 />

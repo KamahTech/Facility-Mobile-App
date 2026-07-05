@@ -6,12 +6,22 @@ import type { TranslationKey } from "@/constants/translations";
 import { useI18n } from "@/hooks/use-i18n";
 
 type PickImageSource = "camera" | "library";
+type PickImageOptions = {
+  allowsEditing?: boolean;
+  aspect?: [number, number];
+  quality?: number;
+};
 
 export function useAppImagePicker() {
   const { t } = useI18n();
 
   const pickImage = React.useCallback(
-    async (source: PickImageSource) => {
+    async (source: PickImageSource, options: PickImageOptions = {}) => {
+      const {
+        allowsEditing = false,
+        aspect,
+        quality = 0.8,
+      } = options;
       const permissionResult =
         source === "camera"
           ? await ImagePicker.requestCameraPermissionsAsync()
@@ -29,14 +39,16 @@ export function useAppImagePicker() {
       const result =
         source === "camera"
           ? await ImagePicker.launchCameraAsync({
-              allowsEditing: false,
+              allowsEditing,
+              aspect,
               mediaTypes: ["images"],
-              quality: 0.8,
+              quality,
             })
           : await ImagePicker.launchImageLibraryAsync({
-              allowsEditing: false,
+              allowsEditing,
+              aspect,
               mediaTypes: ["images"],
-              quality: 0.8,
+              quality,
             });
 
       if (result.canceled || !result.assets.length) {

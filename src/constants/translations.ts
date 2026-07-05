@@ -56,7 +56,7 @@ export const translations = {
     "profile.description": "Resident account and preferences.",
     "profile.settingsDescription":
       "Choose how the app appearance should follow your device or preference.",
-    "profile.settingsTitle": "Profile settings",
+    "profile.settingsTitle": "Appearance",
     "profile.title": "Profile",
     "residentHome.description":
       "Overview of facility updates and resident actions.",
@@ -413,6 +413,7 @@ export const translations = {
     "errors.completeTaskFailed": "Failed to complete task",
     "errors.inquirySubmitFailed": "Failed to submit inquiry",
     "errors.profileSaveFailed": "Failed to save profile changes",
+    "errors.profileAvatarUpdateFailed": "Failed to update profile avatar",
     "permissions.requiredTitle": "Permission Required",
     "permissions.cameraRequired": "Camera permission is required to take photos.",
     "permissions.photoLibraryRequired": "Photo library permission is required to select photos.",
@@ -431,6 +432,7 @@ export const translations = {
     "language.arabic": "العربية (Arabic)",
     "language.arabicDescription": "Set application language to Arabic.",
     "profile.changeAvatarDescription": "Choose a source to upload your profile avatar.",
+    "profile.avatarUpdated": "Profile avatar updated.",
     "communityUpdates.postNotFound": "Post Not Found",
     "communityUpdates.pollSubtext": "Your feedback is essential to improving our community facility services. Polls remain open for all active residents until the end of the month. Results are automatically aggregated and shared with the facility manager.",
     "communityUpdates.postPlaceholder": "We thank all residents for their ongoing cooperation and adherence to facility guidelines to ensure a safe and pleasant environment for everyone. Please reach out to the management office for any questions or feedback.",
@@ -507,7 +509,7 @@ export const translations = {
     "profile.description": "حساب المقيم وتفضيلاته.",
     "profile.settingsDescription":
       "اختر كيف يتبع مظهر التطبيق إعدادات جهازك أو تفضيلك.",
-    "profile.settingsTitle": "إعدادات الملف الشخصي",
+    "profile.settingsTitle": "المظهر",
     "profile.title": "الملف الشخصي",
     "residentHome.description": "نظرة عامة على تحديثات المرفق وإجراءات المقيم.",
     "residentHome.detailsDescription":
@@ -861,6 +863,7 @@ export const translations = {
     "errors.completeTaskFailed": "فشل إكمال المهمة",
     "errors.inquirySubmitFailed": "فشل إرسال الاستفسار",
     "errors.profileSaveFailed": "فشل حفظ تغييرات الملف الشخصي",
+    "errors.profileAvatarUpdateFailed": "فشل تحديث الصورة الشخصية",
     "permissions.requiredTitle": "الصلاحية مطلوبة",
     "permissions.cameraRequired": "صلاحية الكاميرا مطلوبة لالتقاط الصور.",
     "permissions.photoLibraryRequired": "صلاحية مكتبة الصور مطلوبة لاختيار الصور.",
@@ -879,6 +882,7 @@ export const translations = {
     "language.arabic": "العربية",
     "language.arabicDescription": "ضبط لغة التطبيق إلى اللغة العربية.",
     "profile.changeAvatarDescription": "اختر مصدراً لرفع صورتك الشخصية.",
+    "profile.avatarUpdated": "تم تحديث الصورة الشخصية.",
     "communityUpdates.postNotFound": "المنشور غير موجود",
     "communityUpdates.pollSubtext": "ملاحظاتكم أساسية لتحسين خدمات مرافق مجتمعنا. تظل الاستطلاعات مفتوحة لجميع المقيمين النشطين حتى نهاية الشهر. يتم تجميع النتائج تلقائياً ومشاركتها مع مدير المرفق.",
     "communityUpdates.postPlaceholder": "نشكر جميع السكان على تعاونهم المستمر والتزامهم بقوانين المرفق لضمان بيئة آمنة ومريحة للجميع. يرجى التواصل مع مكتب الإدارة في حال وجود أي استفسارات أو ملاحظات إضافية.",

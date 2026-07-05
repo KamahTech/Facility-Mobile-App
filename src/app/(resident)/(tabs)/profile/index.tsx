@@ -1,15 +1,20 @@
 import React from "react";
-import { View, Pressable, Alert, StyleSheet } from "react-native";
+import { View, Pressable, Alert } from "react-native";
 import Animated from "react-native-reanimated";
 import { router, type Href, useNavigation } from "expo-router";
-import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppText } from "@/components/app-text";
+import { Avatar } from "@/components/avatar";
+import { FullScreenLoader } from "@/components/full-screen-loader";
+import { MediaSourceSheet } from "@/components/media-source-sheet";
 import { SettingsRow } from "@/components/settings-row";
+import { useAppImagePicker } from "@/hooks/use-image-picker";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
+import { encodeImageUriAsDataUrl } from "@/lib/media";
+import { getProfileImageSource } from "@/lib/image-source";
 import { useUserStore } from "@/stores/user-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 
@@ -19,10 +24,17 @@ export default function ResidentProfileScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const foregroundColor = useThemeToken("--foreground");
-  const { profile, logout } = useUserStore();
+  const { profile, logout, loading, updateProfileImage } = useUserStore();
+  const { pickImage } = useAppImagePicker();
   const navigation = useNavigation();
   const { scrollHandler, resetScrollAnimation } = useScrollAnimation();
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
+  const [isMediaSheetVisible, setIsMediaSheetVisible] = React.useState(false);
+
+  const avatarSource = React.useMemo(
+    () => getProfileImageSource(profile?.profileImageUrl, johnDoeAvatar),
+    [profile?.profileImageUrl],
+  );
 
   const scrollToTop = React.useCallback(() => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
@@ -46,11 +58,34 @@ export default function ResidentProfileScreen() {
   }, [navigation, resetScrollAnimation]);
 
   const handleChangeAvatar = () => {
-    Alert.alert(
-      t("profile.changeAvatar"),
-      t("profile.changeAvatarDescription")
-    );
+    setIsMediaSheetVisible(true);
   };
+
+  const handlePickAvatar = React.useCallback(
+    async (source: "camera" | "library") => {
+      try {
+        const imageUri = await pickImage(source, {
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+
+        if (!imageUri) {
+          return;
+        }
+
+        const encoded = await encodeImageUriAsDataUrl(imageUri);
+        await updateProfileImage(encoded.dataUrl);
+        Alert.alert(t("profile.changeAvatar"), t("profile.avatarUpdated"));
+      } catch (error) {
+        Alert.alert(
+          t("common.error"),
+          error instanceof Error ? error.message : t("errors.profileAvatarUpdateFailed"),
+        );
+      }
+    },
+    [pickImage, t, updateProfileImage],
+  );
 
   const handleEditInformation = () => {
     router.push("/profile/edit" as Href);
@@ -124,16 +159,12 @@ export default function ResidentProfileScreen() {
         {/* Center Avatar & User Info Block */}
         <View className="items-center justify-center py-6 px-5 sm:px-8">
           <View className="relative">
-            <View className="w-24 h-24 rounded-full overflow-hidden border border-border bg-muted">
-              <Image
-                source={johnDoeAvatar}
-                style={StyleSheet.absoluteFill}
-                contentFit="cover"
-              />
-            </View>
+            <Avatar size={96} source={avatarSource} />
             {/* Overlay Camera Change Avatar Button */}
             <Pressable
               onPress={handleChangeAvatar}
+              accessibilityLabel={t("profile.changeAvatar")}
+              accessibilityRole="button"
               className="absolute bottom-0 end-0 w-8 h-8 rounded-full bg-primary items-center justify-center border-2 border-background shadow-md active:opacity-75"
             >
               <AppIcon
@@ -149,10 +180,6 @@ export default function ResidentProfileScreen() {
             {profile?.name || ""}
           </AppText>
           
-          {/* User Email */}
-          <AppText align="center" className="text-sm text-muted-foreground mt-1">
-            {profile?.email || ""}
-          </AppText>
         </View>
 
         {/* Section: Account Settings */}
@@ -228,6 +255,13 @@ export default function ResidentProfileScreen() {
           titleClassName="text-rose-600 dark:text-rose-400 font-bold"
         />
       </Animated.ScrollView>
+      <MediaSourceSheet
+        isPresented={isMediaSheetVisible}
+        onDismiss={() => setIsMediaSheetVisible(false)}
+        onSelectCamera={() => void handlePickAvatar("camera")}
+        onSelectLibrary={() => void handlePickAvatar("library")}
+      />
+      <FullScreenLoader visible={loading} />
     </View>
   );
 }

@@ -7,6 +7,7 @@ export type UserProfile = {
   name: string;
   email: string;
   phone: string;
+  profileImageUrl?: string | false;
 };
 
 type UserState = {
@@ -25,6 +26,7 @@ type UserState = {
   signup: (name: string, email: string, password: string, otp: string, phone?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updated: Partial<UserProfile>) => Promise<void>;
+  updateProfileImage: (image: string | false) => Promise<void>;
   fetchProfile: () => Promise<void>;
   clearError: () => void;
 };
@@ -213,6 +215,22 @@ export const useUserStore = create<UserState>((set, get) => ({
       });
     } catch (e: unknown) {
       set({ loading: false, error: getErrorMessage(e, "Profile update failed") });
+      throw e;
+    }
+  },
+
+  updateProfileImage: async (image) => {
+    set({ loading: true, error: null });
+    try {
+      const updatedProfile = await apiRequest<UserProfile>("/me/profile-image", { image });
+
+      await SecureStore.setItemAsync("profile_data", JSON.stringify(updatedProfile));
+      set({
+        profile: updatedProfile,
+        loading: false,
+      });
+    } catch (e: unknown) {
+      set({ loading: false, error: getErrorMessage(e, "Profile image update failed") });
       throw e;
     }
   },

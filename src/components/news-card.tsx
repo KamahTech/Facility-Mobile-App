@@ -7,6 +7,7 @@ import { type TranslationKey } from "@/constants/translations";
 import type { CommunityNews } from "@/stores/community-store";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
+import { getBackendImageSource } from "@/lib/image-source";
 
 type NewsCardProps = {
   item: CommunityNews;
@@ -30,6 +31,7 @@ export function NewsCard({ item, onPress }: NewsCardProps) {
     const translated = t(key);
     return translated === key ? item.date : translated;
   })();
+  const imageSource = getBackendImageSource(item.imageUrl);
 
   return (
     <Pressable
@@ -69,7 +71,7 @@ export function NewsCard({ item, onPress }: NewsCardProps) {
         {/* Image Area */}
         <View className="size-20 rounded-xl overflow-hidden bg-muted">
           <Image
-            source={{ uri: item.imageUrl }}
+            source={imageSource}
             style={StyleSheet.absoluteFill}
             contentFit="cover"
             transition={200}
