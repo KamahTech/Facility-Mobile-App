@@ -1,4 +1,4 @@
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { router } from "expo-router";
 
 import { AppChevron } from "@/components/app-chevron";
@@ -21,15 +21,14 @@ export function ScreenHeader({
 
   return (
     <AppRow className="w-full items-center justify-between py-4 border-b border-border px-5 sm:px-8">
-      <TouchableOpacity
-        activeOpacity={0.7}
+      <Pressable
         accessibilityLabel={t("actions.back")}
         accessibilityRole="button"
         onPress={onBack}
         className="w-10 h-10 rounded-full bg-secondary justify-center items-center active:opacity-75"
       >
         <AppChevron type="back" size={20} />
-      </TouchableOpacity>
+      </Pressable>
 
       <AppText className="text-lg font-bold text-foreground">
         {title}

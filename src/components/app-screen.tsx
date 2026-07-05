@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { View, TouchableOpacity } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
@@ -50,13 +50,12 @@ export function AppScreen({
         <View className="w-full max-w-xl self-center">
           <AppRow className="w-full items-center justify-between mb-8">
             {showBackButton ? (
-              <TouchableOpacity
-                activeOpacity={0.7}
+              <Pressable
                 onPress={() => router.back()}
                 className="w-10 h-10 rounded-full bg-secondary justify-center items-center active:opacity-75"
               >
                 <AppChevron type="back" size={20} />
-              </TouchableOpacity>
+              </Pressable>
             ) : !hideLanguageToggle ? (
               <AppButton
                 accessibilityLabel={t("language.toggleLabel")}

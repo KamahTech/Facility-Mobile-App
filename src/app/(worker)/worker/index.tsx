@@ -1,6 +1,6 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
+import { Pressable, View, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, type Href, useNavigation } from "expo-router";
 import { LegendList } from "@legendapp/list/react-native";
@@ -103,9 +103,8 @@ export default function WorkerHomeScreen() {
   const renderTabItem = (tab: typeof tabs[0]) => {
     const isSelected = activeTab === tab.value;
     return (
-      <TouchableOpacity
+      <Pressable
         key={tab.value}
-        activeOpacity={0.8}
         onPress={() => setActiveTab(tab.value)}
         className={`px-4 py-2.5 rounded-full border me-2 items-center justify-center ${
           isSelected
@@ -120,7 +119,7 @@ export default function WorkerHomeScreen() {
         >
           {t(tab.labelKey as any)}
         </AppText>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -156,22 +155,21 @@ export default function WorkerHomeScreen() {
 
       {/* Top Header Row */}
       <AppRow className="items-center justify-between px-5 sm:px-8 py-4 border-b border-border/40">
-        <TouchableOpacity activeOpacity={0.7} onPress={logoutSheet.present}>
+        <Pressable onPress={logoutSheet.present}>
           <Avatar size={40} />
-        </TouchableOpacity>
+        </Pressable>
 
         <AppText className="text-lg font-bold text-foreground">
           {t("worker.title")}
         </AppText>
 
-        <TouchableOpacity
-          activeOpacity={0.7}
+        <Pressable
           onPress={() => router.push("/worker/notifications" as Href)}
           className="w-10 h-10 rounded-full bg-secondary items-center justify-center active:opacity-75"
           accessibilityLabel={t("notifications.title")}
         >
           <AppIcon name="notification" size={20} color={mutedColor} />
-        </TouchableOpacity>
+        </Pressable>
       </AppRow>
 
       {/* Welcome Block */}

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { Pressable, View } from "react-native";
 import { router, type Href } from "expo-router";
 
 import { AppIcon } from "@/components/app-icon";
@@ -64,8 +64,7 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
+    <Pressable
       onPress={handleCardPress}
       className={`w-full p-4 rounded-2xl bg-card border ${theme.borderColor} mb-3 flex-col gap-3 active:opacity-95`}
     >
@@ -128,6 +127,6 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
           </AppText>
         </View>
       </AppRow>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

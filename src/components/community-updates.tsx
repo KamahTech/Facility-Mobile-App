@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { Pressable, View } from "react-native";
 import { router, type Href } from "expo-router";
 
 import { AppChevron } from "@/components/app-chevron";
@@ -54,8 +54,7 @@ export function CommunityUpdates({
           </AppText>
 
           {showSeeAll && (
-            <TouchableOpacity
-              activeOpacity={0.6}
+            <Pressable
               onPress={handleSeeAll}
               className="active:opacity-75"
             >
@@ -65,7 +64,7 @@ export function CommunityUpdates({
                 </AppText>
                 <AppChevron size={14} color={primaryColor} />
               </AppRow>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </AppRow>
       )}

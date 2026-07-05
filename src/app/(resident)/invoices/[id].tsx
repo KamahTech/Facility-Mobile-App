@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, View, TouchableOpacity, Alert } from "react-native";
+import { Pressable, ScrollView, View, Alert } from "react-native";
 import { Stack, useLocalSearchParams, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -267,19 +267,17 @@ export default function InvoiceDetailsScreen() {
           {/* Action Buttons */}
           <View className="flex-col gap-3 mt-4">
             {invoice.status !== "paid" ? (
-              <TouchableOpacity
-                activeOpacity={0.8}
+              <Pressable
                 onPress={handlePay}
                 className="w-full bg-primary py-4 rounded-2xl justify-center items-center active:opacity-90"
               >
                 <AppText className="text-primary-foreground font-bold text-base uppercase tracking-wider">
                   {t("invoices.payNow")}
                 </AppText>
-              </TouchableOpacity>
+              </Pressable>
             ) : (
               <View className="flex-row gap-3">
-                <TouchableOpacity
-                  activeOpacity={0.8}
+                <Pressable
                   onPress={handleComingSoon}
                   className="flex-1 bg-card border border-border py-4 rounded-2xl flex-row items-center justify-center gap-2 active:opacity-90"
                 >
@@ -287,10 +285,9 @@ export default function InvoiceDetailsScreen() {
                   <AppText className="text-foreground font-bold text-sm">
                     {t("invoices.downloadReceipt")}
                   </AppText>
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity
-                  activeOpacity={0.8}
+                <Pressable
                   onPress={handleComingSoon}
                   className="flex-1 bg-card border border-border py-4 rounded-2xl flex-row items-center justify-center gap-2 active:opacity-90"
                 >
@@ -298,7 +295,7 @@ export default function InvoiceDetailsScreen() {
                   <AppText className="text-foreground font-bold text-sm">
                     {t("invoices.shareInvoice")}
                   </AppText>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             )}
           </View>

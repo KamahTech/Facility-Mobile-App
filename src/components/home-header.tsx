@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View, TouchableOpacity } from "react-native";
+import { Pressable, View } from "react-native";
 import { Image } from "expo-image";
 
 import { AppIcon } from "@/components/app-icon";
@@ -37,22 +37,22 @@ export function HomeHeader({
   return (
     <AppRow className="w-full items-center justify-between relative">
       {/* Left/Start side: Avatar */}
-      <TouchableOpacity activeOpacity={0.7} onPress={onAvatarPress}>
+      <Pressable onPress={onAvatarPress}>
         <Avatar size={40} source={avatarSource} />
-      </TouchableOpacity>
+      </Pressable>
 
       {/* Center: App Logo (Dynamic Theme-Based SVG) */}
       <View
         className="absolute inset-x-0 top-0 bottom-0 items-center justify-center"
         pointerEvents="box-none"
       >
-        <TouchableOpacity activeOpacity={1} onPress={onLogoPress}>
+        <Pressable onPress={onLogoPress}>
           <Image
             source={logoSource}
             style={{ width: 40, height: 40 }}
             contentFit="contain"
           />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* Right/End side: Notification Button */}

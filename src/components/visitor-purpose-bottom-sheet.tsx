@@ -1,7 +1,7 @@
 import { BottomSheet, BottomSheetView } from "@expo/ui/community/bottom-sheet";
 import type { BottomSheetMethods } from "@expo/ui/community/bottom-sheet";
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
@@ -50,9 +50,8 @@ export function VisitorPurposeBottomSheet({
             const isLast = index === visitorPurposeOptions.length - 1;
 
             return (
-              <TouchableOpacity
+              <Pressable
                 key={option.id}
-                activeOpacity={0.75}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
                 className={`min-h-14 w-full justify-center px-4 py-4 ${
@@ -73,7 +72,7 @@ export function VisitorPurposeBottomSheet({
                     />
                   )}
                 </AppRow>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </View>

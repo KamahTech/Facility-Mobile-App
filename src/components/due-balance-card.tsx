@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { Pressable, View, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { router, type Href } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -50,8 +50,7 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
+    <Pressable
       onPress={handlePress}
       style={{
         borderRadius: 24,
@@ -106,6 +105,6 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
         ]}
         contentFit="contain"
       />
-    </TouchableOpacity>
+    </Pressable>
   );
 }

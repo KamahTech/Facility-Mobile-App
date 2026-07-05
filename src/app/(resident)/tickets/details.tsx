@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { Pressable, View, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, Stack, router, type Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -255,8 +255,7 @@ export default function ResidentTicketDetailsScreen() {
 
         {/* Cancel Request Button */}
         {request.status !== "completed" && request.status !== "cancelled" && (
-          <TouchableOpacity
-            activeOpacity={0.8}
+          <Pressable
             onPress={handleCancelPress}
             disabled={actionLoading}
             className="w-full bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-950/30 py-4 rounded-2xl justify-center items-center mt-6 active:opacity-90"
@@ -268,7 +267,7 @@ export default function ResidentTicketDetailsScreen() {
                 {t("tickets.cancelBtn")}
               </AppText>
             )}
-          </TouchableOpacity>
+          </Pressable>
         )}
       </ScrollView>
 
@@ -278,8 +277,7 @@ export default function ResidentTicketDetailsScreen() {
         style={{ paddingBottom: Math.max(insets.bottom, 16), paddingTop: 12 }}
       >
         <View className="w-full max-w-xl self-center px-5">
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <Pressable
             onPress={() => {
               router.push({
                 pathname: "/(resident)/tickets/messages",
@@ -307,7 +305,7 @@ export default function ResidentTicketDetailsScreen() {
               )}
               <AppChevron size={14} color={mutedToken} />
             </AppRow>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </View>

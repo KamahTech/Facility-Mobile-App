@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity } from "react-native";
+import { Pressable } from "react-native";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppText } from "@/components/app-text";
@@ -19,8 +19,7 @@ export function QuickActionCard({
   onPress,
 }: QuickActionCardProps) {
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <Pressable
       accessibilityLabel={title}
       accessibilityRole="button"
       onPress={onPress}
@@ -45,6 +44,6 @@ export function QuickActionCard({
       >
         {title}
       </AppText>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

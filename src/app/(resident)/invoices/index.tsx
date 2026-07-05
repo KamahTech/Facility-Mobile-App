@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, ActivityIndicator, RefreshControl, Alert } from "react-native";
+import { Pressable, View, ActivityIndicator, RefreshControl, Alert } from "react-native";
 import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegendList } from "@legendapp/list/react-native";
@@ -97,9 +97,8 @@ export default function ResidentInvoicesScreen() {
         {filters.map((f) => {
           const isActive = activeFilter === f.key;
           return (
-            <TouchableOpacity
+            <Pressable
               key={f.key}
-              activeOpacity={0.8}
               onPress={() => setActiveFilter(f.key)}
               className={`flex-1 py-2 px-3 rounded-xl border items-center justify-center transition-all ${
                 isActive
@@ -114,7 +113,7 @@ export default function ResidentInvoicesScreen() {
               >
                 {t(f.labelKey as any)}
               </AppText>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </AppRow>

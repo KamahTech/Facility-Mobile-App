@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Alert, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
+import { Pressable, View, Alert, ActivityIndicator, RefreshControl } from "react-native";
 import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegendList } from "@legendapp/list/react-native";
@@ -139,8 +139,7 @@ export default function ConnectUnitScreen() {
   ];
 
   const headerRightAction = !isAdding ? (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <Pressable
       onPress={() => {
         reset();
         setIsAdding(true);
@@ -151,7 +150,7 @@ export default function ConnectUnitScreen() {
       className="w-10 h-10 rounded-full bg-primary items-center justify-center active:opacity-75"
     >
       <AppIcon name="add" size={18} colorToken="--primary-foreground" />
-    </TouchableOpacity>
+    </Pressable>
   ) : null;
 
   return (

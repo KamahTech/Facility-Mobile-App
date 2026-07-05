@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { Pressable, View, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -32,8 +32,7 @@ export function NewsCard({ item, onPress }: NewsCardProps) {
   })();
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.75}
+    <Pressable
       onPress={onPress}
       disabled={!onPress}
       className="w-full p-4 rounded-2xl border border-border bg-card active:opacity-90"
@@ -77,6 +76,6 @@ export function NewsCard({ item, onPress }: NewsCardProps) {
           />
         </View>
       </AppRow>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

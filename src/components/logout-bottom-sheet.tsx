@@ -1,7 +1,7 @@
 import { BottomSheet, BottomSheetView } from "@expo/ui/community/bottom-sheet";
 import type { BottomSheetMethods } from "@expo/ui/community/bottom-sheet";
 import React from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppIcon } from "@/components/app-icon";
@@ -87,8 +87,7 @@ export function LogoutBottomSheet({
           </AppText>
 
           <View className="w-full overflow-hidden rounded-xl border border-border bg-card">
-            <TouchableOpacity
-              activeOpacity={0.75}
+            <Pressable
               accessibilityRole="button"
               className="min-h-14 w-full justify-center border-b border-border px-4 py-4"
               onPress={() => runSheetAction(handleConfirm)}
@@ -104,10 +103,9 @@ export function LogoutBottomSheet({
                   </AppText>
                 </AppRow>
               </AppRow>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
-              activeOpacity={0.75}
+            <Pressable
               accessibilityRole="button"
               className="min-h-14 w-full justify-center px-4 py-4"
               onPress={() => runSheetAction(handleDismiss)}
@@ -118,7 +116,7 @@ export function LogoutBottomSheet({
                   {t("actions.cancel")}
                 </AppText>
               </AppRow>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </BottomSheetView>

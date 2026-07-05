@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, Alert } from "react-native";
+import { Pressable, View, Alert } from "react-native";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
@@ -108,13 +108,12 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
         </View>
       </AppRow>
 
-      <TouchableOpacity
-        activeOpacity={0.7}
+      <Pressable
         onPress={handleDeletePress}
         className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/30 items-center justify-center border border-rose-100 dark:border-rose-950/40 active:opacity-75"
       >
         <AppIcon name="trash" size={18} color={destructiveColor} />
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }

@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, type TouchableOpacityProps, type ColorValue } from "react-native";
+import { Pressable, View, type ColorValue, type PressableProps } from "react-native";
 
 import { AppChevron } from "@/components/app-chevron";
 import { AppIcon } from "@/components/app-icon";
@@ -6,7 +6,7 @@ import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import type { AppIconName } from "@/constants/icons";
 
-type SettingsRowProps = TouchableOpacityProps & {
+type SettingsRowProps = PressableProps & {
   accentColor?: string;
   chevronColor?: ColorValue;
   icon: AppIconName;
@@ -25,8 +25,7 @@ export function SettingsRow({
   ...props
 }: SettingsRowProps) {
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <Pressable
       className="mx-5 sm:mx-8 p-4 rounded-2xl bg-card border border-border mb-3 active:opacity-75"
       {...props}
     >
@@ -41,6 +40,6 @@ export function SettingsRow({
         </AppRow>
         <AppChevron color={chevronColor ?? accentColor} />
       </AppRow>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

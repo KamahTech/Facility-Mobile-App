@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "@/components/app-text";
 import { AppRow } from "@/components/app-row";
@@ -35,9 +35,8 @@ export function AppSegmentSelector({
         {options.map((option) => {
           const isSelected = option.value === selectedValue;
           return (
-            <TouchableOpacity
+            <Pressable
               key={option.value}
-              activeOpacity={0.8}
               onPress={() => onSelect(option.value)}
               className={`flex-1 py-3 rounded-lg items-center justify-center ${
                 isSelected ? "bg-card shadow-sm border border-border/10" : ""
@@ -50,7 +49,7 @@ export function AppSegmentSelector({
               >
                 {option.label}
               </AppText>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </AppRow>

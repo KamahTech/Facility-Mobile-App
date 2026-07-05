@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, Alert, ActivityIndicator, RefreshControl } from "react-native";
+import { Pressable, View, Alert, ActivityIndicator, RefreshControl } from "react-native";
 import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegendList } from "@legendapp/list/react-native";
@@ -74,8 +74,7 @@ export default function NotificationsScreen() {
     }
 
     return (
-      <TouchableOpacity
-        activeOpacity={0.7}
+      <Pressable
         onPress={() => handleNotificationPress(item)}
         className="w-full p-4 rounded-2xl bg-card border border-border mb-3 active:opacity-75"
       >
@@ -109,7 +108,7 @@ export default function NotificationsScreen() {
             <View className="size-2.5 rounded-full bg-primary" />
           )}
         </AppRow>
-      </TouchableOpacity>
+      </Pressable>
     );
   }, [handleNotificationPress]);
 

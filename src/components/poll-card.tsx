@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { Pressable, View, StyleSheet, ActivityIndicator, Alert } from "react-native";
 
 import { useI18n } from "@/hooks/use-i18n";
 import { type TranslationKey } from "@/constants/translations";
@@ -50,8 +50,7 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
   return (
     <View className="w-full p-4 rounded-2xl border border-border bg-card flex-col gap-3">
       {/* Clickable Header/Question block */}
-      <TouchableOpacity
-        activeOpacity={0.7}
+      <Pressable
         onPress={onPressHeader}
         disabled={!onPressHeader}
         className="flex-col gap-3 w-full"
@@ -74,7 +73,7 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
         >
           {localizedQuestion}
         </AppText>
-      </TouchableOpacity>
+      </Pressable>
 
       {/* Options List */}
       <View className="flex-col gap-2 w-full mt-1">
@@ -85,11 +84,10 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
             totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
 
           return (
-            <TouchableOpacity
+            <Pressable
               key={option.id}
               disabled={!!votingOptionId}
               onPress={() => handleVote(option.id)}
-              activeOpacity={0.7}
               className="w-full h-12 rounded-xl border border-border bg-muted/30 overflow-hidden relative justify-center px-4"
             >
               {/* Voted Progress Bar fill */}
@@ -143,7 +141,7 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
                   </AppText>
                 )}
               </AppRow>
-            </TouchableOpacity>
+            </Pressable>
           );
         })}
       </View>

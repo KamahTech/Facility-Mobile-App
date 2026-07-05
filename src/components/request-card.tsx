@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { Pressable, View } from "react-native";
 import { router, type Href } from "expo-router";
 
 import { AppIcon } from "@/components/app-icon";
@@ -103,8 +103,7 @@ export function RequestCard({ request }: RequestCardProps) {
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <Pressable
       onPress={handlePress}
       className="w-full bg-card border border-border rounded-2xl p-4 flex-col gap-3.5 mb-4 shadow-sm active:opacity-90"
     >
@@ -147,6 +146,6 @@ export function RequestCard({ request }: RequestCardProps) {
           {request.createdAt}
         </AppText>
       </AppRow>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
