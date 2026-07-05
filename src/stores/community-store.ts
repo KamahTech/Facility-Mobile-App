@@ -26,6 +26,10 @@ export type CommunityPoll = {
   totalVotes: number;
   votedOptionId: string | boolean;
   date: string;
+  pollDurationDays?: number;
+  pollDeadlineDate?: string;
+  pollStatus?: "open" | "closed";
+  canVote?: boolean;
 };
 
 export type CommunityUpdate = CommunityNews | CommunityPoll;
@@ -58,6 +62,7 @@ export type NotificationItem = {
   time: string;
   type: "payment" | "maintenance" | "visitor" | "announcement" | "task_assigned" | "inspection" | "general";
   unread: boolean;
+  read: boolean;
 };
 
 export type CreateVisitorParams = {
@@ -142,6 +147,27 @@ export function useCommunityStore(options?: {
     }
   });
 
+  const markNotificationReadMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiRequest<{ id: string; read: boolean; unread: boolean }>(`/notifications/${id}/read`, {}),
+    onSuccess: (data, id) => {
+      queryClient.setQueryData<NotificationItem[]>(["notifications"], (old) => {
+        if (!old) return [];
+        return old.map((item) => (item.id === id ? { ...item, unread: false, read: true } : item));
+      });
+    },
+  });
+
+  const markAllNotificationsReadMutation = useMutation({
+    mutationFn: () => apiRequest<{ markedRead: number }>("/notifications/mark-all-read", {}),
+    onSuccess: () => {
+      queryClient.setQueryData<NotificationItem[]>(["notifications"], (old) => {
+        if (!old) return [];
+        return old.map((item) => ({ ...item, unread: false, read: true }));
+      });
+    },
+  });
+
   // States
   const updates = updatesQuery.data || [];
   const visitors = visitorsQuery.data || [];
@@ -156,7 +182,9 @@ export function useCommunityStore(options?: {
     votePollMutation.isPending ||
     createVisitorMutation.isPending ||
     cancelVisitorMutation.isPending ||
-    submitFeedbackMutation.isPending;
+    submitFeedbackMutation.isPending ||
+    markNotificationReadMutation.isPending ||
+    markAllNotificationsReadMutation.isPending;
 
   const error =
     updatesQuery.error?.message ||
@@ -167,6 +195,8 @@ export function useCommunityStore(options?: {
     createVisitorMutation.error?.message ||
     cancelVisitorMutation.error?.message ||
     submitFeedbackMutation.error?.message ||
+    markNotificationReadMutation.error?.message ||
+    markAllNotificationsReadMutation.error?.message ||
     null;
 
   // Actions
@@ -206,6 +236,14 @@ export function useCommunityStore(options?: {
     await notificationsQuery.refetch();
   }, [notificationsQuery]);
 
+  const markNotificationRead = React.useCallback(async (id: string) => {
+    await markNotificationReadMutation.mutateAsync(id);
+  }, [markNotificationReadMutation]);
+
+  const markAllNotificationsRead = React.useCallback(async () => {
+    await markAllNotificationsReadMutation.mutateAsync();
+  }, [markAllNotificationsReadMutation]);
+
   const clearError = React.useCallback(() => {}, []);
 
   return {
@@ -224,6 +262,8 @@ export function useCommunityStore(options?: {
     fetchFeedbacks,
     submitFeedback,
     fetchNotifications,
+    markNotificationRead,
+    markAllNotificationsRead,
     clearError,
   };
 }

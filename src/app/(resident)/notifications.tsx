@@ -15,7 +15,15 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 export default function NotificationsScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const { notifications, fetchNotifications, loading, error, clearError } = useCommunityStore({ enableNotifications: true });
+  const {
+    notifications,
+    fetchNotifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+    loading,
+    error,
+    clearError,
+  } = useCommunityStore({ enableNotifications: true });
   const isTransitionFinished = useScreenTransition();
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -38,9 +46,19 @@ export default function NotificationsScreen() {
     router.back();
   };
 
-  const handleNotificationPress = React.useCallback((item: NotificationItem) => {
-    Alert.alert(item.title, item.description);
-  }, []);
+  const handleNotificationPress = React.useCallback(
+    async (item: NotificationItem) => {
+      Alert.alert(item.title, item.description);
+      if (item.unread) {
+        try {
+          await markNotificationRead(item.id);
+        } catch (err) {
+          console.error("Failed to mark notification as read", err);
+        }
+      }
+    },
+    [markNotificationRead]
+  );
 
   // Compose list card layout
   const renderItem = React.useCallback(({ item }: { item: NotificationItem }) => {
@@ -133,7 +151,28 @@ export default function NotificationsScreen() {
     >
       <Stack.Screen options={{ headerShown: false }} />
 
-      <ScreenHeader title={t("notifications.title")} onBack={handleBack} />
+      <ScreenHeader
+        title={t("notifications.title")}
+        onBack={handleBack}
+        rightAction={
+          notifications.some((n) => n.unread) ? (
+            <Pressable
+              accessibilityLabel={t("notifications.markAllRead")}
+              accessibilityRole="button"
+              onPress={async () => {
+                try {
+                  await markAllNotificationsRead();
+                } catch (err) {
+                  Alert.alert(t("common.error"), err instanceof Error ? err.message : String(err));
+                }
+              }}
+              className="w-10 h-10 rounded-full bg-secondary justify-center items-center active:opacity-75"
+            >
+              <AppIcon name="check" size={20} colorToken="--primary" />
+            </Pressable>
+          ) : undefined
+        }
+      />
 
       <View className="flex-1 w-full max-w-xl self-center">
         {loading && notifications.length === 0 ? (

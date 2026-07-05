@@ -43,6 +43,10 @@ export function MediaSourceSheet({
     onDismissRef.current = onDismiss;
   }, [onDismiss]);
 
+  const handleDismissCallback = React.useCallback(() => {
+    onDismissRef.current();
+  }, []);
+
   // Sync animation with presentation state
   React.useEffect(() => {
     if (isPresented) {
@@ -55,10 +59,10 @@ export function MediaSourceSheet({
   const handleDismiss = React.useCallback(() => {
     translateY.value = withTiming(SCREEN_HEIGHT, { duration: 200 }, (finished) => {
       if (finished) {
-        runOnJS(onDismissRef.current)();
+        runOnJS(handleDismissCallback)();
       }
     });
-  }, [translateY]);
+  }, [translateY, handleDismissCallback]);
 
   const handleSelectCamera = () => {
     onSelectCamera();
@@ -95,7 +99,7 @@ export function MediaSourceSheet({
           if (gestureState.dy > 120 || gestureState.vy > 0.5) {
             translateY.value = withTiming(SCREEN_HEIGHT, { duration: 200 }, (finished) => {
               if (finished) {
-                runOnJS(onDismissRef.current)();
+                runOnJS(handleDismissCallback)();
               }
             });
           } else {
@@ -103,7 +107,7 @@ export function MediaSourceSheet({
           }
         },
       }),
-    [translateY]
+    [translateY, handleDismissCallback]
   );
   /* eslint-enable react-hooks/refs */
 

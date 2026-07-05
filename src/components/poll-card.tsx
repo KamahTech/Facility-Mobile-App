@@ -22,6 +22,9 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
   const votesData = item.options || [];
   const totalVotes = item.totalVotes || 0;
 
+  const isClosed = item.pollStatus === "closed" || item.canVote === false;
+  const showResults = !!votedOptionId || isClosed;
+
   const localizedQuestion = (() => {
     const key = `communityUpdates.${item.id}.question` as TranslationKey;
     const translated = t(key);
@@ -62,9 +65,21 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
               {t("communityUpdates.surveyBadge")}
             </AppText>
           </View>
+          {isClosed && (
+            <View className="bg-destructive/10 px-2 py-0.5 rounded-md">
+              <AppText className="text-[10px] font-bold text-destructive">
+                {t("communityUpdates.pollClosed")}
+              </AppText>
+            </View>
+          )}
           <AppText className="text-[10px] text-muted-foreground">
             {localizedDate}
           </AppText>
+          {item.pollDeadlineDate && !isClosed && (
+            <AppText className="text-[10px] text-muted-foreground">
+              • {t("communityUpdates.pollEnds").replace("{{date}}", item.pollDeadlineDate)}
+            </AppText>
+          )}
         </AppRow>
 
         {/* Survey Question */}
@@ -86,12 +101,12 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
           return (
             <Pressable
               key={option.id}
-              disabled={!!votingOptionId}
+              disabled={!!votingOptionId || isClosed}
               onPress={() => handleVote(option.id)}
-              className="w-full h-12 rounded-xl border border-border bg-muted/30 overflow-hidden relative justify-center px-4"
+              className="w-full h-12 rounded-xl border border-border bg-muted/30 overflow-hidden relative justify-center px-4 animate-fade-in"
             >
               {/* Voted Progress Bar fill */}
-              {!!votedOptionId && (
+              {showResults && (
                 <View
                   style={[
                     StyleSheet.absoluteFill,
@@ -128,8 +143,8 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
                   {isVotingForThis && <ActivityIndicator size="small" color="#4F46E5" />}
                 </AppRow>
 
-                {/* Show percentage if voted */}
-                {!!votedOptionId && (
+                {/* Show percentage if voted or closed */}
+                {showResults && (
                   <AppText
                     className={`text-xs ${
                       isVotedOption
@@ -147,11 +162,17 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
       </View>
 
       {/* Footer Info Row */}
-      {!!votedOptionId && (
+      {showResults && (
         <AppRow className="justify-between items-center mt-1">
-          <AppText className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
-            ✓ {t("communityUpdates.voted")}
-          </AppText>
+          {!!votedOptionId ? (
+            <AppText className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+              ✓ {t("communityUpdates.voted")}
+            </AppText>
+          ) : (
+            <AppText className="text-[11px] font-medium text-muted-foreground">
+              {t("communityUpdates.pollClosed")}
+            </AppText>
+          )}
           <AppText className="text-[11px] text-muted-foreground">
             {t("communityUpdates.votesCount").replace("{{count}}", String(totalVotes))}
           </AppText>
