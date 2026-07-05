@@ -1,0 +1,196 @@
+import React from "react";
+import { StatusBar } from "expo-status-bar";
+import { View } from "react-native";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router, type Href, useNavigation } from "expo-router";
+
+import { HomeHeader } from "@/components/home-header";
+import { AppText } from "@/components/app-text";
+import { DueBalanceCard } from "@/components/due-balance-card";
+import { QuickActions } from "@/components/quick-actions";
+import { CommunityUpdates } from "@/components/community-updates";
+import { LogoutBottomSheet } from "@/components/logout-bottom-sheet";
+import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentation";
+import { useI18n } from "@/hooks/use-i18n";
+import { useTheme } from "@/hooks/use-theme";
+import { useThemeToken } from "@/hooks/use-theme-token";
+import { useInvoicesStore } from "@/stores/invoices-store";
+import { useUserStore } from "@/stores/user-store";
+import { useCommunityStore } from "@/stores/community-store";
+import { useScrollAnimation } from "@/providers/scroll-animation-provider";
+
+const johnDoeAvatar = require("@/assets/temp/john-doe-avatar.png");
+
+export default function ResidentHomeScreen() {
+  const { t } = useI18n();
+  const { resolvedTheme } = useTheme();
+  const insets = useSafeAreaInsets();
+  const background = useThemeToken("--background");
+  const { headerTranslateY, scrollHandler, resetScrollAnimation } = useScrollAnimation();
+  const navigation = useNavigation();
+  const scrollViewRef = React.useRef<Animated.ScrollView>(null);
+  
+  const { profile, logout } = useUserStore();
+  const { fetchInvoices, invoices } = useInvoicesStore();
+  const { fetchUpdates } = useCommunityStore({ enableUpdates: true });
+  const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
+
+  const loadData = React.useCallback(async () => {
+    try {
+      await Promise.all([
+        fetchInvoices(),
+        fetchUpdates(),
+      ]);
+    } catch (err) {
+      console.error("Error loading home dashboard data:", err);
+    }
+  }, [fetchInvoices, fetchUpdates]);
+
+  const handleLogout = async () => {
+    logoutSheet.dismiss();
+    try {
+      await logout();
+      router.replace("/choose-login-method" as Href);
+    } catch (err) {
+      console.error("Failed to logout:", err);
+    }
+  };
+
+  const scrollToTop = React.useCallback(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    resetScrollAnimation();
+  }, [resetScrollAnimation]);
+
+  React.useEffect(() => {
+    const unsubscribeTabPress = (navigation as any).addListener("tabPress", () => {
+      if (navigation.isFocused()) {
+        scrollToTop();
+      }
+    });
+    return unsubscribeTabPress;
+  }, [navigation, scrollToTop]);
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      resetScrollAnimation();
+      loadData();
+    });
+    return unsubscribe;
+  }, [navigation, resetScrollAnimation, loadData]);
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: headerTranslateY.value }],
+    };
+  });
+
+  const totalDueBalance = React.useMemo(() => {
+    return invoices
+      .filter((inv) => inv.status === "pending" || inv.status === "overdue")
+      .reduce((sum, inv) => sum + inv.amount, 0);
+  }, [invoices]);
+
+  // Determine if it is morning or evening based on current time
+  const isMorning = React.useMemo(() => {
+    const hours = new Date().getHours();
+    return hours >= 5 && hours < 12;
+  }, []);
+
+  // Compute greeting text dynamically (e.g., "Good morning John Doe")
+  const greetingText = React.useMemo(() => {
+    const baseGreeting = isMorning ? t("welcomeCard.morning") : t("welcomeCard.evening");
+    const name = profile?.name || t("residentHome.userName");
+    return `${baseGreeting} ${name}`;
+  }, [isMorning, t, profile]);
+
+  return (
+    <View
+      className="flex-1 bg-background"
+      style={{
+        paddingStart: insets.left,
+        paddingEnd: insets.right,
+      }}
+    >
+      <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
+      <View
+        style={{
+          height: insets.top,
+          backgroundColor: background,
+          position: "absolute",
+          top: 0,
+          start: 0,
+          end: 0,
+          zIndex: 100,
+        }}
+      />
+      <Animated.ScrollView
+        ref={scrollViewRef}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingTop: insets.top + 76,
+          paddingBottom: insets.bottom + 140,
+          flexDirection: "column",
+          gap: 24,
+        }}
+        className="flex-1 w-full max-w-xl self-center"
+      >
+        
+        {/* Plain Greeting Text */}
+        <AppText
+          className="text-start text-2xl text-foreground px-5 sm:px-8 font-bold"
+        >
+          {greetingText}
+        </AppText>
+
+        {/* Due Balance Card Component */}
+        <View className="px-5 sm:px-8">
+          <DueBalanceCard dueAmount={totalDueBalance} />
+        </View>
+
+        {/* Quick Actions List */}
+        <QuickActions />
+
+        {/* Community Updates Component */}
+        <CommunityUpdates />
+      </Animated.ScrollView>
+
+      {/* Absolute Collapsible Header Container */}
+      <Animated.View
+        style={[
+          headerAnimatedStyle,
+          {
+            position: "absolute",
+            top: 0,
+            start: 0,
+            end: 0,
+            paddingTop: insets.top + 12,
+            paddingBottom: 12,
+            backgroundColor: background,
+            zIndex: 10,
+          }
+        ]}
+        className="px-5 sm:px-8"
+      >
+        <HomeHeader
+          avatarSource={johnDoeAvatar}
+          onNotificationPress={() => router.push("/notifications" as Href)}
+          onAvatarPress={logoutSheet.present}
+          onLogoPress={scrollToTop}
+        />
+      </Animated.View>
+
+      {/* Logout bottom sheet */}
+      <LogoutBottomSheet
+        isPresented={logoutSheet.isPresented}
+        onDismiss={logoutSheet.dismiss}
+        onConfirm={handleLogout}
+        userName={profile?.name || ""}
+        userRole={t("auth.residentTitle")}
+        avatarSource={johnDoeAvatar}
+      />
+    </View>
+  );
+}

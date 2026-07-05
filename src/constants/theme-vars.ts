@@ -1,0 +1,51 @@
+import { vars } from "react-native-css-interop";
+
+export const themeTokens = {
+  light: {
+    "--background": "#f5f6f8",
+    "--foreground": "#27272a",
+    "--card": "#ffffff",
+    "--card-foreground": "#27272a",
+    "--popover": "#ffffff",
+    "--popover-foreground": "#27272a",
+    "--primary": "#18181b",
+    "--primary-foreground": "#fafafa",
+    "--secondary": "#f4f4f5",
+    "--secondary-foreground": "#18181b",
+    "--muted": "#f4f4f5",
+    "--muted-foreground": "#71717a",
+    "--accent": "#f4f4f5",
+    "--accent-foreground": "#18181b",
+    "--destructive": "#ef4444",
+    "--destructive-foreground": "#ffffff",
+    "--border": "#e4e4e7",
+    "--input": "#e4e4e7",
+    "--ring": "#a1a1aa",
+  },
+  dark: {
+    "--background": "#09090b",
+    "--foreground": "#fafafa",
+    "--card": "#18181b",
+    "--card-foreground": "#fafafa",
+    "--popover": "#18181b",
+    "--popover-foreground": "#fafafa",
+    "--primary": "#fafafa",
+    "--primary-foreground": "#18181b",
+    "--secondary": "#27272a",
+    "--secondary-foreground": "#fafafa",
+    "--muted": "#27272a",
+    "--muted-foreground": "#a1a1aa",
+    "--accent": "#27272a",
+    "--accent-foreground": "#fafafa",
+    "--destructive": "#7f1d1d",
+    "--destructive-foreground": "#ffffff",
+    "--border": "#27272a",
+    "--input": "#27272a",
+    "--ring": "#71717a",
+  },
+} as const;
+
+export const themeVars = {
+  light: vars(themeTokens.light),
+  dark: vars(themeTokens.dark),
+} as const;
