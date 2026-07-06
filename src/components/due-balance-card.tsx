@@ -12,23 +12,17 @@ import { useI18n } from "@/hooks/use-i18n";
 const houseIcon = require("@/assets/icons/house.png");
 
 type DueBalanceCardProps = {
-  /** The outstanding due balance amount to show. */
-  dueAmount: number;
+  /** The number of connected units to show. */
+  unitsCount: number;
 };
 
-export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
+export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
   const { isRTL, language, t } = useI18n();
 
-  const formattedAmount = React.useMemo(() => {
-    const compactFormatter = new Intl.NumberFormat(language, {
-      notation: "compact",
-      compactDisplay: "short",
-      maximumFractionDigits: 2,
-    });
-    const compacted = compactFormatter.format(dueAmount);
-
-    return isRTL ? `${compacted} $` : `$${compacted}`;
-  }, [dueAmount, isRTL, language]);
+  const formattedCount = React.useMemo(() => {
+    const formatter = new Intl.NumberFormat(language);
+    return formatter.format(unitsCount);
+  }, [unitsCount, language]);
 
   const iconPositionStyle = React.useMemo(() => {
     return { end: -100, bottom: -100 };
@@ -70,17 +64,7 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
         className="flex-col justify-between flex-1"
         style={textContainerStyle}
       >
-        {/* Money Number */}
-        <AppText 
-          className="text-4xl font-bold text-white tracking-tight"
-          style={{
-            alignSelf: "flex-start",
-          }}
-        >
-          {formattedAmount}
-        </AppText>
-
-        {/* Due Text Label Row */}
+        {/* Connected Units Label Row */}
         <AppRow
           className="items-center gap-1.5"
           style={{
@@ -88,7 +72,7 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
           }}
         >
           <AppText className="text-base font-bold text-emerald-100/90 uppercase tracking-wider">
-            {t("welcomeCard.dueBalance")}
+            {t("connectUnit.connectedTitle")}
           </AppText>
           <AppIcon
             name={isRTL ? "arrowUpLeft" : "arrowUpRight"}
@@ -96,6 +80,16 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
             color="rgba(167, 243, 208, 0.9)"
           />
         </AppRow>
+
+        {/* Connected Units Count Number */}
+        <AppText 
+          className="text-4xl font-bold text-white tracking-tight"
+          style={{
+            alignSelf: "flex-start",
+          }}
+        >
+          {formattedCount}
+        </AppText>
       </View>
 
       {/* 3D House icon (Positioned absolutely in bottom-end corner and clipped) */}

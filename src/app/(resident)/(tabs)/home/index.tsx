@@ -18,6 +18,7 @@ import { useThemeToken } from "@/hooks/use-theme-token";
 import { useInvoicesStore } from "@/stores/invoices-store";
 import { useUserStore } from "@/stores/user-store";
 import { useCommunityStore } from "@/stores/community-store";
+import { useOwnerStore } from "@/stores/owner-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { getProfileImageSource } from "@/lib/image-source";
 
@@ -33,8 +34,9 @@ export default function ResidentHomeScreen() {
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   
   const { profile, logout } = useUserStore();
-  const { fetchInvoices, invoices } = useInvoicesStore();
+  const { fetchInvoices } = useInvoicesStore();
   const { fetchUpdates } = useCommunityStore({ enableUpdates: true });
+  const { ownerUnits, fetchOwnerUnits } = useOwnerStore({ enableOwnerUnits: true });
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
   const avatarSource = React.useMemo(
     () => getProfileImageSource(profile?.profileImageUrl, johnDoeAvatar),
@@ -46,11 +48,12 @@ export default function ResidentHomeScreen() {
       await Promise.all([
         fetchInvoices(),
         fetchUpdates(),
+        fetchOwnerUnits(),
       ]);
     } catch (err) {
       console.error("Error loading home dashboard data:", err);
     }
-  }, [fetchInvoices, fetchUpdates]);
+  }, [fetchInvoices, fetchUpdates, fetchOwnerUnits]);
 
   const handleLogout = async () => {
     logoutSheet.dismiss();
@@ -90,11 +93,6 @@ export default function ResidentHomeScreen() {
     };
   });
 
-  const totalDueBalance = React.useMemo(() => {
-    return invoices
-      .filter((inv) => inv.status === "pending" || inv.status === "overdue")
-      .reduce((sum, inv) => sum + inv.amount, 0);
-  }, [invoices]);
 
   // Compute greeting text dynamically (e.g., "Hello, John Doe")
   const greetingText = React.useMemo(() => {
@@ -144,9 +142,9 @@ export default function ResidentHomeScreen() {
           {greetingText}
         </AppText>
 
-        {/* Due Balance Card Component */}
+        {/* Connected Units Card Component */}
         <View className="px-5 sm:px-8">
-          <DueBalanceCard dueAmount={totalDueBalance} />
+          <DueBalanceCard unitsCount={ownerUnits.length} />
         </View>
 
         {/* Quick Actions List */}
