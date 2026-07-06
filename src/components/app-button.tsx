@@ -7,6 +7,7 @@ type AppButtonProps = PressableProps & {
   href?: Href;
   label: string;
   variant?: "card" | "primary";
+  className?: string;
 };
 
 export function AppButton({
@@ -14,12 +15,15 @@ export function AppButton({
   label,
   onPress,
   variant = "primary",
+  className = "",
   ...props
 }: AppButtonProps) {
-  const buttonClassName =
+  const defaultClassName =
     variant === "card"
       ? "min-h-14 items-center justify-center rounded-lg border border-border bg-card px-5 py-4 active:opacity-80"
       : "min-h-14 items-center justify-center rounded-lg bg-primary px-5 py-4 active:opacity-80";
+  
+  const buttonClassName = `${defaultClassName} ${className}`.trim();
   const textClassName =
     variant === "card"
       ? "text-center text-base font-semibold text-card-foreground"
