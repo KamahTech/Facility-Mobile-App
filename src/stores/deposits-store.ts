@@ -34,16 +34,17 @@ export function useDepositsStore() {
   const deposits = React.useMemo(() => query.data?.pages.flatMap((page) => page.items) || [], [query.data]);
   const loading = query.isLoading || query.isFetchingNextPage;
   const error = query.error?.message || null;
+  const { fetchNextPage: fetchNextDepositsPage, hasNextPage, isFetchingNextPage, refetch } = query;
 
   const fetchDeposits = React.useCallback(async () => {
-    await query.refetch();
-  }, [query]);
+    await refetch();
+  }, [refetch]);
 
   const fetchNextPage = React.useCallback(async () => {
-    if (query.hasNextPage && !query.isFetchingNextPage) {
-      await query.fetchNextPage();
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextDepositsPage();
     }
-  }, [query]);
+  }, [fetchNextDepositsPage, hasNextPage, isFetchingNextPage]);
 
   const fetchUnitDeposits = React.useCallback(async (unitId: string, limit = 50, cursor?: string) => {
     const res = await apiRequest<PaginatedDeposits>(`/resident/owner-units/${unitId}/maintenance-deposits`, { limit, cursor });

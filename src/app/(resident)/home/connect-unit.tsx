@@ -15,6 +15,7 @@ import { AppButton } from "@/components/app-button";
 import { AppIcon } from "@/components/app-icon";
 import { ConnectedUnitCard } from "@/components/connected-unit-card";
 import { FullScreenLoader } from "@/components/full-screen-loader";
+import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { useI18n } from "@/hooks/use-i18n";
 import { useTransitionDelayedLoading } from "@/hooks/use-screen-transition";
 import { useUnitStore } from "@/stores/unit-store";
@@ -174,7 +175,14 @@ export default function ConnectUnitScreen() {
         <FullScreenLoader visible={actionLoading} />
 
         {isAdding ? (
-          <View className="flex-1 pt-6 pb-10">
+          <KeyboardAwareScrollContent
+            bottomOffset={insets.bottom + 24}
+            contentContainerStyle={{
+              paddingTop: 24,
+              paddingBottom: insets.bottom + 40,
+            }}
+            className="flex-1"
+          >
             <AppText className="text-start text-base leading-6 text-muted-foreground mb-8">
               {t("quickActions.connectUnitDescription")}
             </AppText>
@@ -267,7 +275,7 @@ export default function ConnectUnitScreen() {
                 />
               </View>
             </View>
-          </View>
+          </KeyboardAwareScrollContent>
         ) : (
           <View className="flex-1">
             {loading && units.length === 0 ? (

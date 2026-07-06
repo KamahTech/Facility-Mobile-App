@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, ActivityIndicator, Pressable, Alert } from "react-native";
+import { View, ActivityIndicator, Pressable, Alert } from "react-native";
 import { Stack, router, type Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -7,6 +7,7 @@ import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
 import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
+import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { useI18n } from "@/hooks/use-i18n";
 import { useUserStore } from "@/stores/user-store";
 import { AppIcon } from "@/components/app-icon";
@@ -130,10 +131,7 @@ export default function SignupScreen() {
         onBack={step === 2 ? () => setStep(1) : () => router.back()}
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAwareScrollContent
         contentContainerStyle={{
           paddingTop: 24,
           paddingBottom: insets.bottom + 40,
@@ -344,7 +342,7 @@ export default function SignupScreen() {
             </AppText>
           </Pressable>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollContent>
     </View>
   );
 }

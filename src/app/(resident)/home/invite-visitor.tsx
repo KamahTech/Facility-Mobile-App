@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, Alert } from "react-native";
+import { View, Alert } from "react-native";
 import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller, useWatch } from "react-hook-form";
@@ -12,6 +12,7 @@ import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
 import { AppSelectField } from "@/components/app-select-field";
 import { FullScreenLoader } from "@/components/full-screen-loader";
+import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { VisitorPurposeBottomSheet } from "@/components/visitor-purpose-bottom-sheet";
 import { visitorPurposeOptions, type VisitorPurposeId } from "@/constants/visitor-purposes";
 import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentation";
@@ -95,10 +96,7 @@ export default function InviteVisitorScreen() {
 
       <ScreenHeader title={t("quickActions.inviteVisitor")} onBack={() => router.back()} />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAwareScrollContent
         contentContainerStyle={{
           paddingTop: 24,
           paddingBottom: insets.bottom + 40,
@@ -179,7 +177,7 @@ export default function InviteVisitorScreen() {
             />
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollContent>
 
       <FullScreenLoader visible={localLoading || loading} />
 

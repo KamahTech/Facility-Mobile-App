@@ -114,7 +114,7 @@ export async function apiRequest<T = ApiResponse>(route: string, params: ApiPara
     }
 
     const data = result.result;
-    if (!data) {
+    if (data === undefined || data === null) {
       throw new Error("No response data from Odoo service.");
     }
 

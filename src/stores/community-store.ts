@@ -189,7 +189,7 @@ export function useCommunityStore(options?: {
     mutationFn: (id: string) =>
       apiRequest<{ id: string; read: boolean; unread: boolean }>(`/notifications/${id}/read`, {}),
     onSuccess: (data, id) => {
-      queryClient.setQueryData<{ pages: PaginatedNotifications[]; pageParams: any[] }>(
+      queryClient.setQueryData<{ pages: PaginatedNotifications[]; pageParams: unknown[] }>(
         ["notifications"],
         (old) => {
           if (!old) return old;
@@ -210,7 +210,7 @@ export function useCommunityStore(options?: {
   const markAllNotificationsReadMutation = useMutation({
     mutationFn: () => apiRequest<{ markedRead: number }>("/notifications/mark-all-read", {}),
     onSuccess: () => {
-      queryClient.setQueryData<{ pages: PaginatedNotifications[]; pageParams: any[] }>(
+      queryClient.setQueryData<{ pages: PaginatedNotifications[]; pageParams: unknown[] }>(
         ["notifications"],
         (old) => {
           if (!old) return old;
@@ -260,77 +260,131 @@ export function useCommunityStore(options?: {
     markNotificationReadMutation.error?.message ||
     markAllNotificationsReadMutation.error?.message ||
     null;
+  const {
+    fetchNextPage: fetchNextUpdatesPage,
+    hasNextPage: hasNextUpdatesPage,
+    isFetchingNextPage: isFetchingNextUpdatesPage,
+    refetch: refetchUpdates,
+  } = updatesQuery;
+  const {
+    fetchNextPage: fetchNextVisitorsPage,
+    hasNextPage: hasNextVisitorsPage,
+    isFetchingNextPage: isFetchingNextVisitorsPage,
+    refetch: refetchVisitors,
+  } = visitorsQuery;
+  const {
+    fetchNextPage: fetchNextFeedbacksPage,
+    hasNextPage: hasNextFeedbacksPage,
+    isFetchingNextPage: isFetchingNextFeedbacksPage,
+    refetch: refetchFeedbacks,
+  } = feedbacksQuery;
+  const {
+    fetchNextPage: fetchNextNotificationsPage,
+    hasNextPage: hasNextNotificationsPage,
+    isFetchingNextPage: isFetchingNextNotificationsPage,
+    refetch: refetchNotifications,
+  } = notificationsQuery;
+  const { mutateAsync: votePollMutateAsync, reset: resetVotePollMutation } = votePollMutation;
+  const { mutateAsync: createVisitorMutateAsync, reset: resetCreateVisitorMutation } = createVisitorMutation;
+  const { mutateAsync: cancelVisitorMutateAsync, reset: resetCancelVisitorMutation } = cancelVisitorMutation;
+  const { mutateAsync: submitFeedbackMutateAsync, reset: resetSubmitFeedbackMutation } = submitFeedbackMutation;
+  const {
+    mutateAsync: markNotificationReadMutateAsync,
+    reset: resetMarkNotificationReadMutation,
+  } = markNotificationReadMutation;
+  const {
+    mutateAsync: markAllNotificationsReadMutateAsync,
+    reset: resetMarkAllNotificationsReadMutation,
+  } = markAllNotificationsReadMutation;
 
   // Actions
   const fetchUpdates = React.useCallback(async () => {
-    await updatesQuery.refetch();
-  }, [updatesQuery]);
+    await refetchUpdates();
+  }, [refetchUpdates]);
 
   const fetchNextUpdates = React.useCallback(async () => {
-    if (updatesQuery.hasNextPage && !updatesQuery.isFetchingNextPage) {
-      await updatesQuery.fetchNextPage();
+    if (hasNextUpdatesPage && !isFetchingNextUpdatesPage) {
+      await fetchNextUpdatesPage();
     }
-  }, [updatesQuery]);
+  }, [fetchNextUpdatesPage, hasNextUpdatesPage, isFetchingNextUpdatesPage]);
 
   const fetchUpdateDetails = React.useCallback(async (id: string) => {
     return await apiRequest<CommunityUpdate>(`/community/updates/${id}`, { lang: language });
   }, [language]);
 
   const votePoll = React.useCallback(async (pollId: string, optionId: string | number) => {
-    await votePollMutation.mutateAsync({ pollId, optionId });
-  }, [votePollMutation]);
+    await votePollMutateAsync({ pollId, optionId });
+  }, [votePollMutateAsync]);
 
   const fetchVisitors = React.useCallback(async () => {
-    await visitorsQuery.refetch();
-  }, [visitorsQuery]);
+    await refetchVisitors();
+  }, [refetchVisitors]);
 
   const fetchNextVisitors = React.useCallback(async () => {
-    if (visitorsQuery.hasNextPage && !visitorsQuery.isFetchingNextPage) {
-      await visitorsQuery.fetchNextPage();
+    if (hasNextVisitorsPage && !isFetchingNextVisitorsPage) {
+      await fetchNextVisitorsPage();
     }
-  }, [visitorsQuery]);
+  }, [fetchNextVisitorsPage, hasNextVisitorsPage, isFetchingNextVisitorsPage]);
 
   const createVisitor = React.useCallback(async (params: CreateVisitorParams) => {
-    return await createVisitorMutation.mutateAsync(params);
-  }, [createVisitorMutation]);
+    return await createVisitorMutateAsync(params);
+  }, [createVisitorMutateAsync]);
 
   const cancelVisitor = React.useCallback(async (id: string) => {
-    await cancelVisitorMutation.mutateAsync(id);
-  }, [cancelVisitorMutation]);
+    await cancelVisitorMutateAsync(id);
+  }, [cancelVisitorMutateAsync]);
 
   const fetchFeedbacks = React.useCallback(async () => {
-    await feedbacksQuery.refetch();
-  }, [feedbacksQuery]);
+    await refetchFeedbacks();
+  }, [refetchFeedbacks]);
 
   const fetchNextFeedbacks = React.useCallback(async () => {
-    if (feedbacksQuery.hasNextPage && !feedbacksQuery.isFetchingNextPage) {
-      await feedbacksQuery.fetchNextPage();
+    if (hasNextFeedbacksPage && !isFetchingNextFeedbacksPage) {
+      await fetchNextFeedbacksPage();
     }
-  }, [feedbacksQuery]);
+  }, [fetchNextFeedbacksPage, hasNextFeedbacksPage, isFetchingNextFeedbacksPage]);
 
   const submitFeedback = React.useCallback(async (params: SubmitFeedbackParams) => {
-    return await submitFeedbackMutation.mutateAsync(params);
-  }, [submitFeedbackMutation]);
+    return await submitFeedbackMutateAsync(params);
+  }, [submitFeedbackMutateAsync]);
 
   const fetchNotifications = React.useCallback(async () => {
-    await notificationsQuery.refetch();
-  }, [notificationsQuery]);
+    await refetchNotifications();
+  }, [refetchNotifications]);
 
   const fetchNextNotifications = React.useCallback(async () => {
-    if (notificationsQuery.hasNextPage && !notificationsQuery.isFetchingNextPage) {
-      await notificationsQuery.fetchNextPage();
+    if (hasNextNotificationsPage && !isFetchingNextNotificationsPage) {
+      await fetchNextNotificationsPage();
     }
-  }, [notificationsQuery]);
+  }, [
+    fetchNextNotificationsPage,
+    hasNextNotificationsPage,
+    isFetchingNextNotificationsPage,
+  ]);
 
   const markNotificationRead = React.useCallback(async (id: string) => {
-    await markNotificationReadMutation.mutateAsync(id);
-  }, [markNotificationReadMutation]);
+    await markNotificationReadMutateAsync(id);
+  }, [markNotificationReadMutateAsync]);
 
   const markAllNotificationsRead = React.useCallback(async () => {
-    await markAllNotificationsReadMutation.mutateAsync();
-  }, [markAllNotificationsReadMutation]);
+    await markAllNotificationsReadMutateAsync();
+  }, [markAllNotificationsReadMutateAsync]);
 
-  const clearError = React.useCallback(() => {}, []);
+  const clearError = React.useCallback(() => {
+    resetVotePollMutation();
+    resetCreateVisitorMutation();
+    resetCancelVisitorMutation();
+    resetSubmitFeedbackMutation();
+    resetMarkNotificationReadMutation();
+    resetMarkAllNotificationsReadMutation();
+  }, [
+    resetVotePollMutation,
+    resetCreateVisitorMutation,
+    resetCancelVisitorMutation,
+    resetSubmitFeedbackMutation,
+    resetMarkNotificationReadMutation,
+    resetMarkAllNotificationsReadMutation,
+  ]);
 
   return {
     updates,

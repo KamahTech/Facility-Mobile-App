@@ -79,7 +79,7 @@ export function useRequestsStore(options?: {
       const unitIdNum = parseInt(params.unitId, 10);
       const isMobile = params.source === "mobile_unit_link";
       
-      const payload: Record<string, any> = {
+      const payload: Record<string, unknown> = {
         category: params.category,
         description: params.description,
       };
@@ -200,87 +200,104 @@ export function useRequestsStore(options?: {
     startTaskMutation.error?.message ||
     completeTaskMutation.error?.message ||
     null;
+  const {
+    fetchNextPage: fetchNextResidentRequestsPage,
+    hasNextPage: hasNextResidentRequestsPage,
+    isFetchingNextPage: isFetchingNextResidentRequestsPage,
+    refetch: refetchResidentRequests,
+  } = residentRequestsQuery;
+  const {
+    fetchNextPage: fetchNextWorkerTasksPage,
+    hasNextPage: hasNextWorkerTasksPage,
+    isFetchingNextPage: isFetchingNextWorkerTasksPage,
+    refetch: refetchWorkerTasks,
+  } = workerTasksQuery;
+  const { mutateAsync: createRequestMutateAsync, reset: resetCreateRequestMutation } = createRequestMutation;
+  const { mutateAsync: cancelRequestMutateAsync, reset: resetCancelRequestMutation } = cancelRequestMutation;
+  const { mutateAsync: addCommentMutateAsync, reset: resetAddCommentMutation } = addCommentMutation;
+  const { mutateAsync: acceptTaskMutateAsync, reset: resetAcceptTaskMutation } = acceptTaskMutation;
+  const { mutateAsync: inspectTaskMutateAsync, reset: resetInspectTaskMutation } = inspectTaskMutation;
+  const { mutateAsync: startTaskMutateAsync, reset: resetStartTaskMutation } = startTaskMutation;
+  const { mutateAsync: completeTaskMutateAsync, reset: resetCompleteTaskMutation } = completeTaskMutation;
 
   // Actions
   const fetchResidentRequests = React.useCallback(async () => {
-    await residentRequestsQuery.refetch();
-  }, [residentRequestsQuery]);
+    await refetchResidentRequests();
+  }, [refetchResidentRequests]);
 
   const fetchNextResidentRequests = React.useCallback(async () => {
-    if (residentRequestsQuery.hasNextPage && !residentRequestsQuery.isFetchingNextPage) {
-      await residentRequestsQuery.fetchNextPage();
+    if (hasNextResidentRequestsPage && !isFetchingNextResidentRequestsPage) {
+      await fetchNextResidentRequestsPage();
     }
-  }, [residentRequestsQuery]);
+  }, [
+    fetchNextResidentRequestsPage,
+    hasNextResidentRequestsPage,
+    isFetchingNextResidentRequestsPage,
+  ]);
 
   const fetchWorkerTasks = React.useCallback(async () => {
-    await workerTasksQuery.refetch();
-  }, [workerTasksQuery]);
+    await refetchWorkerTasks();
+  }, [refetchWorkerTasks]);
 
   const fetchNextWorkerTasks = React.useCallback(async () => {
-    if (workerTasksQuery.hasNextPage && !workerTasksQuery.isFetchingNextPage) {
-      await workerTasksQuery.fetchNextPage();
+    if (hasNextWorkerTasksPage && !isFetchingNextWorkerTasksPage) {
+      await fetchNextWorkerTasksPage();
     }
-  }, [workerTasksQuery]);
+  }, [
+    fetchNextWorkerTasksPage,
+    hasNextWorkerTasksPage,
+    isFetchingNextWorkerTasksPage,
+  ]);
 
   const createRequest = React.useCallback(async (category: string, description: string, unitId: string) => {
     const unit = units.find((u) => u.id === unitId);
     const source = unit?.source;
-    return await createRequestMutation.mutateAsync({ category, description, unitId, source });
-  }, [createRequestMutation, units]);
+    return await createRequestMutateAsync({ category, description, unitId, source });
+  }, [createRequestMutateAsync, units]);
 
   const cancelRequest = React.useCallback(async (id: string) => {
-    await cancelRequestMutation.mutateAsync(id);
-  }, [cancelRequestMutation]);
+    await cancelRequestMutateAsync(id);
+  }, [cancelRequestMutateAsync]);
 
   const addRequestComment = React.useCallback(
     async (requestId: string, content: string, image: RequestCommentImage = false, imageName: string | false = false) => {
-      return await addCommentMutation.mutateAsync({ requestId, content, image, imageName });
+      return await addCommentMutateAsync({ requestId, content, image, imageName });
     },
-    [addCommentMutation]
+    [addCommentMutateAsync]
   );
 
   const acceptTask = React.useCallback(async (id: string) => {
-    await acceptTaskMutation.mutateAsync(id);
-  }, [acceptTaskMutation]);
+    await acceptTaskMutateAsync(id);
+  }, [acceptTaskMutateAsync]);
 
   const inspectTask = React.useCallback(async (id: string, inspectParams: InspectTaskParams) => {
-    await inspectTaskMutation.mutateAsync({ id, inspectParams });
-  }, [inspectTaskMutation]);
+    await inspectTaskMutateAsync({ id, inspectParams });
+  }, [inspectTaskMutateAsync]);
 
   const startTask = React.useCallback(async (id: string) => {
-    await startTaskMutation.mutateAsync(id);
-  }, [startTaskMutation]);
+    await startTaskMutateAsync(id);
+  }, [startTaskMutateAsync]);
 
   const completeTask = React.useCallback(async (id: string) => {
-    await completeTaskMutation.mutateAsync(id);
-  }, [completeTaskMutation]);
+    await completeTaskMutateAsync(id);
+  }, [completeTaskMutateAsync]);
 
   const clearError = React.useCallback(() => {
-    if (enableResidentRequests) {
-      residentRequestsQuery.refetch({ cancelRefetch: true }).catch(() => undefined);
-    }
-    if (enableWorkerTasks) {
-      workerTasksQuery.refetch({ cancelRefetch: true }).catch(() => undefined);
-    }
-    createRequestMutation.reset();
-    cancelRequestMutation.reset();
-    addCommentMutation.reset();
-    acceptTaskMutation.reset();
-    inspectTaskMutation.reset();
-    startTaskMutation.reset();
-    completeTaskMutation.reset();
+    resetCreateRequestMutation();
+    resetCancelRequestMutation();
+    resetAddCommentMutation();
+    resetAcceptTaskMutation();
+    resetInspectTaskMutation();
+    resetStartTaskMutation();
+    resetCompleteTaskMutation();
   }, [
-    enableResidentRequests,
-    enableWorkerTasks,
-    residentRequestsQuery,
-    workerTasksQuery,
-    createRequestMutation,
-    cancelRequestMutation,
-    addCommentMutation,
-    acceptTaskMutation,
-    inspectTaskMutation,
-    startTaskMutation,
-    completeTaskMutation,
+    resetCreateRequestMutation,
+    resetCancelRequestMutation,
+    resetAddCommentMutation,
+    resetAcceptTaskMutation,
+    resetInspectTaskMutation,
+    resetStartTaskMutation,
+    resetCompleteTaskMutation,
   ]);
 
   return {

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, ActivityIndicator, Pressable, Alert, Platform } from "react-native";
+import { View, ActivityIndicator, Pressable, Alert, Platform } from "react-native";
 import { Stack, useLocalSearchParams, router, type Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -9,6 +9,7 @@ import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
 import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
+import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { useI18n } from "@/hooks/use-i18n";
 import { useUserStore } from "@/stores/user-store";
 import { AppIcon } from "@/components/app-icon";
@@ -145,10 +146,7 @@ export default function LoginScreen() {
         onBack={() => router.back()}
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAwareScrollContent
         contentContainerStyle={{
           paddingTop: 24,
           paddingBottom: insets.bottom + 40,
@@ -276,7 +274,7 @@ export default function LoginScreen() {
             </View>
           )}
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollContent>
     </View>
   );
 }

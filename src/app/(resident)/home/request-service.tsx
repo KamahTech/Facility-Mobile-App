@@ -14,6 +14,7 @@ import { ActionCard } from "@/components/action-card";
 import { AppInput } from "@/components/app-input";
 import { AppSelectField } from "@/components/app-select-field";
 import { AppButton } from "@/components/app-button";
+import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { FullScreenLoader } from "@/components/full-screen-loader";
 import { UnitSelectBottomSheet } from "@/components/unit-select-bottom-sheet";
 import { serviceItems } from "@/constants/services";
@@ -195,7 +196,15 @@ export default function RequestServiceScreen() {
           />
         </View>
       ) : selectedCategory ? (
-        <View className="flex-1 w-full max-w-xl self-center px-5 pt-6 pb-10">
+        <KeyboardAwareScrollContent
+          bottomOffset={insets.bottom + 24}
+          contentContainerStyle={{
+            paddingTop: 24,
+            paddingBottom: insets.bottom + 40,
+            paddingHorizontal: 20,
+          }}
+          className="flex-1 w-full max-w-xl self-center"
+        >
           <View className="flex-col gap-6">
             {/* Category summary */}
             {selectedCategoryItem && (
@@ -247,7 +256,7 @@ export default function RequestServiceScreen() {
               />
             </View>
           </View>
-        </View>
+        </KeyboardAwareScrollContent>
       ) : (
         <LegendList
           data={services}

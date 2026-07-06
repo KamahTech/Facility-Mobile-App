@@ -45,20 +45,22 @@ export function useInvoicesStore() {
   const invoices = React.useMemo(() => query.data?.pages.flatMap((page) => page.items) || [], [query.data]);
   const loading = query.isLoading || query.isFetchingNextPage || payMutation.isPending;
   const error = query.error?.message || payMutation.error?.message || null;
+  const { fetchNextPage: fetchNextInvoicesPage, hasNextPage, isFetchingNextPage, refetch } = query;
+  const { mutateAsync: payMutateAsync, reset: resetPayMutation } = payMutation;
 
   const fetchInvoices = React.useCallback(async () => {
-    await query.refetch();
-  }, [query]);
+    await refetch();
+  }, [refetch]);
 
   const fetchNextPage = React.useCallback(async () => {
-    if (query.hasNextPage && !query.isFetchingNextPage) {
-      await query.fetchNextPage();
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextInvoicesPage();
     }
-  }, [query]);
+  }, [fetchNextInvoicesPage, hasNextPage, isFetchingNextPage]);
 
   const payInvoice = React.useCallback(async (id: string) => {
-    return await payMutation.mutateAsync({ id });
-  }, [payMutation]);
+    return await payMutateAsync({ id });
+  }, [payMutateAsync]);
 
   const getTotalDueBalance = React.useCallback(() => {
     return invoices
@@ -66,7 +68,9 @@ export function useInvoicesStore() {
       .reduce((sum, inv) => sum + inv.amount, 0);
   }, [invoices]);
 
-  const clearError = React.useCallback(() => {}, []);
+  const clearError = React.useCallback(() => {
+    resetPayMutation();
+  }, [resetPayMutation]);
 
   return {
     invoices,

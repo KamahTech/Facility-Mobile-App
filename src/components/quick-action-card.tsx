@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, View } from "react-native";
 
 import { AppIcon } from "@/components/app-icon";
+import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import type { QuickActionIconName } from "@/constants/quick-actions";
 
@@ -23,29 +24,29 @@ export function QuickActionCard({
       accessibilityLabel={title}
       accessibilityRole="button"
       onPress={onPress}
-      className="w-full py-5 px-4 rounded-2xl items-center flex-row gap-3 bg-card border border-border/80 active:opacity-85 shadow-xs"
+      className="w-full py-5 px-4 rounded-2xl bg-card border border-border/80 active:opacity-85 shadow-xs"
     >
-      {/* Soft Tinted Icon Badge */}
-      <View 
-        style={{ backgroundColor: themeColor + "15" }}
-        className="w-10 h-10 rounded-xl items-center justify-center shrink-0"
-      >
-        <AppIcon
-          accessibilityLabel={title}
-          name={icon}
-          size={20}
-          color={themeColor}
-        />
-      </View>
+      <AppRow className="items-center gap-3">
+        <View 
+          style={{ backgroundColor: themeColor + "15" }}
+          className="w-10 h-10 rounded-xl items-center justify-center shrink-0"
+        >
+          <AppIcon
+            accessibilityLabel={title}
+            name={icon}
+            size={20}
+            color={themeColor}
+          />
+        </View>
 
-      {/* Aligned Title Text */}
-      <AppText
-        align="start"
-        numberOfLines={2}
-        className="text-foreground text-xs font-bold leading-tight flex-1 text-start"
-      >
-        {title}
-      </AppText>
+        <AppText
+          align="start"
+          numberOfLines={2}
+          className="text-foreground text-xs font-bold leading-tight flex-1 text-start"
+        >
+          {title}
+        </AppText>
+      </AppRow>
     </Pressable>
   );
 }

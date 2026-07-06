@@ -8,6 +8,7 @@ import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
+import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 import type { OwnerUnit } from "@/stores/owner-store";
 
 type OwnerUnitCardProps = {
@@ -15,7 +16,7 @@ type OwnerUnitCardProps = {
 };
 
 export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
-  const { t } = useI18n();
+  const { direction, t } = useI18n();
   const { formatCurrency } = useFormatters();
 
   const handlePress = () => {
@@ -51,8 +52,8 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
   return (
     <Pressable
       onPress={handlePress}
-      className="w-full bg-card rounded-[24px] shadow-sm overflow-hidden active:opacity-90 flex-row"
-      style={{ marginBottom: 16 }}
+      className="w-full bg-card rounded-[24px] shadow-sm overflow-hidden active:opacity-90"
+      style={[getDirectionalRowStyle(direction), { marginBottom: 16 }]}
     >
       {/* Decorative vertical gradient bar on the start side */}
       <LinearGradient

@@ -40,20 +40,26 @@ export function useUnitStore() {
   const units = query.data || [];
   const loading = query.isLoading || connectMutation.isPending || disconnectMutation.isPending;
   const error = query.error?.message || connectMutation.error?.message || disconnectMutation.error?.message || null;
+  const { refetch } = query;
+  const { mutateAsync: connectMutateAsync, reset: resetConnectMutation } = connectMutation;
+  const { mutateAsync: disconnectMutateAsync, reset: resetDisconnectMutation } = disconnectMutation;
 
   const fetchUnits = React.useCallback(async () => {
-    await query.refetch();
-  }, [query]);
+    await refetch();
+  }, [refetch]);
 
   const connectUnit = React.useCallback(async (newUnit: Omit<ConnectedUnit, "id">) => {
-    return await connectMutation.mutateAsync(newUnit);
-  }, [connectMutation]);
+    return await connectMutateAsync(newUnit);
+  }, [connectMutateAsync]);
 
   const disconnectUnit = React.useCallback(async (id: string) => {
-    await disconnectMutation.mutateAsync(id);
-  }, [disconnectMutation]);
+    await disconnectMutateAsync(id);
+  }, [disconnectMutateAsync]);
 
-  const clearError = React.useCallback(() => {}, []);
+  const clearError = React.useCallback(() => {
+    resetConnectMutation();
+    resetDisconnectMutation();
+  }, [resetConnectMutation, resetDisconnectMutation]);
 
   return {
     units,

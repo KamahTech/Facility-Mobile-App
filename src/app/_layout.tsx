@@ -3,6 +3,7 @@ import "../global.css";
 import { Stack } from "expo-router";
 import { SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { createStackScreenOptions } from "@/constants/navigation";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { I18nProvider } from "@/providers/i18n-provider";
@@ -25,11 +26,13 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <I18nProvider>
-              <RootStack />
-            </I18nProvider>
-          </ThemeProvider>
+          <KeyboardProvider>
+            <ThemeProvider>
+              <I18nProvider>
+                <RootStack />
+              </I18nProvider>
+            </ThemeProvider>
+          </KeyboardProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

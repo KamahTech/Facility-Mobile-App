@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, Alert } from "react-native";
+import { View, Alert } from "react-native";
 import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
@@ -10,6 +10,7 @@ import { ScreenHeader } from "@/components/screen-header";
 import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
 import { AppText } from "@/components/app-text";
+import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { useI18n } from "@/hooks/use-i18n";
 import { useUserStore } from "@/stores/user-store";
 
@@ -75,10 +76,7 @@ export default function EditProfileScreen() {
         onBack={() => router.back()}
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAwareScrollContent
         contentContainerStyle={{
           paddingTop: 24,
           paddingBottom: insets.bottom + 40,
@@ -143,7 +141,7 @@ export default function EditProfileScreen() {
             />
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollContent>
     </View>
   );
 }

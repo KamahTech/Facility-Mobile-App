@@ -1,7 +1,8 @@
 import React from "react";
-import { View, FlatList } from "react-native";
+import { View } from "react-native";
 import { Stack, router, type Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { QuickActionCard } from "@/components/quick-action-card";
@@ -52,8 +53,10 @@ export default function ResidentHomeDetailsScreen() {
 
       <ScreenHeader title={t("quickActions.title")} onBack={() => router.back()} />
 
-      <FlatList
+      <LegendList
         data={quickActions}
+        recycleItems={true}
+        estimatedItemSize={92}
         keyExtractor={(item) => item.titleKey}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={renderHeader}

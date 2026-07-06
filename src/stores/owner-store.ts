@@ -1,6 +1,11 @@
 import React from "react";
 import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
+import {
+  normalizeOwnerDetails,
+  normalizeOwnerStatementResponse,
+  normalizeTotalInvoiced,
+} from "@/lib/owner-normalization";
 
 export type OwnerUnit = {
   id: string;
@@ -124,39 +129,9 @@ export function useOwnerStore(options?: {
   const statementQuery = useQuery<OwnerStatement>({
     queryKey: ["owner-statement"],
     queryFn: async () => {
-      const data = await apiRequest<any>("/resident/statement", {});
+      const data = await apiRequest<Record<string, unknown>>("/resident/statement", {});
       if (!data) return data;
-
-      const totalSummary = data.summary || data.totalSummary || {};
-      const totalInvoiced =
-        totalSummary.totalInvoiced !== undefined ? totalSummary.totalInvoiced :
-        totalSummary.totallinvoices !== undefined ? totalSummary.totallinvoices :
-        totalSummary.totalinvoices !== undefined ? totalSummary.totalinvoices :
-        totalSummary.total_invoiced !== undefined ? totalSummary.total_invoiced : 0;
-
-      const rawUnits = data.units || data.unitSummaries || [];
-      const unitSummaries = rawUnits.map((item: any) => {
-        const summary = item.financialSummary ? item.financialSummary : item;
-        const summaryTotalInvoiced =
-          summary.totalInvoiced !== undefined ? summary.totalInvoiced :
-          summary.totallinvoices !== undefined ? summary.totallinvoices :
-          summary.totalinvoices !== undefined ? summary.totalinvoices :
-          summary.total_invoiced !== undefined ? summary.total_invoiced : 0;
-
-        return {
-          ...summary,
-          totalInvoiced: summaryTotalInvoiced,
-        };
-      });
-
-      return {
-        ...data,
-        totalSummary: {
-          ...totalSummary,
-          totalInvoiced,
-        },
-        unitSummaries,
-      };
+      return normalizeOwnerStatementResponse(data) as OwnerStatement;
     },
     enabled: enableStatement,
   });
@@ -190,32 +165,12 @@ export function useOwnerStore(options?: {
   
   const claims = React.useMemo(() => {
     const list = claimsQuery.data?.pages.flatMap((page) => page.items) || [];
-    return list.map((item: any) => {
-      const totalInvoiced =
-        item.totalInvoiced !== undefined ? item.totalInvoiced :
-        item.totallinvoices !== undefined ? item.totallinvoices :
-        item.totalinvoices !== undefined ? item.totalinvoices :
-        item.total_invoiced !== undefined ? item.total_invoiced : 0;
-      return {
-        ...item,
-        totalInvoiced,
-      } as OwnerClaim;
-    });
+    return list.map((item) => normalizeTotalInvoiced(item) as OwnerClaim);
   }, [claimsQuery.data]);
 
   const services = React.useMemo(() => {
     const list = servicesQuery.data?.pages.flatMap((page) => page.items) || [];
-    return list.map((item: any) => {
-      const totalInvoiced =
-        item.totalInvoiced !== undefined ? item.totalInvoiced :
-        item.totallinvoices !== undefined ? item.totallinvoices :
-        item.totalinvoices !== undefined ? item.totalinvoices :
-        item.total_invoiced !== undefined ? item.total_invoiced : 0;
-      return {
-        ...item,
-        totalInvoiced,
-      } as OwnerServiceCost;
-    });
+    return list.map((item) => normalizeTotalInvoiced(item) as OwnerServiceCost);
   }, [servicesQuery.data]);
 
   const loading =
@@ -237,85 +192,63 @@ export function useOwnerStore(options?: {
 
   const ownerUnitsError = ownerUnitsQuery.error?.message || null;
   const statementError = statementQuery.error?.message || null;
+  const { refetch: refetchOwnerUnits } = ownerUnitsQuery;
+  const { refetch: refetchStatement } = statementQuery;
+  const {
+    fetchNextPage: fetchNextClaimsPage,
+    hasNextPage: hasNextClaimsPage,
+    isFetchingNextPage: isFetchingNextClaimsPage,
+    refetch: refetchClaims,
+  } = claimsQuery;
+  const {
+    fetchNextPage: fetchNextServicesPage,
+    hasNextPage: hasNextServicesPage,
+    isFetchingNextPage: isFetchingNextServicesPage,
+    refetch: refetchServices,
+  } = servicesQuery;
+  const { mutateAsync: submitInquiryMutateAsync, reset: resetSubmitInquiryMutation } = submitInquiryMutation;
 
   // Actions
   const fetchOwnerUnits = React.useCallback(async () => {
-    await ownerUnitsQuery.refetch();
-  }, [ownerUnitsQuery]);
+    await refetchOwnerUnits();
+  }, [refetchOwnerUnits]);
 
   const fetchOwnerUnitDetails = React.useCallback(async (unitId: string) => {
-    const data = await apiRequest<any>(`/resident/owner-units/${unitId}`, {});
+    const data = await apiRequest<Record<string, unknown>>(`/resident/owner-units/${unitId}`, {});
     if (data && data.financialSummary) {
-      const summary = data.financialSummary;
-      const totalInvoiced =
-        summary.totalInvoiced !== undefined ? summary.totalInvoiced :
-        summary.totallinvoices !== undefined ? summary.totallinvoices :
-        summary.totalinvoices !== undefined ? summary.totalinvoices :
-        summary.total_invoiced !== undefined ? summary.total_invoiced : 0;
       data.financialSummary = {
-        ...summary,
-        totalInvoiced,
+        ...normalizeTotalInvoiced(data.financialSummary as Record<string, unknown>),
       };
     }
     return data as OwnerUnit & { financialSummary?: OwnerFinancialSummary };
   }, []);
 
   const fetchFinancialSummary = React.useCallback(async (unitId: string) => {
-    const data = await apiRequest<any>(`/resident/owner-units/${unitId}/financial-summary`, {});
+    const data = await apiRequest<Record<string, unknown>>(`/resident/owner-units/${unitId}/financial-summary`, {});
     if (data) {
-      const totalInvoiced =
-        data.totalInvoiced !== undefined ? data.totalInvoiced :
-        data.totallinvoices !== undefined ? data.totallinvoices :
-        data.totalinvoices !== undefined ? data.totalinvoices :
-        data.total_invoiced !== undefined ? data.total_invoiced : 0;
-      return {
-        ...data,
-        totalInvoiced,
-      } as OwnerFinancialSummary;
+      return normalizeTotalInvoiced(data) as OwnerFinancialSummary;
     }
     return data;
   }, []);
 
   const fetchStatement = React.useCallback(async () => {
-    await statementQuery.refetch();
-  }, [statementQuery]);
+    await refetchStatement();
+  }, [refetchStatement]);
 
   const fetchClaims = React.useCallback(async () => {
-    await claimsQuery.refetch();
-  }, [claimsQuery]);
+    await refetchClaims();
+  }, [refetchClaims]);
 
   const fetchNextClaims = React.useCallback(async () => {
-    if (claimsQuery.hasNextPage && !claimsQuery.isFetchingNextPage) {
-      await claimsQuery.fetchNextPage();
+    if (hasNextClaimsPage && !isFetchingNextClaimsPage) {
+      await fetchNextClaimsPage();
     }
-  }, [claimsQuery]);
+  }, [fetchNextClaimsPage, hasNextClaimsPage, isFetchingNextClaimsPage]);
 
   const fetchClaimDetails = React.useCallback(async (claimId: string) => {
-    const details = await apiRequest<any>(`/resident/claims/${claimId}`, {});
+    const details = await apiRequest<Record<string, unknown>>(`/resident/claims/${claimId}`, {});
     if (details) {
-      const totalInvoiced =
-        details.totalInvoiced !== undefined ? details.totalInvoiced :
-        details.totallinvoices !== undefined ? details.totallinvoices :
-        details.totalinvoices !== undefined ? details.totalinvoices :
-        details.total_invoiced !== undefined ? details.total_invoiced : 0;
-
-      const services = (details.services || []).map((svc: any) => {
-        const svcTotalInvoiced =
-          svc.totalInvoiced !== undefined ? svc.totalInvoiced :
-          svc.totallinvoices !== undefined ? svc.totallinvoices :
-          svc.totalinvoices !== undefined ? svc.totalinvoices :
-          svc.total_invoiced !== undefined ? svc.total_invoiced : 0;
-        return {
-          ...svc,
-          totalInvoiced: svcTotalInvoiced,
-        };
-      });
-
-      const normalizedDetails = {
-        ...details,
-        totalInvoiced,
-        services,
-      } as OwnerClaim;
+      const normalizedDetails = normalizeOwnerDetails(details) as OwnerClaim;
       setCurrentClaim(normalizedDetails);
       return normalizedDetails;
     }
@@ -324,20 +257,22 @@ export function useOwnerStore(options?: {
   }, []);
 
   const fetchServices = React.useCallback(async () => {
-    await servicesQuery.refetch();
-  }, [servicesQuery]);
+    await refetchServices();
+  }, [refetchServices]);
 
   const fetchNextServices = React.useCallback(async () => {
-    if (servicesQuery.hasNextPage && !servicesQuery.isFetchingNextPage) {
-      await servicesQuery.fetchNextPage();
+    if (hasNextServicesPage && !isFetchingNextServicesPage) {
+      await fetchNextServicesPage();
     }
-  }, [servicesQuery]);
+  }, [fetchNextServicesPage, hasNextServicesPage, isFetchingNextServicesPage]);
 
   const submitInquiry = React.useCallback(async (params: OwnerInquiryParams) => {
-    return await submitInquiryMutation.mutateAsync(params);
-  }, [submitInquiryMutation]);
+    return await submitInquiryMutateAsync(params);
+  }, [submitInquiryMutateAsync]);
 
-  const clearError = React.useCallback(() => {}, []);
+  const clearError = React.useCallback(() => {
+    resetSubmitInquiryMutation();
+  }, [resetSubmitInquiryMutation]);
 
   return {
     ownerUnits,
