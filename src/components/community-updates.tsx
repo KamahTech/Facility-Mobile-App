@@ -1,12 +1,9 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { router, type Href } from "expo-router";
 
-import { AppChevron } from "@/components/app-chevron";
-import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
+import { SectionHeader } from "@/components/section-header";
 import { useI18n } from "@/hooks/use-i18n";
-import { useThemeToken } from "@/hooks/use-theme-token";
 import { useCommunityStore } from "@/stores/community-store";
 
 import { NewsCard } from "./news-card";
@@ -25,7 +22,6 @@ export function CommunityUpdates({
   showSeeAll = true,
 }: CommunityUpdatesProps) {
   const { t } = useI18n();
-  const primaryColor = useThemeToken("--primary");
 
   const { updates, loading } = useCommunityStore({ enableUpdates: true });
 
@@ -46,27 +42,11 @@ export function CommunityUpdates({
     <View className="w-full flex-col gap-4">
       {/* Header Row */}
       {showHeader && (
-        <AppRow className="w-full items-center justify-between px-5 sm:px-8">
-          <AppText
-            className="text-start text-lg font-bold text-foreground animate-fade-in"
-          >
-            {t("communityUpdates.title")}
-          </AppText>
-
-          {showSeeAll && (
-            <Pressable
-              onPress={handleSeeAll}
-              className="active:opacity-75"
-            >
-              <AppRow className="items-center gap-1">
-                <AppText className="text-start text-sm font-bold text-primary">
-                  {t("actions.seeAll")}
-                </AppText>
-                <AppChevron size={14} color={primaryColor} />
-              </AppRow>
-            </Pressable>
-          )}
-        </AppRow>
+        <SectionHeader
+          title={t("communityUpdates.title")}
+          showSeeAll={showSeeAll}
+          onSeeAllPress={handleSeeAll}
+        />
       )}
 
       <View className="w-full px-5 sm:px-8 flex-col gap-4">

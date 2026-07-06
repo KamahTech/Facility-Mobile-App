@@ -96,18 +96,12 @@ export default function ResidentHomeScreen() {
       .reduce((sum, inv) => sum + inv.amount, 0);
   }, [invoices]);
 
-  // Determine if it is morning or evening based on current time
-  const isMorning = React.useMemo(() => {
-    const hours = new Date().getHours();
-    return hours >= 5 && hours < 12;
-  }, []);
-
-  // Compute greeting text dynamically (e.g., "Good morning John Doe")
+  // Compute greeting text dynamically (e.g., "Hello, John Doe")
   const greetingText = React.useMemo(() => {
-    const baseGreeting = isMorning ? t("welcomeCard.morning") : t("welcomeCard.evening");
+    const baseGreeting = t("residentHome.hello");
     const name = profile?.name || t("residentHome.userName");
-    return `${baseGreeting} ${name}`;
-  }, [isMorning, t, profile]);
+    return `${baseGreeting}, ${name}`;
+  }, [t, profile]);
 
   return (
     <View

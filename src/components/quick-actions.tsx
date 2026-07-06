@@ -1,15 +1,13 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { router, type Href } from "expo-router";
 
-import { AppChevron } from "@/components/app-chevron";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { QuickActionCard } from "@/components/quick-action-card";
+import { SectionHeader } from "@/components/section-header";
 import { quickActions } from "@/constants/quick-actions";
 import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "@/hooks/use-theme";
-import { useThemeToken } from "@/hooks/use-theme-token";
 
 type QuickActionsProps = {
   limit?: number | null;
@@ -59,8 +57,6 @@ export function QuickActions({
 }: QuickActionsProps) {
   const { t } = useI18n();
   const { resolvedTheme } = useTheme();
-
-  const primaryColor = useThemeToken("--primary");
   
   // Display up to the limit of 4 items for the 2x2 grid, or all items if limit is null
   const visibleActions = React.useMemo(() => {
@@ -86,28 +82,13 @@ export function QuickActions({
 
   return (
     <View className="w-full flex-col gap-4">
-      {showHeader ? (
-        <AppRow className="w-full items-center justify-between px-5 sm:px-8">
-          <AppText
-            className="text-start text-2xl font-bold text-foreground"
-          >
-            {t("quickActions.title")}
-          </AppText>
-          {showSeeAll ? (
-            <Pressable
-              onPress={handleSeeAll}
-              className="active:opacity-75"
-            >
-              <AppRow className="items-center gap-1">
-                <AppText className="text-start text-sm font-bold text-primary">
-                  {t("actions.seeAll")}
-                </AppText>
-                <AppChevron size={14} color={primaryColor} />
-              </AppRow>
-            </Pressable>
-          ) : null}
-        </AppRow>
-      ) : null}
+      {showHeader && (
+        <SectionHeader
+          title={t("quickActions.title")}
+          showSeeAll={showSeeAll}
+          onSeeAllPress={handleSeeAll}
+        />
+      )}
 
       {/* Grid Container (2 Columns per Row) */}
       <View className="w-full px-5 sm:px-8 flex-col gap-3">
