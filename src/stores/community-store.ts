@@ -2,6 +2,7 @@ import React from "react";
 import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 import { useI18n } from "@/hooks/use-i18n";
+import { useUserStore } from "@/stores/user-store";
 
 export type CommunityNews = {
   id: string;
@@ -37,6 +38,10 @@ export type CommunityUpdate = CommunityNews | CommunityPoll;
 export type VisitorInvite = {
   id: string;
   reference: string;
+  unitId: string;
+  unitNumber: string;
+  buildingNumber: string;
+  projectName: string;
   visitorName: string;
   visitDate: string;
   visitTime: string;
@@ -48,6 +53,11 @@ export type VisitorInvite = {
 export type FeedbackItem = {
   id: string;
   reference: string;
+  unitId: string;
+  unitNumber: string;
+  buildingNumber: string;
+  projectName: string;
+  facilityOwnerId: string | false;
   subject: string;
   category: "complaint" | "suggestion";
   details: string;
@@ -110,6 +120,7 @@ export function useCommunityStore(options?: {
 }) {
   const queryClient = useQueryClient();
   const { language } = useI18n();
+  const accountType = useUserStore((state) => state.accountType);
 
   const enableUpdates = options?.enableUpdates ?? false;
   const enableVisitors = options?.enableVisitors ?? false;
@@ -145,7 +156,7 @@ export function useCommunityStore(options?: {
   });
 
   const notificationsQuery = useInfiniteQuery<PaginatedNotifications>({
-    queryKey: ["notifications"],
+    queryKey: ["notifications", accountType],
     queryFn: ({ pageParam }) =>
       apiRequest<PaginatedNotifications>("/notifications", { limit: 20, cursor: pageParam }),
     initialPageParam: undefined,
@@ -190,7 +201,7 @@ export function useCommunityStore(options?: {
       apiRequest<{ id: string; read: boolean; unread: boolean }>(`/notifications/${id}/read`, {}),
     onSuccess: (data, id) => {
       queryClient.setQueryData<{ pages: PaginatedNotifications[]; pageParams: unknown[] }>(
-        ["notifications"],
+        ["notifications", accountType],
         (old) => {
           if (!old) return old;
           return {
@@ -211,7 +222,7 @@ export function useCommunityStore(options?: {
     mutationFn: () => apiRequest<{ markedRead: number }>("/notifications/mark-all-read", {}),
     onSuccess: () => {
       queryClient.setQueryData<{ pages: PaginatedNotifications[]; pageParams: unknown[] }>(
-        ["notifications"],
+        ["notifications", accountType],
         (old) => {
           if (!old) return old;
           return {

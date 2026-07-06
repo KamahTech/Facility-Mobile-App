@@ -44,6 +44,11 @@ export type OwnerFinancialSummary = {
 };
 
 export type OwnerStatement = {
+  summary: OwnerFinancialSummary;
+  units: {
+    unit: OwnerUnit;
+    financialSummary: OwnerFinancialSummary;
+  }[];
   totalSummary: {
     totalInvoiced: number;
     paidAmount: number;
@@ -74,9 +79,9 @@ export type OwnerClaim = {
 
 export type OwnerServiceCost = {
   id: string;
-  source: string;
-  claimId: string;
-  claimReference: string;
+  source: "owner_service" | "claim_service";
+  claimId?: string;
+  claimReference?: string;
   unitId: string;
   unitNumber: string;
   serviceName: string;

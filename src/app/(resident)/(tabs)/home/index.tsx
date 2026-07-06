@@ -15,10 +15,8 @@ import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentatio
 import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "@/hooks/use-theme";
 import { useThemeToken } from "@/hooks/use-theme-token";
-import { useInvoicesStore } from "@/stores/invoices-store";
 import { useUserStore } from "@/stores/user-store";
-import { useCommunityStore } from "@/stores/community-store";
-import { useOwnerStore } from "@/stores/owner-store";
+import { useUnitStore } from "@/stores/unit-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { getProfileImageSource } from "@/lib/image-source";
 
@@ -34,26 +32,12 @@ export default function ResidentHomeScreen() {
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   
   const { profile, logout } = useUserStore();
-  const { fetchInvoices } = useInvoicesStore();
-  const { fetchUpdates } = useCommunityStore({ enableUpdates: true });
-  const { ownerUnits, fetchOwnerUnits } = useOwnerStore({ enableOwnerUnits: true });
+  const { unitsCount } = useUnitStore({ enableUnits: false, enableSummary: true });
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
   const avatarSource = React.useMemo(
     () => getProfileImageSource(profile?.profileImageUrl, johnDoeAvatar),
     [profile?.profileImageUrl],
   );
-
-  const loadData = React.useCallback(async () => {
-    try {
-      await Promise.all([
-        fetchInvoices(),
-        fetchUpdates(),
-        fetchOwnerUnits(),
-      ]);
-    } catch (err) {
-      console.error("Error loading home dashboard data:", err);
-    }
-  }, [fetchInvoices, fetchUpdates, fetchOwnerUnits]);
 
   const handleLogout = async () => {
     logoutSheet.dismiss();
@@ -82,10 +66,9 @@ export default function ResidentHomeScreen() {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       resetScrollAnimation();
-      loadData();
     });
     return unsubscribe;
-  }, [navigation, resetScrollAnimation, loadData]);
+  }, [navigation, resetScrollAnimation]);
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -144,7 +127,7 @@ export default function ResidentHomeScreen() {
 
         {/* Connected Units Card Component */}
         <View className="px-5 sm:px-8">
-          <DueBalanceCard unitsCount={ownerUnits.length} />
+          <DueBalanceCard unitsCount={unitsCount} />
         </View>
 
         {/* Quick Actions List */}

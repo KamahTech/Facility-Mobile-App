@@ -123,7 +123,7 @@ export async function apiRequest<T = ApiResponse>(route: string, params: ApiPara
       throw new Error(err.message || "API request failed");
     }
 
-    return data.hasOwnProperty("data") ? data.data : data;
+    return Object.prototype.hasOwnProperty.call(data, "data") ? data.data : data;
   } catch (error: unknown) {
     const axiosError = isAxiosError(error) ? error : null;
     const status = axiosError?.response?.status;

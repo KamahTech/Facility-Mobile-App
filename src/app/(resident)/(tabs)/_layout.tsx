@@ -127,7 +127,7 @@ function TabsContent() {
       tabBar={(props) => <CollapsibleTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        lazy: false,
+        lazy: true,
         freezeOnBlur: true,
         sceneStyle: {
           backgroundColor: background,

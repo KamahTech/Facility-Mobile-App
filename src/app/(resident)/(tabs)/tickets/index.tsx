@@ -63,10 +63,9 @@ export default function ResidentTicketsScreen() {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       resetScrollAnimation();
-      loadRequests();
     });
     return unsubscribe;
-  }, [navigation, resetScrollAnimation, loadRequests]);
+  }, [navigation, resetScrollAnimation]);
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {

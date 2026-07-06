@@ -20,6 +20,10 @@ export type MaintenanceRequest = {
   category: "plumbing" | "electrical" | "hvac" | "cleaning" | "security" | "carpentry" | "other";
   description: string;
   unitId: string;
+  unitNumber: string;
+  buildingNumber: string;
+  projectName: string;
+  mobileUnitLinkId: string | false;
   status: RequestStatus;
   createdAt: string; // YYYY-MM-DD
   updatedAt: string; // YYYY-MM-DD
@@ -47,9 +51,10 @@ export type PaginatedRequests = {
 export function useRequestsStore(options?: {
   enableResidentRequests?: boolean;
   enableWorkerTasks?: boolean;
+  enableUnits?: boolean;
 }) {
   const queryClient = useQueryClient();
-  const { units } = useUnitStore();
+  const { units } = useUnitStore({ enableUnits: options?.enableUnits ?? false });
 
   const enableResidentRequests = options?.enableResidentRequests ?? false;
   const enableWorkerTasks = options?.enableWorkerTasks ?? false;

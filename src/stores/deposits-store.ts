@@ -4,13 +4,20 @@ import { apiRequest } from "@/lib/api-client";
 
 export type MaintenanceDeposit = {
   id: string;
+  unitId: string;
   unitNumber: string;
   buildingNumber: string;
   periodic: "annual" | "semi_annual" | "quarterly" | "monthly";
   amount: number;
+  annualAmount: number;
+  semiAnnualAmount: number;
+  quarterlyAmount: number;
+  monthlyAmount: number;
   status: string;
   rate: number;
   returnValue: number;
+  difference: number;
+  totalInvoiced: number;
   expirationDate: string | boolean;
   dateFrom: string | boolean;
   dateTo: string | boolean;

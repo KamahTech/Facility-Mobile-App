@@ -1,13 +1,12 @@
 import React from "react";
-import { View, RefreshControl, ActivityIndicator, Pressable } from "react-native";
-import { Stack, router, type Href } from "expo-router";
+import { View, RefreshControl, ActivityIndicator } from "react-native";
+import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
-import { AppRow } from "@/components/app-row";
 import { OwnerUnitCard } from "@/components/owner-unit-card";
 import { OwnerFinancialOverview } from "@/components/owner-financial-overview";
 import { useI18n } from "@/hooks/use-i18n";
@@ -15,8 +14,6 @@ import { useOwnerStore } from "@/stores/owner-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 
 const SECTION_GAP = 16;
-const ITEM_GAP = SECTION_GAP;
-
 type InlineErrorCardProps = {
   message: string;
 };
@@ -75,55 +72,32 @@ export default function OwnerUnitsScreen() {
           {t("ownerUnits.description")}
         </AppText>
 
-        {statementError ? (
-          <InlineErrorCard message={t("ownerFinancials.summaryLoadFailed")} />
-        ) : statement ? (
-          <OwnerFinancialOverview statement={statement} />
-        ) : null}
-
-        {/* Owner Claim and Services Costs Links */}
-        <View className="flex-col" style={{ rowGap: ITEM_GAP }}>
-          <Pressable
-            onPress={() => router.push("/profile/claims" as Href)}
-            className="w-full p-4 bg-card rounded-2xl active:opacity-90 shadow-2xs"
-          >
-            <AppRow className="items-center justify-between" style={{ columnGap: ITEM_GAP }}>
-              <AppRow className="items-center flex-1 min-w-0" style={{ columnGap: ITEM_GAP }}>
-                <View className="w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-950/20 items-center justify-center">
-                  <AppIcon name="tickets" size={18} color="#EA580C" />
-                </View>
-                <AppText className="text-sm font-bold text-foreground flex-1 text-start" numberOfLines={1}>
-                  {t("claims.title")}
-                </AppText>
-              </AppRow>
-              <AppIcon name="chevronRight" size={16} colorToken="--foreground" />
-            </AppRow>
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/profile/services" as Href)}
-            className="w-full p-4 bg-card rounded-2xl active:opacity-90 shadow-2xs"
-          >
-            <AppRow className="items-center justify-between" style={{ columnGap: ITEM_GAP }}>
-              <AppRow className="items-center flex-1 min-w-0" style={{ columnGap: ITEM_GAP }}>
-                <View className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/20 items-center justify-center">
-                  <AppIcon name="requestService" size={18} color="#2563EB" />
-                </View>
-                <AppText className="text-sm font-bold text-foreground flex-1 text-start" numberOfLines={1}>
-                  {t("ownerFinancials.serviceCost")}
-                </AppText>
-              </AppRow>
-              <AppIcon name="chevronRight" size={16} colorToken="--foreground" />
-            </AppRow>
-          </Pressable>
-        </View>
-
         {/* List Header Title */}
         {ownerUnits.length > 0 && (
           <AppText className="text-start text-base font-bold text-foreground px-1">
             {t("ownerUnits.title")}
           </AppText>
         )}
+      </View>
+    );
+  };
+
+  const renderFooter = () => {
+    if (statementError) {
+      return (
+        <View className="pt-4">
+          <InlineErrorCard message={t("ownerFinancials.summaryLoadFailed")} />
+        </View>
+      );
+    }
+
+    if (!statement) {
+      return null;
+    }
+
+    return (
+      <View className="pt-4">
+        <OwnerFinancialOverview statement={statement} />
       </View>
     );
   };
@@ -189,6 +163,7 @@ export default function OwnerUnitsScreen() {
             }}
             className="flex-1 w-full max-w-xl self-center"
             ListHeaderComponent={renderHeader}
+            ListFooterComponent={renderFooter}
             ListEmptyComponent={renderEmpty}
           />
         </View>

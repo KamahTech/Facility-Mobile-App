@@ -2,7 +2,7 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { Pressable, View, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router, type Href, useNavigation } from "expo-router";
+import { router, type Href } from "expo-router";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { AppIcon } from "@/components/app-icon";
@@ -24,7 +24,6 @@ export default function WorkerHomeScreen() {
   const { t, direction } = useI18n();
   const insets = useSafeAreaInsets();
   const { resolvedTheme } = useTheme();
-  const navigation = useNavigation();
   const isTransitionFinished = useScreenTransition();
   const mutedColor = useThemeToken("--muted-foreground");
 
@@ -49,13 +48,6 @@ export default function WorkerHomeScreen() {
     await loadTasks();
     setRefreshing(false);
   };
-
-  React.useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
-      loadTasks();
-    });
-    return unsubscribe;
-  }, [navigation, loadTasks]);
 
   // Filter tasks based on activeTab selection
   const filteredTasks = React.useMemo(() => {
