@@ -96,10 +96,8 @@ export default function ResidentTicketsScreen() {
       <Pressable
         key={option.value}
         onPress={() => setActiveFilter(option.value)}
-        className={`px-4 py-2 rounded-full border me-2 items-center justify-center active:opacity-90 ${
-          isSelected
-            ? "bg-primary border-primary"
-            : "bg-card border-border"
+        className={`px-4 py-2 rounded-full me-2 items-center justify-center active:opacity-90 ${
+          isSelected ? "bg-primary" : "bg-card"
         }`}
       >
         <AppText
@@ -177,7 +175,7 @@ export default function ResidentTicketsScreen() {
         className="shadow-sm"
       >
         {/* Tab Screen Header */}
-        <AppRow className="items-center justify-between px-5 sm:px-8 py-4 border-b border-border/40">
+        <AppRow className="items-center justify-between px-5 sm:px-8 py-4">
           <View className="flex-col text-start">
             <AppText className="text-2xl font-bold text-foreground text-start">
               {t("tickets.title")}
@@ -223,7 +221,7 @@ export default function ResidentTicketsScreen() {
         ) : (
           <View className="flex-1">
             {error && (
-              <View style={{ marginTop: insets.top + 140 }} className="bg-destructive/10 p-3 rounded-xl border border-destructive/25 mb-2 mx-1">
+              <View style={{ marginTop: insets.top + 140 }} className="bg-destructive/10 p-3 rounded-xl mb-2 mx-1">
                 <AppText className="text-sm font-semibold text-destructive text-start">
                   {error}
                 </AppText>

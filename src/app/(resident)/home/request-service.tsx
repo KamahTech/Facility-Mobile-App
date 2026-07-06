@@ -208,7 +208,7 @@ export default function RequestServiceScreen() {
           <View className="flex-col gap-6">
             {/* Category summary */}
             {selectedCategoryItem && (
-              <View className="p-4 rounded-xl bg-secondary/50 border border-border">
+              <View className="p-4 rounded-xl bg-secondary/50">
                 <AppText className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-start">
                   {t("tickets.categoryLabel")}
                 </AppText>

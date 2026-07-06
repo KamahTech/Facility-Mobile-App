@@ -152,7 +152,7 @@ export default function ResidentTicketMessagesScreen() {
         className="flex-1 w-full max-w-xl self-center"
       >
         {request.comments.length === 0 ? (
-          <View className="w-full py-16 items-center justify-center border border-dashed border-border rounded-2xl bg-card/40">
+          <View className="w-full py-16 items-center justify-center rounded-2xl bg-card/40">
             <AppText className="text-sm text-muted-foreground text-center">
               {t("tickets.noComments")}
             </AppText>
@@ -192,8 +192,8 @@ export default function ResidentTicketMessagesScreen() {
                   <View
                     className={`p-2.5 rounded-2xl ${
                       isResident
-                        ? "bg-primary/10 border border-primary/25 dark:bg-primary/20 dark:border-primary/30 rounded-se-none"
-                        : "bg-card border border-border/80 rounded-ss-none"
+                        ? "bg-primary/10 dark:bg-primary/20 rounded-se-none"
+                        : "bg-card rounded-ss-none"
                     }`}
                   >
                     {/* Render attachment image if present */}
@@ -205,7 +205,7 @@ export default function ResidentTicketMessagesScreen() {
                         }}
                         accessibilityLabel={t("tickets.openAttachment")}
                         accessibilityRole="imagebutton"
-                        className="mb-2 w-52 h-36 rounded-xl overflow-hidden border border-border/40 active:opacity-90"
+                        className="mb-2 w-52 h-36 rounded-xl overflow-hidden active:opacity-90"
                       >
                         <Image source={comment.image} style={{ width: "100%", height: "100%" }} contentFit="cover" />
                       </Pressable>
@@ -230,13 +230,13 @@ export default function ResidentTicketMessagesScreen() {
 
       {/* Sticky Comment Input Box at the bottom */}
       <View
-        className="w-full border-t border-border bg-card"
+        className="w-full bg-card"
         style={{ paddingBottom: Math.max(insets.bottom, 12) }}
       >
         {/* Selected Photo Preview */}
         {selectedPhoto && (
           <AppRow className="px-4 pt-3 max-w-xl self-center w-full">
-            <View className="w-20 h-20 rounded-xl border border-border bg-muted overflow-hidden relative">
+            <View className="w-20 h-20 rounded-xl bg-muted overflow-hidden relative">
               <Pressable
                 onPress={() => {
                   setSelectedViewerImage(selectedPhoto);
@@ -252,7 +252,7 @@ export default function ResidentTicketMessagesScreen() {
                 onPress={() => setSelectedPhoto(null)}
                 accessibilityLabel={t("tickets.removeAttachment")}
                 accessibilityRole="button"
-                className="absolute top-1 end-1 bg-rose-600 w-5 h-5 rounded-full items-center justify-center border border-card shadow-sm z-10 active:opacity-75"
+                className="absolute top-1 end-1 bg-rose-600 w-5 h-5 rounded-full items-center justify-center shadow-sm z-10 active:opacity-75"
               >
                 <AppIcon name="trash" size={10} colorToken="--primary-foreground" />
               </Pressable>
@@ -265,7 +265,7 @@ export default function ResidentTicketMessagesScreen() {
             onPress={handlePickImage}
             accessibilityLabel={t("worker.mediaSourceCamera")}
             accessibilityRole="button"
-            className="w-11 h-11 rounded-full bg-secondary border border-border items-center justify-center active:opacity-75"
+            className="w-11 h-11 rounded-full bg-secondary items-center justify-center active:opacity-75"
           >
             <AppIcon name="camera" size={20} colorToken="--foreground" />
           </Pressable>
@@ -281,7 +281,7 @@ export default function ResidentTicketMessagesScreen() {
                 textAlignVertical: "top",
               },
             ]}
-            className="flex-1 min-h-[44px] max-h-[100px] bg-background border border-border rounded-2xl px-4 py-2.5 text-base text-foreground"
+            className="flex-1 min-h-[44px] max-h-[100px] bg-background rounded-2xl px-4 py-2.5 text-base text-foreground"
             multiline
           />
           <Pressable

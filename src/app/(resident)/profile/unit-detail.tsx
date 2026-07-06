@@ -102,7 +102,7 @@ export default function UnitDetailScreen() {
         className="flex-1 w-full max-w-xl self-center"
       >
         {error && (
-          <View className="bg-destructive/10 p-4 rounded-2xl border border-destructive/20 mt-2">
+          <View className="bg-destructive/10 p-4 rounded-2xl mt-2">
             <AppText className="text-sm font-semibold text-destructive text-start">{error}</AppText>
           </View>
         )}
@@ -114,7 +114,7 @@ export default function UnitDetailScreen() {
         )}
 
         {unitDetails && (
-          <View className="w-full bg-card border border-border rounded-3xl p-5 flex-col gap-4 shadow-sm">
+          <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm">
             <AppText className="text-start text-base font-bold text-foreground">{t("profile.title")}</AppText>
             
             <View className="flex-col gap-3">
@@ -147,7 +147,7 @@ export default function UnitDetailScreen() {
         )}
 
         {summary && (
-          <View className="w-full bg-card border border-border rounded-3xl p-5 flex-col gap-4 shadow-sm">
+          <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm">
             <AppText className="text-start text-base font-bold text-foreground">{t("ownerFinancials.title")}</AppText>
 
             <View className="flex-col gap-3">
@@ -171,8 +171,6 @@ export default function UnitDetailScreen() {
                 <AppText className="text-sm font-bold text-rose-600 dark:text-rose-400">{formatCurrency(summary.overdueAmount)}</AppText>
               </AppRow>
 
-              <View className="w-full h-[1] bg-border/40 my-1" />
-
               <AppRow className="justify-between items-center">
                 <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.invoiceCount")}</AppText>
                 <AppText className="text-sm font-semibold text-foreground">
@@ -194,8 +192,6 @@ export default function UnitDetailScreen() {
                 <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.claimDifference")}</AppText>
                 <AppText className="text-sm font-semibold text-foreground">{formatCurrency(summary.claimDifference)}</AppText>
               </AppRow>
-
-              <View className="w-full h-[1] bg-border/40 my-1" />
 
               <AppText className="text-start text-sm font-bold text-foreground">{t("ownerFinancials.serviceCost")}</AppText>
 

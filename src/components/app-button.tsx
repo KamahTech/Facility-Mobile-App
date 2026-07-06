@@ -20,7 +20,7 @@ export function AppButton({
 }: AppButtonProps) {
   const defaultClassName =
     variant === "card"
-      ? "min-h-14 items-center justify-center rounded-lg border border-border bg-card px-5 py-4 active:opacity-80"
+      ? "min-h-14 items-center justify-center rounded-lg bg-card px-5 py-4 active:opacity-80"
       : "min-h-14 items-center justify-center rounded-lg bg-primary px-5 py-4 active:opacity-80";
   
   const buttonClassName = `${defaultClassName} ${className}`.trim();

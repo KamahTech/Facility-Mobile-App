@@ -38,19 +38,10 @@ export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
   }, [language]);
 
   const handlePress = () => {
-    router.push("/profile/owner-units" as Href);
-  };
-
-  return (
-    <Pressable
-      onPress={handlePress}
-      style={{
-        borderRadius: 24,
-        padding: 24,
-        backgroundColor: "#2E5A44",
+    router.push("/profile/owner-units"as Href); }; return ( <Pressable onPress={handlePress} style={{ borderRadius: 24, padding: 24, backgroundColor:"#2E5A44",
         minHeight: 160,
       }}
-      className="w-full overflow-hidden shadow-lg border border-white/10 relative flex-col justify-between"
+      className="w-full overflow-hidden shadow-lg relative flex-col justify-between"
     >
       {/* Background Gradient */}
       <LinearGradient

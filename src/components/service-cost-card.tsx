@@ -17,7 +17,7 @@ export function ServiceCostCard({ service }: ServiceCostCardProps) {
   const { formatCurrency } = useFormatters();
 
   return (
-    <View className="w-full bg-card border border-border rounded-3xl p-5 flex-col gap-4 shadow-sm mb-3">
+    <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm mb-3">
       <AppRow className="items-center justify-between gap-3">
         <AppRow className="items-center gap-3.5 flex-1 min-w-0">
           <View className="w-11 h-11 rounded-xl items-center justify-center bg-blue-50 dark:bg-blue-950/20">
@@ -31,8 +31,6 @@ export function ServiceCostCard({ service }: ServiceCostCardProps) {
           </View>
         </AppRow>
       </AppRow>
-
-      <View className="w-full h-[1] bg-border/40" />
 
       <View className="flex-col gap-2.5">
         <AppRow className="justify-between items-center">

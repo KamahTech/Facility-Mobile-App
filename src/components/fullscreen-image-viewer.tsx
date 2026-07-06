@@ -65,7 +65,7 @@ export function FullscreenImageViewer({
 
         {/* WhatsApp-Style Top Header Bar */}
         <AppRow
-          className="absolute top-0 inset-x-0 bg-black/60 items-center justify-between px-5 z-20 border-b border-white/5"
+          className="absolute top-0 inset-x-0 bg-black/60 items-center justify-between px-5 z-20"
           style={{ 
             paddingTop: Math.max(insets.top, 12),
             paddingBottom: 12,

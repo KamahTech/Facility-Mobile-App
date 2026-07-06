@@ -94,7 +94,7 @@ export default function WorkerNotificationsScreen() {
     return (
       <Pressable
         onPress={() => handleNotificationPress(item)}
-        className="w-full p-4 rounded-2xl bg-card border border-border mb-3 active:opacity-75"
+        className="w-full p-4 rounded-2xl bg-card mb-3 active:opacity-75"
       >
         <AppRow className="gap-4 items-center justify-between">
           <View className={`size-10 rounded-xl items-center justify-center ${badgeBg}`}>
@@ -178,7 +178,7 @@ export default function WorkerNotificationsScreen() {
         ) : (
           <View className="flex-1">
             {error && (
-              <View className="bg-destructive/10 p-3 rounded-xl border border-destructive/25 mx-5 mb-4 mt-2">
+              <View className="bg-destructive/10 p-3 rounded-xl mx-5 mb-4 mt-2">
                 <AppText className="text-sm font-semibold text-destructive text-start">
                   {error}
                 </AppText>

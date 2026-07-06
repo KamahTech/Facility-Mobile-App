@@ -132,7 +132,7 @@ export function MediaSourceSheet({
         {/* Animated Floating Card */}
         <Animated.View
           {...panResponder.panHandlers}
-          className="bg-card border border-border rounded-[28px] p-6 shadow-2xl items-center w-full max-w-md"
+          className="bg-card rounded-[28px] p-6 shadow-2xl items-center w-full max-w-md"
           style={[
             animatedStyle,
             {
@@ -141,9 +141,6 @@ export function MediaSourceSheet({
             }
           ]}
         >
-          {/* Drag Handle Indicator */}
-          <View className="w-12 h-1.5 rounded-full bg-border mb-5" />
-
           {/* Title */}
           <AppText className="text-lg font-bold text-foreground mb-6 text-center">
             {t("worker.mediaSourceTitle")}
@@ -154,7 +151,7 @@ export function MediaSourceSheet({
             {/* Camera Option */}
             <Pressable
               onPress={handleSelectCamera}
-              className="flex-1 bg-secondary border border-border/80 rounded-2xl p-5 items-center justify-center active:opacity-90 min-h-[110px]"
+              className="flex-1 bg-secondary rounded-2xl p-5 items-center justify-center active:opacity-90 min-h-[110px]"
             >
               <View className="w-12 h-12 rounded-full bg-primary/10 items-center justify-center mb-2.5">
                 <AppIcon name="camera" size={24} color={primaryColor} />
@@ -167,7 +164,7 @@ export function MediaSourceSheet({
             {/* Library Option */}
             <Pressable
               onPress={handleSelectLibrary}
-              className="flex-1 bg-secondary border border-border/80 rounded-2xl p-5 items-center justify-center active:opacity-90 min-h-[110px]"
+              className="flex-1 bg-secondary rounded-2xl p-5 items-center justify-center active:opacity-90 min-h-[110px]"
             >
               <View className="w-12 h-12 rounded-full bg-primary/10 items-center justify-center mb-2.5">
                 <AppIcon name="gallery" size={24} color={primaryColor} />
@@ -181,7 +178,7 @@ export function MediaSourceSheet({
           {/* Second Row: Cancel Button */}
           <Pressable
             onPress={handleDismiss}
-            className="w-full min-h-[50px] rounded-xl bg-secondary border border-border justify-center items-center active:opacity-90"
+            className="w-full min-h-[50px] rounded-xl bg-secondary justify-center items-center active:opacity-90"
           >
             <AppText className="text-base font-semibold text-foreground">
               {t("actions.cancel")}

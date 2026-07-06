@@ -39,7 +39,7 @@ export function AppSegmentSelector({
               key={option.value}
               onPress={() => onSelect(option.value)}
               className={`flex-1 py-3 rounded-lg items-center justify-center ${
-                isSelected ? "bg-card shadow-sm border border-border/10" : ""
+                isSelected ? "bg-card shadow-sm" : ""
               }`}
             >
               <AppText

@@ -59,7 +59,7 @@ export function AppScreen({
             ) : !hideLanguageToggle ? (
               <AppButton
                 accessibilityLabel={t("language.toggleLabel")}
-                className="min-h-11 rounded-lg border border-border bg-card px-4 py-3 active:opacity-80"
+                className="min-h-11 rounded-lg bg-card px-4 py-3 active:opacity-80"
                 label={languages[language].nativeLabel}
                 onPress={() => router.push("/language" as any)}
                 variant="card"

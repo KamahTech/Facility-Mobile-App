@@ -135,22 +135,22 @@ export default function WorkerDetailsScreen() {
     switch (status) {
       case "pending":
         return {
-          bgClass: "bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-950/40",
+          bgClass: "bg-amber-50 dark:bg-amber-950/30",
           textClass: "text-amber-600 dark:text-amber-400",
         };
       case "in_progress":
         return {
-          bgClass: "bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-950/40",
+          bgClass: "bg-blue-50 dark:bg-blue-950/30",
           textClass: "text-blue-600 dark:text-blue-400",
         };
       case "completed":
         return {
-          bgClass: "bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-950/40",
+          bgClass: "bg-green-50 dark:bg-green-950/30",
           textClass: "text-green-600 dark:text-green-400",
         };
       case "cancelled":
         return {
-          bgClass: "bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-950/40",
+          bgClass: "bg-rose-50 dark:bg-rose-950/30",
           textClass: "text-rose-600 dark:text-rose-400",
         };
     }
@@ -324,7 +324,7 @@ export default function WorkerDetailsScreen() {
         className="flex-1 w-full max-w-xl self-center"
       >
         {/* Task Summary Card */}
-        <View className="w-full bg-card border border-border rounded-2xl p-5 flex-col gap-4 shadow-sm mb-6">
+        <View className="w-full bg-card rounded-2xl p-5 flex-col gap-4 shadow-sm mb-6">
           <AppRow className="items-center justify-between gap-3">
             <AppRow className="items-center gap-3.5 flex-1 min-w-0">
               <View className={`w-12 h-12 rounded-xl items-center justify-center ${categoryConfig.bgClass}`}>
@@ -348,7 +348,7 @@ export default function WorkerDetailsScreen() {
             </View>
           </AppRow>
 
-          <View className="border-t border-border pt-4 flex-col gap-3">
+          <View className="pt-4 flex-col gap-3">
             {/* Unit Info */}
             <AppRow className="justify-between items-center">
               <AppText className="text-sm font-semibold text-muted-foreground text-start">
@@ -372,7 +372,7 @@ export default function WorkerDetailsScreen() {
         </View>
 
         {/* Issue Details Section */}
-        <View className="w-full bg-card border border-border rounded-2xl p-5 shadow-sm mb-6 flex-col gap-3">
+        <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-3">
           <AppText className="text-sm font-bold text-muted-foreground uppercase tracking-wider text-start">
             {t("tickets.enterDetails")}
           </AppText>
@@ -396,8 +396,8 @@ export default function WorkerDetailsScreen() {
         {/* Case 2: In Progress - Needs Inspection */}
         {needsInspection && (
           <View className="flex-col gap-6 w-full mt-2">
-            <View className="w-full bg-card border border-border rounded-2xl p-5 shadow-sm flex-col gap-5">
-              <AppText className="text-base font-bold text-foreground text-start border-b border-border pb-3">
+            <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-5">
+              <AppText className="text-base font-bold text-foreground text-start pb-3">
                 {t("worker.inspectBtn")}
               </AppText>
 
@@ -464,7 +464,7 @@ export default function WorkerDetailsScreen() {
 	                    onPress={handleUploadPhoto}
 	                    accessibilityLabel={t("worker.uploadImages")}
 	                    accessibilityRole="button"
-	                    className="w-12 h-12 rounded-xl bg-secondary border border-border justify-center items-center active:opacity-75"
+	                    className="w-12 h-12 rounded-xl bg-secondary justify-center items-center active:opacity-75"
                   >
                     <AppIcon name="camera" size={20} color={mutedToken} />
                   </Pressable>
@@ -480,7 +480,7 @@ export default function WorkerDetailsScreen() {
                     {selectedPhotos.map((photoUri, idx) => (
 	                      <View
 	                        key={photoUri}
-	                        className="w-16 h-16 rounded-xl border border-border bg-muted overflow-hidden relative"
+	                        className="w-16 h-16 rounded-xl bg-muted overflow-hidden relative"
 	                      >
 	                        <Pressable
                           onPress={() => {
@@ -499,7 +499,7 @@ export default function WorkerDetailsScreen() {
 	                          onPress={() => handleRemovePhoto(idx)}
 	                          accessibilityLabel={t("tickets.removeAttachment")}
 	                          accessibilityRole="button"
-	                          className="absolute -top-1 -end-1 bg-rose-600 w-5 h-5 rounded-full items-center justify-center border border-card shadow-sm z-10 active:opacity-75"
+	                          className="absolute -top-1 -end-1 bg-rose-600 w-5 h-5 rounded-full items-center justify-center shadow-sm z-10 active:opacity-75"
                         >
                           <AppIcon name="trash" size={10} colorToken="--primary-foreground" />
                         </Pressable>
@@ -522,11 +522,11 @@ export default function WorkerDetailsScreen() {
         {needsStartTask && (
           <View className="flex-col gap-6 w-full mt-2">
             {/* Inspection details card */}
-            <View className="w-full bg-card border border-border rounded-2xl p-5 shadow-sm flex-col gap-4">
-              <AppText className="text-base font-bold text-foreground text-start border-b border-border pb-3">
+            <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-4">
+              <AppText className="text-base font-bold text-foreground text-start pb-3">
                 {t("worker.inspectBtn")}
               </AppText>
-              <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl border border-border/60">
+              <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl">
                 {typeof task.notes === "string" ? task.notes : ""}
               </AppText>
             </View>
@@ -544,8 +544,8 @@ export default function WorkerDetailsScreen() {
         {needsCloseMission && (
           <View className="flex-col gap-6 w-full mt-2">
             {/* Inspection details card */}
-            <View className="w-full bg-card border border-border rounded-2xl p-5 shadow-sm flex-col gap-4">
-              <AppRow className="items-center justify-between border-b border-border pb-3">
+            <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-4">
+              <AppRow className="items-center justify-between pb-3">
                 <AppText className="text-base font-bold text-foreground text-start">
                   {t("worker.inspectBtn")}
                 </AppText>
@@ -555,7 +555,7 @@ export default function WorkerDetailsScreen() {
                   </AppText>
                 </View>
               </AppRow>
-              <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl border border-border/60">
+              <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl">
                 {typeof task.notes === "string" ? task.notes : ""}
               </AppText>
             </View>
@@ -571,11 +571,11 @@ export default function WorkerDetailsScreen() {
 
         {/* Case 5: Completed Tasks - Read Only Summary */}
         {isCompleted && task.notes && (
-          <View className="w-full bg-card border border-border rounded-2xl p-5 shadow-sm mt-2 flex-col gap-4">
-            <AppText className="text-base font-bold text-foreground text-start border-b border-border pb-3">
+          <View className="w-full bg-card rounded-2xl p-5 shadow-sm mt-2 flex-col gap-4">
+            <AppText className="text-base font-bold text-foreground text-start pb-3">
               {t("worker.inspectBtn")}
             </AppText>
-            <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl border border-border/60">
+            <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl">
               {typeof task.notes === "string" ? task.notes : ""}
             </AppText>
           </View>

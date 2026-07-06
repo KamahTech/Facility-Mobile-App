@@ -100,10 +100,8 @@ export default function ResidentInvoicesScreen() {
             <Pressable
               key={f.key}
               onPress={() => setActiveFilter(f.key)}
-              className={`flex-1 py-2 px-3 rounded-xl border items-center justify-center transition-all ${
-                isActive
-                  ? "bg-primary border-primary"
-                  : "bg-card border-border"
+              className={`flex-1 py-2 px-3 rounded-xl items-center justify-center transition-all ${
+                isActive ? "bg-primary" : "bg-card"
               }`}
             >
               <AppText
@@ -124,7 +122,7 @@ export default function ResidentInvoicesScreen() {
     return (
       <View className="mb-4">
         {/* Outstanding balance card summary */}
-        <View className="bg-primary/5 dark:bg-primary/10 border border-primary/10 p-5 rounded-2xl items-center mb-6">
+        <View className="bg-primary/5 dark:bg-primary/10 p-5 rounded-2xl items-center mb-6">
           <AppText className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">
             {t("invoices.totalBalance")}
           </AppText>
@@ -172,7 +170,7 @@ export default function ResidentInvoicesScreen() {
         ) : (
           <View className="flex-1">
             {error && (
-              <View className="bg-destructive/10 p-3 rounded-xl border border-destructive/25 mx-5 mb-4">
+              <View className="bg-destructive/10 p-3 rounded-xl mx-5 mb-4">
                 <AppText className="text-sm font-semibold text-destructive text-start">
                   {error}
                 </AppText>

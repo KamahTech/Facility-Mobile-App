@@ -71,22 +71,22 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
     switch (status) {
       case "pending":
         return {
-          bgClass: "bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-950/40",
+          bgClass: "bg-amber-50 dark:bg-amber-950/30",
           textClass: "text-amber-600 dark:text-amber-400",
         };
       case "in_progress":
         return {
-          bgClass: "bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-950/40",
+          bgClass: "bg-blue-50 dark:bg-blue-950/30",
           textClass: "text-blue-600 dark:text-blue-400",
         };
       case "completed":
         return {
-          bgClass: "bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-950/40",
+          bgClass: "bg-green-50 dark:bg-green-950/30",
           textClass: "text-green-600 dark:text-green-400",
         };
       case "cancelled":
         return {
-          bgClass: "bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-950/40",
+          bgClass: "bg-rose-50 dark:bg-rose-950/30",
           textClass: "text-rose-600 dark:text-rose-400",
         };
     }
@@ -105,7 +105,7 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
   return (
     <Pressable
       onPress={handlePress}
-      className="w-full bg-card border border-border rounded-2xl p-4 flex-col gap-3 mb-4 shadow-sm active:opacity-90"
+      className="w-full bg-card rounded-2xl p-4 flex-col gap-3 mb-4 shadow-sm active:opacity-90"
     >
       <AppRow className="items-center justify-between gap-3">
         <AppRow className="items-center gap-3 flex-1 min-w-0">
@@ -138,7 +138,7 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
       </AppText>
 
       {/* Bottom info: ID and Date */}
-      <AppRow className="items-center justify-between border-t border-border/60 pt-3">
+      <AppRow className="items-center justify-between pt-3">
         <AppText className="text-xs text-muted-foreground">
           #{task.id.toUpperCase()}
         </AppText>

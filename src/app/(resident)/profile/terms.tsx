@@ -52,7 +52,7 @@ export default function TermsAndConditionsScreen() {
           {sections.map((section) => (
             <View
               key={section.title}
-              className="w-full bg-card border border-border rounded-2xl p-5 shadow-sm flex-col gap-2"
+              className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-2"
             >
               <AppText className="text-lg font-bold text-foreground text-start">
                 {t(section.title)}

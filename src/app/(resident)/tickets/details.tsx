@@ -107,22 +107,22 @@ export default function ResidentTicketDetailsScreen() {
     switch (status) {
       case "pending":
         return {
-          bgClass: "bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-950/40",
+          bgClass: "bg-amber-50 dark:bg-amber-950/30",
           textClass: "text-amber-600 dark:text-amber-400",
         };
       case "in_progress":
         return {
-          bgClass: "bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-950/40",
+          bgClass: "bg-blue-50 dark:bg-blue-950/30",
           textClass: "text-blue-600 dark:text-blue-400",
         };
       case "completed":
         return {
-          bgClass: "bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-950/40",
+          bgClass: "bg-green-50 dark:bg-green-950/30",
           textClass: "text-green-600 dark:text-green-400",
         };
       case "cancelled":
         return {
-          bgClass: "bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-950/40",
+          bgClass: "bg-rose-50 dark:bg-rose-950/30",
           textClass: "text-rose-600 dark:text-rose-400",
         };
     }
@@ -174,7 +174,7 @@ export default function ResidentTicketDetailsScreen() {
         className="flex-1 w-full max-w-xl self-center"
       >
         {/* Category Header Card */}
-        <View className="w-full bg-card border border-border rounded-2xl p-5 flex-col gap-4 shadow-sm mb-6">
+        <View className="w-full bg-card rounded-2xl p-5 flex-col gap-4 shadow-sm mb-6">
           <AppRow className="items-center justify-between gap-3">
             <AppRow className="items-center gap-3.5 flex-1 min-w-0">
               <View className={`w-12 h-12 rounded-xl items-center justify-center ${categoryConfig.bgClass}`}>
@@ -198,7 +198,7 @@ export default function ResidentTicketDetailsScreen() {
             </View>
           </AppRow>
 
-          <View className="border-t border-border pt-4 flex-col gap-3">
+          <View className="pt-4 flex-col gap-3">
             {/* Unit Info */}
             <AppRow className="justify-between items-center">
               <AppText className="text-sm font-semibold text-muted-foreground text-start">
@@ -222,7 +222,7 @@ export default function ResidentTicketDetailsScreen() {
         </View>
 
         {/* Issue Details Section */}
-        <View className="w-full bg-card border border-border rounded-2xl p-5 shadow-sm mb-6 flex-col gap-3">
+        <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-3">
           <AppText className="text-sm font-bold text-muted-foreground uppercase tracking-wider text-start">
             {t("tickets.enterDetails")}
           </AppText>
@@ -233,7 +233,7 @@ export default function ResidentTicketDetailsScreen() {
 
         {/* Worker Section */}
         {request.workerName && (
-          <View className="w-full bg-card border border-border rounded-2xl p-4 shadow-sm mb-6 flex-col gap-3">
+          <View className="w-full bg-card rounded-2xl p-4 shadow-sm mb-6 flex-col gap-3">
             <AppText className="text-sm font-bold text-muted-foreground uppercase tracking-wider text-start">
               {t("tickets.assignedWorker")}
             </AppText>
@@ -258,7 +258,7 @@ export default function ResidentTicketDetailsScreen() {
           <Pressable
             onPress={handleCancelPress}
             disabled={actionLoading}
-            className="w-full bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-950/30 py-4 rounded-2xl justify-center items-center mt-6 active:opacity-90"
+            className="w-full bg-rose-50 dark:bg-rose-950/20 py-4 rounded-2xl justify-center items-center mt-6 active:opacity-90"
           >
             {actionLoading ? (
               <ActivityIndicator color="#EF4444" />
@@ -273,7 +273,7 @@ export default function ResidentTicketDetailsScreen() {
 
       {/* Sticky Bottom Button Container */}
       <View
-        className="w-full border-t border-border bg-card"
+        className="w-full bg-card"
         style={{ paddingBottom: Math.max(insets.bottom, 16), paddingTop: 12 }}
       >
         <View className="w-full max-w-xl self-center px-5">
@@ -284,7 +284,7 @@ export default function ResidentTicketDetailsScreen() {
                 params: { id: request.id },
               } as Href);
             }}
-            className="w-full min-h-14 rounded-xl bg-background border border-border px-5 py-4 active:opacity-80"
+            className="w-full min-h-14 rounded-xl bg-background px-5 py-4 active:opacity-80"
           >
             <AppRow className="items-center justify-between">
               <AppRow className="items-center gap-3">

@@ -22,7 +22,7 @@ export function ScreenHeader({
   const { t } = useI18n();
 
   return (
-    <AppRow className={`w-full items-center justify-between py-4 px-5 sm:px-8 ${showBorder ? "border-b border-border" : ""}`}>
+    <AppRow className={`w-full items-center justify-between py-4 px-5 sm:px-8 ${showBorder ? "" : ""}`}>
       <Pressable
         accessibilityLabel={t("actions.back")}
         accessibilityRole="button"

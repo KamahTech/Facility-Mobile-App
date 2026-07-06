@@ -261,7 +261,7 @@ export default function ConnectUnitScreen() {
               />
 
               {error && (
-                <View className="bg-destructive/10 p-4 rounded-xl border border-destructive/25 mt-2">
+                <View className="bg-destructive/10 p-4 rounded-xl mt-2">
                   <AppText className="text-sm font-semibold text-destructive text-start">
                     {error}
                   </AppText>
@@ -299,7 +299,7 @@ export default function ConnectUnitScreen() {
             ) : (
               <View className="flex-1">
                 {error && (
-                  <View className="bg-destructive/10 p-3 rounded-xl border border-destructive/25 mb-4 mt-2">
+                  <View className="bg-destructive/10 p-3 rounded-xl mb-4 mt-2">
                     <AppText className="text-sm font-semibold text-destructive text-start">
                       {error}
                     </AppText>

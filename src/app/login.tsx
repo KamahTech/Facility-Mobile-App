@@ -211,7 +211,7 @@ export default function LoginScreen() {
 
           {/* API error messages */}
           {error && (
-            <View className="bg-destructive/10 p-4 rounded-xl border border-destructive/25">
+            <View className="bg-destructive/10 p-4 rounded-xl">
               <AppText className="text-sm font-semibold text-destructive text-start">
                 {error}
               </AppText>
@@ -249,12 +249,12 @@ export default function LoginScreen() {
 
           {/* Social login for residents only */}
           {accountType === "resident" && (
-            <View className="flex-col gap-3 mt-6 border-t border-border/60 pt-6">
+            <View className="flex-col gap-3 mt-6 pt-6">
               {/* Google login */}
               <Pressable
                 onPress={handleGoogleLogin}
                 disabled={loading}
-                className="min-h-14 items-center justify-center rounded-lg border border-border bg-card px-5 active:opacity-85"
+                className="min-h-14 items-center justify-center rounded-lg bg-card px-5 active:opacity-85"
               >
                 <AppText className="text-center text-base font-semibold text-card-foreground">
                   {t("auth.loginWithGoogle")}

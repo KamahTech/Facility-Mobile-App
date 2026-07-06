@@ -58,7 +58,7 @@ export default function ServicesScreen() {
       ) : (
         <View className="flex-1 mt-2">
           {error && (
-            <View className="bg-destructive/10 p-4 rounded-2xl border border-destructive/20 mx-5 mb-4">
+            <View className="bg-destructive/10 p-4 rounded-2xl mx-5 mb-4">
               <AppText className="text-sm font-semibold text-destructive text-start">{error}</AppText>
             </View>
           )}

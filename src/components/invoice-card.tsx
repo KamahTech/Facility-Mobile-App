@@ -33,7 +33,6 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
           iconBg: "bg-emerald-500/10",
           iconColor: "#10B981",
           statusTextKey: "invoices.status.paid",
-          borderColor: "border-border/50",
         };
       case "overdue":
         return {
@@ -42,7 +41,6 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
           iconBg: "bg-rose-500/10",
           iconColor: "#F43F5E",
           statusTextKey: "invoices.status.overdue",
-          borderColor: "border-rose-500/20 dark:border-rose-500/10",
         };
       case "pending":
       default:
@@ -52,12 +50,9 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
           iconBg: "bg-amber-500/10",
           iconColor: "#F59E0B",
           statusTextKey: "invoices.status.pending",
-          borderColor: "border-border/80",
         };
     }
   }, [status]);
-
-
 
   const handleCardPress = () => {
     router.push(`/invoices/${id}` as Href);
@@ -66,9 +61,8 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
   return (
     <Pressable
       onPress={handleCardPress}
-      className={`w-full p-4 rounded-2xl bg-card border ${theme.borderColor} mb-3 flex-col gap-3 active:opacity-95`}
+      className="w-full p-4 rounded-2xl bg-card mb-3 flex-col gap-3 active:opacity-95"
     >
-      {/* Top Header Row: Invoice Number, Badge Status & Icon */}
       <AppRow className="w-full items-center justify-between">
         <AppRow className="items-center gap-2.5">
           <View className={`size-8 rounded-lg items-center justify-center ${theme.iconBg}`}>
@@ -96,9 +90,6 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
           {t(descriptionKey)}
         </AppText>
       </View>
-
-      {/* Divider */}
-      <View className="w-full h-[1px] bg-border/50" />
 
       {/* Footer Row: Dates, Amount, and Optional Payment Button */}
       <AppRow className="w-full items-end justify-between">

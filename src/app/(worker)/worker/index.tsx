@@ -99,10 +99,8 @@ export default function WorkerHomeScreen() {
       <Pressable
         key={tab.value}
         onPress={() => setActiveTab(tab.value)}
-        className={`px-4 py-2.5 rounded-full border me-2 items-center justify-center ${
-          isSelected
-            ? "bg-primary border-primary"
-            : "bg-card border-border"
+        className={`px-4 py-2.5 rounded-full me-2 items-center justify-center ${
+          isSelected ? "bg-primary" : "bg-card"
         }`}
       >
         <AppText
@@ -147,7 +145,7 @@ export default function WorkerHomeScreen() {
       <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
 
       {/* Top Header Row */}
-      <AppRow className="items-center justify-between px-5 sm:px-8 py-4 border-b border-border/40">
+      <AppRow className="items-center justify-between px-5 sm:px-8 py-4">
         <Pressable onPress={logoutSheet.present}>
           <Avatar size={40} />
         </Pressable>
@@ -202,7 +200,7 @@ export default function WorkerHomeScreen() {
         ) : (
           <View className="flex-1">
             {error && (
-              <View className="bg-destructive/10 p-3 rounded-xl border border-destructive/25 mb-4">
+              <View className="bg-destructive/10 p-3 rounded-xl mb-4">
                 <AppText className="text-sm font-semibold text-destructive text-start">
                   {error}
                 </AppText>

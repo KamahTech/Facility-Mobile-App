@@ -36,12 +36,7 @@ export function AppInput({
         style={[
           directionStyle,
           {
-            textAlignVertical: multiline ? "top" : "center",
-          },
-        ]}
-        className={`w-full rounded-xl border border-border px-4 py-3.5 text-base focus:border-primary ${
-          props.editable === false
-            ? "bg-muted/40 text-muted-foreground opacity-60"
+            textAlignVertical: multiline ? "top" : "center", }, ]} className={`w-full rounded-xl px-4 py-3.5 text-base ${ props.editable === false ?"bg-muted/40 text-muted-foreground opacity-60"
             : "bg-card text-foreground"
         } ${
           multiline ? "min-h-[110px]" : "min-h-[50px]"

@@ -165,7 +165,7 @@ export default function ResidentProfileScreen() {
               onPress={handleChangeAvatar}
               accessibilityLabel={t("profile.changeAvatar")}
               accessibilityRole="button"
-              className="absolute bottom-0 end-0 w-8 h-8 rounded-full bg-primary items-center justify-center border-2 border-background shadow-md active:opacity-75"
+              className="absolute bottom-0 end-0 w-8 h-8 rounded-full bg-primary items-center justify-center shadow-md active:opacity-75"
             >
               <AppIcon
                 name="camera"
@@ -246,7 +246,7 @@ export default function ResidentProfileScreen() {
         {/* Sign Out Button */}
         <SettingsRow
           onPress={handleSignOut}
-          className="mx-5 sm:mx-8 p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-950/40 mt-6 mb-3 active:opacity-75"
+          className="mx-5 sm:mx-8 p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 mt-6 mb-3 active:opacity-75"
           icon="logout"
           iconClassName="bg-rose-100 dark:bg-rose-950"
           accentColor="#EF4444"

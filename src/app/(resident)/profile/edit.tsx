@@ -126,7 +126,7 @@ export default function EditProfileScreen() {
           />
 
           {error && (
-            <View className="bg-destructive/10 p-4 rounded-xl border border-destructive/25 mt-2">
+            <View className="bg-destructive/10 p-4 rounded-xl mt-2">
               <AppText className="text-sm font-semibold text-destructive text-start">
                 {error}
               </AppText>

@@ -76,7 +76,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
   const config = getUnitTypeConfig();
 
   return (
-    <AppRow className="w-full bg-card border border-border rounded-2xl p-4 items-center justify-between mb-4 shadow-sm">
+    <AppRow className="w-full bg-card rounded-2xl p-4 items-center justify-between mb-4 shadow-sm">
       <AppRow className="items-center gap-3.5 flex-1 min-w-0">
         <View className={`w-12 h-12 rounded-xl items-center justify-center ${config.bgClass}`}>
           <AppIcon name={config.icon} size={24} color={config.iconColor} />
@@ -119,7 +119,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
       {unit.source !== "odoo_unit" && (
         <Pressable
           onPress={handleDeletePress}
-          className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/30 items-center justify-center border border-rose-100 dark:border-rose-950/40 active:opacity-75"
+          className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/30 items-center justify-center active:opacity-75"
         >
           <AppIcon name="trash" size={18} color={destructiveColor} />
         </Pressable>

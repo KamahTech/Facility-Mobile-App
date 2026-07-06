@@ -13,23 +13,7 @@ type AvatarProps = {
   className?: string;
 };
 
-export function Avatar({ size = 48, source, className = "" }: AvatarProps) {
-  const roundedStyle = {
-    width: size,
-    height: size,
-    borderRadius: size / 2,
-  };
-
-  return (
-    <View
-      style={roundedStyle}
-      className={`items-center justify-center overflow-hidden bg-card border border-border ${className}`}
-    >
-      {source ? (
-        <Image
-          source={source}
-          style={roundedStyle}
-          contentFit="cover"
+export function Avatar({ size = 48, source, className = ""}: AvatarProps) { const roundedStyle = { width: size, height: size, borderRadius: size / 2, }; return ( <View style={roundedStyle} className={`items-center justify-center overflow-hidden bg-card ${className}`} > {source ? ( <Image source={source} style={roundedStyle} contentFit="cover"
           transition={150}
         />
       ) : (

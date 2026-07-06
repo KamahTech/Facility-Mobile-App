@@ -16,7 +16,6 @@ function CollapsibleTabBar({ state, descriptors, navigation }: any) {
   const { width } = useWindowDimensions();
 
   const card = useThemeToken("--card");
-  const border = useThemeToken("--border");
   const foreground = useThemeToken("--foreground");
   const mutedForeground = useThemeToken("--muted-foreground");
 
@@ -40,8 +39,6 @@ function CollapsibleTabBar({ state, descriptors, navigation }: any) {
           width: tabBarWidth,
           height: 68,
           borderRadius: 32,
-          borderWidth: 1,
-          borderColor: border,
           backgroundColor: card,
           ...getDirectionalRowStyle(direction),
           alignItems: "center",

@@ -25,9 +25,7 @@ export function AppSelectField({
       </AppText>
       <Pressable
         accessibilityRole="button"
-        className={`min-h-[50px] w-full justify-center rounded-xl border bg-card px-4 py-3.5 active:opacity-80 ${
-          error ? "border-destructive" : "border-border"
-        }`}
+        className="min-h-[50px] w-full justify-center rounded-xl bg-card px-4 py-3.5 active:opacity-80"
         {...props}
       >
         <AppRow className="items-center justify-between gap-3">

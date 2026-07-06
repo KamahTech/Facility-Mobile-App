@@ -12,7 +12,6 @@ import { PollCard } from "@/components/poll-card";
 import { ScreenHeader } from "@/components/screen-header";
 import { type TranslationKey } from "@/constants/translations";
 import { useI18n } from "@/hooks/use-i18n";
-import { useThemeToken } from "@/hooks/use-theme-token";
 import { getBackendImageSource } from "@/lib/image-source";
 import { useCommunityStore, type CommunityPoll } from "@/stores/community-store";
 
@@ -20,7 +19,6 @@ export default function PostDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const cardBorder = useThemeToken("--border");
   const { updates, fetchUpdateDetails, loading } = useCommunityStore({ enableUpdates: true });
   const updateId = Array.isArray(id) ? id[0] : id;
 
@@ -156,12 +154,6 @@ export default function PostDetailsScreen() {
               >
                 {localizedTitle}
               </AppText>
-
-              {/* Divider */}
-              <View
-                style={{ height: 1, backgroundColor: cardBorder }}
-                className="w-full my-1"
-              />
 
               {/* Detailed Body Paragraphs */}
               <AppText

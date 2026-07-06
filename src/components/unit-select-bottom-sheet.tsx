@@ -46,7 +46,7 @@ export function UnitSelectBottomSheet({
           {t("tickets.selectUnit")}
         </AppText>
 
-        <View className="w-full overflow-hidden rounded-xl border border-border bg-card">
+        <View className="w-full overflow-hidden rounded-xl bg-card">
           {units.map((unit, index) => {
             const isSelected = selectedUnitId === unit.id;
             const isLast = index === units.length - 1;
@@ -58,7 +58,7 @@ export function UnitSelectBottomSheet({
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
                 className={`min-h-14 w-full justify-center px-4 py-4 ${
-                  isLast ? "" : "border-b border-border"
+                  isLast ? "" : ""
                 }`}
                 onPress={() => handleSelect(unit)}
               >

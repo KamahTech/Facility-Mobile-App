@@ -26,7 +26,7 @@ export function SettingsRow({
 }: SettingsRowProps) {
   return (
     <Pressable
-      className="mx-5 sm:mx-8 p-4 rounded-2xl bg-card border border-border mb-3 active:opacity-75"
+      className="mx-5 sm:mx-8 p-4 rounded-2xl bg-card mb-3 active:opacity-75"
       {...props}
     >
       <AppRow className="items-center justify-between">

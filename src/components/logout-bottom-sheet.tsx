@@ -86,10 +86,10 @@ export function LogoutBottomSheet({
             {userRole || t("auth.workerTitle")}
           </AppText>
 
-          <View className="w-full overflow-hidden rounded-xl border border-border bg-card">
+          <View className="w-full overflow-hidden rounded-xl bg-card">
             <Pressable
               accessibilityRole="button"
-              className="min-h-14 w-full justify-center border-b border-border px-4 py-4"
+              className="min-h-14 w-full justify-center px-4 py-4"
               onPress={() => runSheetAction(handleConfirm)}
               onPressIn={() => runSheetAction(handleConfirm)}
             >

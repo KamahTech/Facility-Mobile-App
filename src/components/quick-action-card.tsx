@@ -24,7 +24,7 @@ export function QuickActionCard({
       accessibilityLabel={title}
       accessibilityRole="button"
       onPress={onPress}
-      className="w-full py-5 px-4 rounded-2xl bg-card border border-border/80 active:opacity-85 shadow-xs"
+      className="w-full py-5 px-4 rounded-2xl bg-card active:opacity-85 shadow-xs"
     >
       <AppRow className="items-center gap-3">
         <View 

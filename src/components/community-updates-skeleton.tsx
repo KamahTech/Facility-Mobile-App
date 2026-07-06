@@ -12,7 +12,7 @@ export function CommunityUpdatesSkeleton() {
   return (
     <View className="w-full flex-col gap-4">
       {/* News Card Skeleton */}
-      <View className="w-full p-4 rounded-2xl border border-border bg-card">
+      <View className="w-full p-4 rounded-2xl bg-card">
         <AppRow className="gap-4 items-center justify-between">
           {/* Text Area Skeleton */}
           <View className="flex-1 flex-col gap-3 min-w-0">
@@ -38,7 +38,7 @@ export function CommunityUpdatesSkeleton() {
       </View>
 
       {/* Poll Card Skeleton */}
-      <View className="w-full p-4 rounded-2xl border border-border bg-card flex-col gap-3.5">
+      <View className="w-full p-4 rounded-2xl bg-card flex-col gap-3.5">
         {/* Badge & Date Row */}
         <AppRow className="items-center gap-2">
           <ShimmerPlaceholder className="w-20 h-4 rounded-md" />

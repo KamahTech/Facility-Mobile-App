@@ -102,7 +102,6 @@ export default function InvoiceDetailsScreen() {
           iconBg: "bg-emerald-500/10",
           iconColor: "#10B981",
           statusTextKey: "invoices.status.paid",
-          borderColor: "border-border/50",
         };
       case "overdue":
         return {
@@ -111,7 +110,6 @@ export default function InvoiceDetailsScreen() {
           iconBg: "bg-rose-500/10",
           iconColor: "#F43F5E",
           statusTextKey: "invoices.status.overdue",
-          borderColor: "border-rose-500/20 dark:border-rose-500/10",
         };
       case "pending":
       default:
@@ -121,7 +119,6 @@ export default function InvoiceDetailsScreen() {
           iconBg: "bg-amber-500/10",
           iconColor: "#F59E0B",
           statusTextKey: "invoices.status.pending",
-          borderColor: "border-border/80",
         };
     }
   })();
@@ -150,7 +147,7 @@ export default function InvoiceDetailsScreen() {
         <View className="px-5 sm:px-8 flex-col gap-6">
           
           {/* Header Summary Box */}
-          <View className="bg-card border border-border p-6 rounded-3xl flex-col items-center gap-4">
+          <View className="bg-card p-6 rounded-3xl flex-col items-center gap-4">
             <View className={`size-12 rounded-2xl items-center justify-center ${statusTheme.iconBg}`}>
               <AppIcon name="invoices" size={24} color={statusTheme.iconColor} />
             </View>
@@ -175,7 +172,7 @@ export default function InvoiceDetailsScreen() {
               {t("invoices.paymentInfo")}
             </AppText>
 
-            <View className="bg-card border border-border rounded-2xl p-4 flex-col gap-3">
+            <View className="bg-card rounded-2xl p-4 flex-col gap-3">
               <AppRow className="justify-between items-center">
                 <AppText className="text-sm text-muted-foreground">
                   {t("invoices.itemDescription")}
@@ -185,8 +182,6 @@ export default function InvoiceDetailsScreen() {
                 </AppText>
               </AppRow>
               
-              <View className="h-[1px] bg-border/50" />
-
               <AppRow className="justify-between items-center">
                 <AppText className="text-sm text-muted-foreground">
                   {t("invoices.issueDate")}
@@ -195,8 +190,6 @@ export default function InvoiceDetailsScreen() {
                   {formatDate(invoice.issueDate)}
                 </AppText>
               </AppRow>
-
-              <View className="h-[1px] bg-border/50" />
 
               <AppRow className="justify-between items-center">
                 <AppText className="text-sm text-muted-foreground">
@@ -215,7 +208,7 @@ export default function InvoiceDetailsScreen() {
               {t("invoices.lineItems")}
             </AppText>
 
-            <View className="bg-card border border-border rounded-2xl p-4 flex-col gap-3">
+            <View className="bg-card rounded-2xl p-4 flex-col gap-3">
               {/* Row 1: Base fee */}
               <AppRow className="justify-between items-center">
                 <AppText className="text-sm text-muted-foreground">
@@ -225,8 +218,6 @@ export default function InvoiceDetailsScreen() {
                   {formatCurrency(baseFee)}
                 </AppText>
               </AppRow>
-
-              <View className="h-[1px] bg-border/50" />
 
               {/* Row 2: VAT */}
               <AppRow className="justify-between items-center">
@@ -238,8 +229,6 @@ export default function InvoiceDetailsScreen() {
                 </AppText>
               </AppRow>
 
-              <View className="h-[1px] bg-border/50" />
-
               {/* Row 3: Processing Fee */}
               <AppRow className="justify-between items-center">
                 <AppText className="text-sm text-muted-foreground">
@@ -249,8 +238,6 @@ export default function InvoiceDetailsScreen() {
                   {formatCurrency(processingFee)}
                 </AppText>
               </AppRow>
-
-              <View className="h-[1px] bg-border/50" />
 
               {/* Row 4: Total */}
               <AppRow className="justify-between items-center pt-1">
@@ -279,7 +266,7 @@ export default function InvoiceDetailsScreen() {
               <AppRow className="gap-3">
                 <Pressable
                   onPress={handleComingSoon}
-                  className="flex-1 bg-card border border-border py-4 rounded-2xl items-center justify-center active:opacity-90"
+                  className="flex-1 bg-card py-4 rounded-2xl items-center justify-center active:opacity-90"
                 >
                   <AppRow className="items-center justify-center gap-2">
                     <AppIcon name="invoices" size={16} colorToken="--foreground" />
@@ -291,7 +278,7 @@ export default function InvoiceDetailsScreen() {
 
                 <Pressable
                   onPress={handleComingSoon}
-                  className="flex-1 bg-card border border-border py-4 rounded-2xl items-center justify-center active:opacity-90"
+                  className="flex-1 bg-card py-4 rounded-2xl items-center justify-center active:opacity-90"
                 >
                   <AppRow className="items-center justify-center gap-2">
                     <AppIcon name="linkUnit" size={16} colorToken="--foreground" />

@@ -232,7 +232,7 @@ export default function SignupScreen() {
 
               {/* API error messages */}
               {error && (
-                <View className="bg-destructive/10 p-4 rounded-xl border border-destructive/25">
+                <View className="bg-destructive/10 p-4 rounded-xl">
                   <AppText className="text-sm font-semibold text-destructive text-start">
                     {error}
                   </AppText>
@@ -256,7 +256,7 @@ export default function SignupScreen() {
           ) : (
             <>
               {/* Read-only target profile view */}
-              <View className="bg-secondary/45 border border-border/80 p-4 rounded-xl flex-col gap-2">
+              <View className="bg-secondary/45 p-4 rounded-xl flex-col gap-2">
                 <View>
                   <AppText className="text-xs text-muted-foreground text-start">
                     {t("auth.name")}
@@ -265,7 +265,6 @@ export default function SignupScreen() {
                     {getValues("name")}
                   </AppText>
                 </View>
-                <View className="h-[1px] bg-border/40" />
                 <View>
                   <AppText className="text-xs text-muted-foreground text-start">
                     {t("auth.email")}
@@ -308,7 +307,7 @@ export default function SignupScreen() {
 
               {/* API error messages */}
               {error && (
-                <View className="bg-destructive/10 p-4 rounded-xl border border-destructive/25">
+                <View className="bg-destructive/10 p-4 rounded-xl">
                   <AppText className="text-sm font-semibold text-destructive text-start">
                     {error}
                   </AppText>

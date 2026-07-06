@@ -22,7 +22,6 @@ export default function DepositsScreen() {
 
   const [refreshing, setRefreshing] = React.useState(false);
   const mutedForeground = useThemeToken("--muted-foreground");
-  const cardBorder = useThemeToken("--border");
 
   const loadDeposits = React.useCallback(async () => {
     clearError();
@@ -43,17 +42,17 @@ export default function DepositsScreen() {
     const norm = status.toLowerCase();
     if (norm.includes("collect")) {
       return {
-        bg: "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-950/40",
+        bg: "bg-emerald-50 dark:bg-emerald-950/30",
         text: "text-emerald-700 dark:text-emerald-400",
       };
     } else if (norm.includes("return")) {
       return {
-        bg: "bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-950/40",
+        bg: "bg-blue-50 dark:bg-blue-950/30",
         text: "text-blue-700 dark:text-blue-400",
       };
     } else {
       return {
-        bg: "bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-950/40",
+        bg: "bg-amber-50 dark:bg-amber-950/30",
         text: "text-amber-700 dark:text-amber-400",
       };
     }
@@ -73,7 +72,7 @@ export default function DepositsScreen() {
     return (
       <View
         key={item.id}
-        className="w-full bg-card border border-border rounded-3xl p-5 flex-col gap-4 shadow-sm mb-4"
+        className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm mb-4"
       >
         <AppRow className="items-center justify-between gap-3">
           <AppRow className="items-center gap-3.5 flex-1 min-w-0">
@@ -96,8 +95,6 @@ export default function DepositsScreen() {
             </AppText>
           </View>
         </AppRow>
-
-        <View style={{ height: 1, backgroundColor: cardBorder }} className="w-full" />
 
         <View className="flex-col gap-2.5">
           <AppRow className="justify-between items-center">
@@ -138,7 +135,6 @@ export default function DepositsScreen() {
 
           {typeof item.expirationDate === "string" && (
             <>
-              <View style={{ height: 1, backgroundColor: cardBorder }} className="w-full my-0.5" />
               <AppRow className="justify-between items-center">
                 <AppText className="text-xs text-muted-foreground text-start">
                   {t("deposits.expiration")}
@@ -192,7 +188,7 @@ export default function DepositsScreen() {
             className="flex-1 w-full"
           >
             {error && (
-              <View className="bg-destructive/10 p-3 rounded-xl border border-destructive/25 mb-4">
+              <View className="bg-destructive/10 p-3 rounded-xl mb-4">
                 <AppText className="text-sm font-semibold text-destructive text-start">
                   {error}
                 </AppText>

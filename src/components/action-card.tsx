@@ -20,7 +20,7 @@ export function ActionCard({
   return (
     <Pressable
       accessibilityRole="button"
-      className="min-h-24 rounded-lg border border-border bg-card px-5 py-4 active:opacity-80"
+      className="min-h-24 rounded-lg bg-card px-5 py-4 active:opacity-80"
       {...props}
     >
       <AppRow className="items-start gap-3">

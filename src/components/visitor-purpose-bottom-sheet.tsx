@@ -44,7 +44,7 @@ export function VisitorPurposeBottomSheet({
           {t("inviteVisitor.purpose")}
         </AppText>
 
-        <View className="w-full overflow-hidden rounded-xl border border-border bg-card">
+        <View className="w-full overflow-hidden rounded-xl bg-card">
           {visitorPurposeOptions.map((option, index) => {
             const isSelected = selectedPurpose === option.id;
             const isLast = index === visitorPurposeOptions.length - 1;
@@ -55,7 +55,7 @@ export function VisitorPurposeBottomSheet({
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
                 className={`min-h-14 w-full justify-center px-4 py-4 ${
-                  isLast ? "" : "border-b border-border"
+                  isLast ? "" : ""
                 }`}
                 onPress={() => handleSelect(option.id)}
               >

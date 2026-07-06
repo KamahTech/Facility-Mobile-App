@@ -37,7 +37,7 @@ export function NewsCard({ item, onPress }: NewsCardProps) {
     <Pressable
       onPress={onPress}
       disabled={!onPress}
-      className="w-full p-4 rounded-2xl border border-border bg-card active:opacity-90"
+      className="w-full p-4 rounded-2xl bg-card active:opacity-90"
     >
       <AppRow className="gap-4 items-center justify-between">
         {/* Text Content Area */}
