@@ -7,7 +7,6 @@ import { QuickActionCard } from "@/components/quick-action-card";
 import { SectionHeader } from "@/components/section-header";
 import { quickActions } from "@/constants/quick-actions";
 import { useI18n } from "@/hooks/use-i18n";
-import { useTheme } from "@/hooks/use-theme";
 
 type QuickActionsProps = {
   limit?: number | null;
@@ -17,48 +16,26 @@ type QuickActionsProps = {
 
 const CARD_COLORS: Record<
   "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "tickets",
-  { light: string; dark: string }
+  string
 > = {
-  linkUnit: {
-    light: "#4F46E5", // Premium Indigo
-    dark: "#3730A3",
-  },
-  invoices: {
-    light: "#059669", // Rich Emerald Green
-    dark: "#065F46",
-  },
-  requestService: {
-    light: "#D97706", // Deep Warm Amber
-    dark: "#92400E",
-  },
-  inviteVisitor: {
-    light: "#7C3AED", // Royal Violet
-    dark: "#5B21B6",
-  },
-  feedback: {
-    light: "#E11D48", // Premium Rose
-    dark: "#9F1239",
-  },
-  tickets: {
-    light: "#EA580C", // Vibrant Orange
-    dark: "#9A3412",
-  },
+  linkUnit: "#6366F1",      // Indigo
+  invoices: "#10B981",      // Emerald
+  requestService: "#F59E0B",  // Amber
+  inviteVisitor: "#8B5CF6",   // Violet
+  feedback: "#F43F5E",        // Rose
+  tickets: "#F97316",         // Orange
 };
 
-const DEFAULT_CARD_COLOR = {
-  light: "#6B7280", // Gray
-  dark: "#374151",
-};
+const DEFAULT_CARD_COLOR = "#6B7280";
 
 export function QuickActions({
-  limit = 4, // Limit to 4 items by default
+  limit = 4, // Limit to 4 items by default on the home screen
   showHeader = true,
   showSeeAll = true,
 }: QuickActionsProps) {
   const { t } = useI18n();
-  const { resolvedTheme } = useTheme();
   
-  // Display up to the limit of 4 items for the 2x2 grid, or all items if limit is null
+  // Display up to the limit of items, or all items if limit is null
   const visibleActions = React.useMemo(() => {
     return limit === null ? quickActions : quickActions.slice(0, limit);
   }, [limit]);
@@ -98,7 +75,7 @@ export function QuickActions({
             className="w-full gap-3"
           >
             {rowItems.map((item) => {
-              const cardThemeColor = (CARD_COLORS[item.icon as keyof typeof CARD_COLORS] || DEFAULT_CARD_COLOR)[resolvedTheme];
+              const cardThemeColor = CARD_COLORS[item.icon as keyof typeof CARD_COLORS] || DEFAULT_CARD_COLOR;
 
               return (
                 <View key={item.titleKey} className="flex-1">

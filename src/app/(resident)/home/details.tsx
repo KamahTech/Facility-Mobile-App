@@ -1,16 +1,43 @@
 import React from "react";
-import { View, ScrollView } from "react-native";
-import { Stack, router } from "expo-router";
+import { View, FlatList } from "react-native";
+import { Stack, router, type Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { QuickActions } from "@/components/quick-actions";
+import { QuickActionCard } from "@/components/quick-action-card";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
+import { quickActions } from "@/constants/quick-actions";
+
+const CARD_COLORS: Record<
+  "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "tickets",
+  string
+> = {
+  linkUnit: "#6366F1",      // Indigo
+  invoices: "#10B981",      // Emerald
+  requestService: "#F59E0B",  // Amber
+  inviteVisitor: "#8B5CF6",   // Violet
+  feedback: "#F43F5E",        // Rose
+  tickets: "#F97316",         // Orange
+};
+
+const DEFAULT_CARD_COLOR = "#6B7280";
 
 export default function ResidentHomeDetailsScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
+
+  const handlePress = (route: string) => {
+    router.push(route as Href);
+  };
+
+  const renderHeader = () => (
+    <View className="pt-6">
+      <AppText className="text-start text-base leading-6 text-muted-foreground px-5 sm:px-8 mb-6">
+        {t("quickActions.allDescription")}
+      </AppText>
+    </View>
+  );
 
   return (
     <View
@@ -25,24 +52,30 @@ export default function ResidentHomeDetailsScreen() {
 
       <ScreenHeader title={t("quickActions.title")} onBack={() => router.back()} />
 
-      <ScrollView
+      <FlatList
+        data={quickActions}
+        keyExtractor={(item) => item.titleKey}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={renderHeader}
         contentContainerStyle={{
-          paddingTop: 24,
           paddingBottom: insets.bottom + 40,
         }}
         className="flex-1 w-full max-w-xl self-center"
-      >
-        <AppText className="text-start text-base leading-6 text-muted-foreground px-5 sm:px-8 mb-6">
-          {t("quickActions.allDescription")}
-        </AppText>
+        renderItem={({ item }) => {
+          const cardThemeColor = CARD_COLORS[item.icon as keyof typeof CARD_COLORS] || DEFAULT_CARD_COLOR;
 
-        <QuickActions
-          limit={null}
-          showHeader={false}
-          showSeeAll={false}
-        />
-      </ScrollView>
+          return (
+            <View className="px-5 sm:px-8 mb-3">
+              <QuickActionCard
+                icon={item.icon}
+                themeColor={cardThemeColor}
+                title={t(item.titleKey)}
+                onPress={() => handlePress(item.route)}
+              />
+            </View>
+          );
+        }}
+      />
     </View>
   );
 }
