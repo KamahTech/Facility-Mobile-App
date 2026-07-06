@@ -235,6 +235,9 @@ export function useOwnerStore(options?: {
     submitInquiryMutation.error?.message ||
     null;
 
+  const ownerUnitsError = ownerUnitsQuery.error?.message || null;
+  const statementError = statementQuery.error?.message || null;
+
   // Actions
   const fetchOwnerUnits = React.useCallback(async () => {
     await ownerUnitsQuery.refetch();
@@ -343,6 +346,8 @@ export function useOwnerStore(options?: {
     services,
     loading,
     error,
+    ownerUnitsError,
+    statementError,
     currentClaim,
     fetchOwnerUnits,
     fetchOwnerUnitDetails,

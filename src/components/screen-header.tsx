@@ -10,17 +10,19 @@ type ScreenHeaderProps = {
   title: string;
   onBack?: () => void;
   rightAction?: React.ReactNode;
+  showBorder?: boolean;
 };
 
 export function ScreenHeader({
   title,
   onBack = () => router.back(),
   rightAction,
+  showBorder = true,
 }: ScreenHeaderProps) {
   const { t } = useI18n();
 
   return (
-    <AppRow className="w-full items-center justify-between py-4 border-b border-border px-5 sm:px-8">
+    <AppRow className={`w-full items-center justify-between py-4 px-5 sm:px-8 ${showBorder ? "border-b border-border" : ""}`}>
       <Pressable
         accessibilityLabel={t("actions.back")}
         accessibilityRole="button"

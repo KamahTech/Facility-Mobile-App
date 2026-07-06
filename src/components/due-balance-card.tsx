@@ -9,7 +9,7 @@ import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 
-const dollarIcon = require("@/assets/icons/3dicons-dollar-dynamic-color.png");
+const houseIcon = require("@/assets/icons/house.png");
 
 type DueBalanceCardProps = {
   /** The outstanding due balance amount to show. */
@@ -27,22 +27,20 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
     });
     const compacted = compactFormatter.format(dueAmount);
 
-    return isRTL
-      ? `${compacted} $`
-      : `$${compacted}`;
+    return isRTL ? `${compacted} $` : `$${compacted}`;
   }, [dueAmount, isRTL, language]);
 
   const iconPositionStyle = React.useMemo(() => {
-    return { end: -24, bottom: -32 };
+    return { end: -100, bottom: -100 };
   }, []);
 
   const textContainerStyle = React.useMemo(() => {
-    return { paddingEnd: 110 };
+    return { paddingEnd: 150 };
   }, []);
 
-  // Flip the dollar icon image horizontally in English language mode
+  // Flip the house icon image horizontally in Arabic language mode
   const iconFlipStyle = React.useMemo(() => {
-    return language === "en" ? { transform: [{ scaleX: -1 }] } : undefined;
+    return language === "ar" ? { transform: [{ scaleX: -1 }] } : undefined;
   }, [language]);
 
   const handlePress = () => {
@@ -73,7 +71,12 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
         style={textContainerStyle}
       >
         {/* Money Number */}
-        <AppText className="text-4xl font-bold text-white tracking-tight">
+        <AppText 
+          className="text-4xl font-bold text-white tracking-tight"
+          style={{
+            alignSelf: "flex-start",
+          }}
+        >
           {formattedAmount}
         </AppText>
 
@@ -81,7 +84,7 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
         <AppRow
           className="items-center gap-1.5"
           style={{
-            alignSelf: isRTL ? "flex-end" : "flex-start",
+            alignSelf: "flex-start",
           }}
         >
           <AppText className="text-base font-bold text-emerald-100/90 uppercase tracking-wider">
@@ -95,11 +98,11 @@ export function DueBalanceCard({ dueAmount }: DueBalanceCardProps) {
         </AppRow>
       </View>
 
-      {/* 3D Dollar Icon (Positioned absolutely in bottom-end corner and clipped) */}
+      {/* 3D House icon (Positioned absolutely in bottom-end corner and clipped) */}
       <Image
-        source={dollarIcon}
+        source={houseIcon}
         style={[
-          { width: 160, height: 160, position: "absolute" },
+          { width: 320, height: 320, position: "absolute" },
           iconPositionStyle,
           iconFlipStyle,
         ]}
