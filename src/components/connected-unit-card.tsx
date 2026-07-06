@@ -62,6 +62,14 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
           badgeBg: "bg-amber-50 dark:bg-amber-950/30",
           badgeText: "text-amber-600 dark:text-amber-400",
         };
+      default:
+        return {
+          icon: "home" as const,
+          bgClass: "bg-violet-50 dark:bg-violet-950/20",
+          iconColor: "#8B5CF6",
+          badgeBg: "bg-violet-50 dark:bg-violet-950/30",
+          badgeText: "text-violet-600 dark:text-violet-400",
+        };
     }
   };
 
@@ -82,7 +90,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
             {/* Unit Type Badge */}
             <View className={`px-2.5 py-0.5 rounded-full ${config.badgeBg}`}>
               <AppText className={`text-xs font-semibold ${config.badgeText}`}>
-                {t(`connectUnit.${unit.unitType}` as any)}
+                {t(`connectUnit.${unit.unitType}` as any) === `connectUnit.${unit.unitType}` ? unit.unitType : t(`connectUnit.${unit.unitType}` as any)}
               </AppText>
             </View>
 
@@ -108,12 +116,14 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
         </View>
       </AppRow>
 
-      <Pressable
-        onPress={handleDeletePress}
-        className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/30 items-center justify-center border border-rose-100 dark:border-rose-950/40 active:opacity-75"
-      >
-        <AppIcon name="trash" size={18} color={destructiveColor} />
-      </Pressable>
+      {unit.source !== "odoo_unit" && (
+        <Pressable
+          onPress={handleDeletePress}
+          className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/30 items-center justify-center border border-rose-100 dark:border-rose-950/40 active:opacity-75"
+        >
+          <AppIcon name="trash" size={18} color={destructiveColor} />
+        </Pressable>
+      )}
     </AppRow>
   );
 }

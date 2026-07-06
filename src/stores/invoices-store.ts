@@ -1,5 +1,5 @@
 import React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 import type { TranslationKey } from "@/constants/translations";
 
@@ -17,13 +17,21 @@ export type Invoice = {
   paidDate?: string | boolean; // YYYY-MM-DD or false
 };
 
+export type PaginatedInvoices = {
+  items: Invoice[];
+  nextCursor: string | false;
+  hasMore: boolean;
+};
+
 export function useInvoicesStore() {
   const queryClient = useQueryClient();
 
-  const query = useQuery<Invoice[]>({
+  const query = useInfiniteQuery<PaginatedInvoices>({
     queryKey: ["invoices"],
-    queryFn: () => apiRequest("/resident/invoices", { limit: 100 }),
-    enabled: true, // Auto fetch
+    queryFn: ({ pageParam }) =>
+      apiRequest<PaginatedInvoices>("/resident/invoices", { limit: 20, cursor: pageParam }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
   });
 
   const payMutation = useMutation({
@@ -34,12 +42,18 @@ export function useInvoicesStore() {
     }
   });
 
-  const invoices = React.useMemo(() => query.data || [], [query.data]);
-  const loading = query.isLoading || payMutation.isPending;
+  const invoices = React.useMemo(() => query.data?.pages.flatMap((page) => page.items) || [], [query.data]);
+  const loading = query.isLoading || query.isFetchingNextPage || payMutation.isPending;
   const error = query.error?.message || payMutation.error?.message || null;
 
   const fetchInvoices = React.useCallback(async () => {
     await query.refetch();
+  }, [query]);
+
+  const fetchNextPage = React.useCallback(async () => {
+    if (query.hasNextPage && !query.isFetchingNextPage) {
+      await query.fetchNextPage();
+    }
   }, [query]);
 
   const payInvoice = React.useCallback(async (id: string) => {
@@ -59,6 +73,8 @@ export function useInvoicesStore() {
     loading,
     error,
     fetchInvoices,
+    fetchNextPage,
+    hasNextPage: query.hasNextPage,
     payInvoice,
     getTotalDueBalance,
     clearError,

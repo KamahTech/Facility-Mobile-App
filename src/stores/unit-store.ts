@@ -4,9 +4,10 @@ import { apiRequest } from "@/lib/api-client";
 
 export type ConnectedUnit = {
   id: string;
+  source?: "odoo_unit" | "mobile_unit_link";
   buildingNumber: string;
   unitNumber: string;
-  unitType: "residential" | "office" | "retail";
+  unitType: string;
   ownershipType: "owner" | "tenant";
   contactNumber?: string;
 };
@@ -21,7 +22,7 @@ export function useUnitStore() {
   });
 
   const connectMutation = useMutation({
-    mutationFn: (newUnit: Omit<ConnectedUnit, "id">) =>
+    mutationFn: (newUnit: Omit<ConnectedUnit, "id" | "source">) =>
       apiRequest("/resident/units/connect", newUnit),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["connected-units"] });
@@ -30,7 +31,7 @@ export function useUnitStore() {
 
   const disconnectMutation = useMutation({
     mutationFn: (id: string) =>
-      apiRequest(`/resident/units/${id}/disconnect`, {}),
+      apiRequest(`/resident/mobile-unit-links/${id}/disconnect`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["connected-units"] });
     }

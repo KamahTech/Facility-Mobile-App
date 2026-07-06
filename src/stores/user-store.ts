@@ -75,7 +75,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   login: async (email, password, accountType) => {
     set({ loading: true, error: null });
     try {
-      const response = await apiRequest<AuthResponse>("/auth/login", { email, password, accountType });
+      const endpoint = accountType === "worker" ? "/auth/worker/login" : "/auth/login";
+      const response = await apiRequest<AuthResponse>(endpoint, { email, password });
       // The response payload for login:
       // { sessionId, uid, accountType, profile }
       const { sessionId, profile } = response;

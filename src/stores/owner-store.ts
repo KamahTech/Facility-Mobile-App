@@ -1,5 +1,5 @@
 import React from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 
 export type OwnerUnit = {
@@ -89,6 +89,18 @@ export type OwnerInquiryParams = {
   details: string;
 };
 
+export type PaginatedClaims = {
+  items: OwnerClaim[];
+  nextCursor: string | false;
+  hasMore: boolean;
+};
+
+export type PaginatedServices = {
+  items: OwnerServiceCost[];
+  nextCursor: string | false;
+  hasMore: boolean;
+};
+
 export function useOwnerStore(options?: {
   enableOwnerUnits?: boolean;
   enableStatement?: boolean;
@@ -149,43 +161,21 @@ export function useOwnerStore(options?: {
     enabled: enableStatement,
   });
 
-  const claimsQuery = useQuery<OwnerClaim[]>({
+  const claimsQuery = useInfiniteQuery<PaginatedClaims>({
     queryKey: ["owner-claims"],
-    queryFn: async () => {
-      const list = await apiRequest<any[]>("/resident/claims", { limit: 100 });
-      if (!list) return [];
-      return list.map((item) => {
-        const totalInvoiced =
-          item.totalInvoiced !== undefined ? item.totalInvoiced :
-          item.totallinvoices !== undefined ? item.totallinvoices :
-          item.totalinvoices !== undefined ? item.totalinvoices :
-          item.total_invoiced !== undefined ? item.total_invoiced : 0;
-        return {
-          ...item,
-          totalInvoiced,
-        };
-      });
-    },
+    queryFn: ({ pageParam }) =>
+      apiRequest<PaginatedClaims>("/resident/claims", { limit: 20, cursor: pageParam }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableClaims,
   });
 
-  const servicesQuery = useQuery<OwnerServiceCost[]>({
+  const servicesQuery = useInfiniteQuery<PaginatedServices>({
     queryKey: ["owner-services"],
-    queryFn: async () => {
-      const list = await apiRequest<any[]>("/resident/services", { limit: 100 });
-      if (!list) return [];
-      return list.map((item) => {
-        const totalInvoiced =
-          item.totalInvoiced !== undefined ? item.totalInvoiced :
-          item.totallinvoices !== undefined ? item.totallinvoices :
-          item.totalinvoices !== undefined ? item.totalinvoices :
-          item.total_invoiced !== undefined ? item.total_invoiced : 0;
-        return {
-          ...item,
-          totalInvoiced,
-        };
-      });
-    },
+    queryFn: ({ pageParam }) =>
+      apiRequest<PaginatedServices>("/resident/services", { limit: 20, cursor: pageParam }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableServices,
   });
 
@@ -197,13 +187,44 @@ export function useOwnerStore(options?: {
   // Mapped States
   const ownerUnits = ownerUnitsQuery.data || [];
   const statement = statementQuery.data || null;
-  const claims = claimsQuery.data || [];
-  const services = servicesQuery.data || [];
+  
+  const claims = React.useMemo(() => {
+    const list = claimsQuery.data?.pages.flatMap((page) => page.items) || [];
+    return list.map((item: any) => {
+      const totalInvoiced =
+        item.totalInvoiced !== undefined ? item.totalInvoiced :
+        item.totallinvoices !== undefined ? item.totallinvoices :
+        item.totalinvoices !== undefined ? item.totalinvoices :
+        item.total_invoiced !== undefined ? item.total_invoiced : 0;
+      return {
+        ...item,
+        totalInvoiced,
+      } as OwnerClaim;
+    });
+  }, [claimsQuery.data]);
+
+  const services = React.useMemo(() => {
+    const list = servicesQuery.data?.pages.flatMap((page) => page.items) || [];
+    return list.map((item: any) => {
+      const totalInvoiced =
+        item.totalInvoiced !== undefined ? item.totalInvoiced :
+        item.totallinvoices !== undefined ? item.totallinvoices :
+        item.totalinvoices !== undefined ? item.totalinvoices :
+        item.total_invoiced !== undefined ? item.total_invoiced : 0;
+      return {
+        ...item,
+        totalInvoiced,
+      } as OwnerServiceCost;
+    });
+  }, [servicesQuery.data]);
+
   const loading =
     ownerUnitsQuery.isLoading ||
     statementQuery.isLoading ||
     claimsQuery.isLoading ||
+    claimsQuery.isFetchingNextPage ||
     servicesQuery.isLoading ||
+    servicesQuery.isFetchingNextPage ||
     submitInquiryMutation.isPending;
 
   const error =
@@ -260,6 +281,12 @@ export function useOwnerStore(options?: {
     await claimsQuery.refetch();
   }, [claimsQuery]);
 
+  const fetchNextClaims = React.useCallback(async () => {
+    if (claimsQuery.hasNextPage && !claimsQuery.isFetchingNextPage) {
+      await claimsQuery.fetchNextPage();
+    }
+  }, [claimsQuery]);
+
   const fetchClaimDetails = React.useCallback(async (claimId: string) => {
     const details = await apiRequest<any>(`/resident/claims/${claimId}`, {});
     if (details) {
@@ -297,6 +324,12 @@ export function useOwnerStore(options?: {
     await servicesQuery.refetch();
   }, [servicesQuery]);
 
+  const fetchNextServices = React.useCallback(async () => {
+    if (servicesQuery.hasNextPage && !servicesQuery.isFetchingNextPage) {
+      await servicesQuery.fetchNextPage();
+    }
+  }, [servicesQuery]);
+
   const submitInquiry = React.useCallback(async (params: OwnerInquiryParams) => {
     return await submitInquiryMutation.mutateAsync(params);
   }, [submitInquiryMutation]);
@@ -316,8 +349,12 @@ export function useOwnerStore(options?: {
     fetchFinancialSummary,
     fetchStatement,
     fetchClaims,
+    fetchNextClaims,
+    hasNextClaims: claimsQuery.hasNextPage,
     fetchClaimDetails,
     fetchServices,
+    fetchNextServices,
+    hasNextServices: servicesQuery.hasNextPage,
     submitInquiry,
     clearError,
   };

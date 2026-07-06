@@ -28,7 +28,7 @@ export default function WorkerHomeScreen() {
   const isTransitionFinished = useScreenTransition();
   const mutedColor = useThemeToken("--muted-foreground");
 
-  const { requests, fetchWorkerTasks, loading, error, clearError } = useRequestsStore({ enableWorkerTasks: true });
+  const { requests, fetchWorkerTasks, fetchNextWorkerTasks, hasNextWorkerTasks, loading, error, clearError } = useRequestsStore({ enableWorkerTasks: true });
   const { profile, logout } = useUserStore();
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
 
@@ -230,6 +230,12 @@ export default function WorkerHomeScreen() {
                   tintColor="#4F46E5"
                 />
               }
+              onEndReached={() => {
+                if (hasNextWorkerTasks) {
+                  fetchNextWorkerTasks();
+                }
+              }}
+              onEndReachedThreshold={0.5}
               contentContainerStyle={{
                 paddingBottom: insets.bottom + 40,
               }}

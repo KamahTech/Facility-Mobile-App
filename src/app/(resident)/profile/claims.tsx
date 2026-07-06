@@ -26,7 +26,7 @@ export default function ClaimsScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const { formatDate, formatCurrency } = useFormatters();
-  const { claims, currentClaim, fetchClaims, fetchClaimDetails, submitInquiry, loading, error, clearError } = useOwnerStore({ enableClaims: true });
+  const { claims, currentClaim, fetchClaims, fetchNextClaims, hasNextClaims, fetchClaimDetails, submitInquiry, loading, error, clearError } = useOwnerStore({ enableClaims: true });
   const isTransitionFinished = useScreenTransition();
   const inquirySchema = React.useMemo(
     () =>
@@ -322,7 +322,19 @@ export default function ClaimsScreen() {
               <AppText className="text-sm text-muted-foreground">{t("claims.noClaims")}</AppText>
             </View>
           ) : (
-            claims.map(renderClaimCard)
+            <>
+              {claims.map(renderClaimCard)}
+              {hasNextClaims && (
+                <View className="py-2 items-center">
+                  <Pressable
+                    onPress={() => fetchNextClaims()}
+                    className="px-4 py-2.5 bg-secondary rounded-xl border border-border/80 active:opacity-75"
+                  >
+                    <AppText className="text-xs font-semibold text-primary">{t("common.loadMore") || "Load More"}</AppText>
+                  </Pressable>
+                </View>
+              )}
+            </>
           )}
         </ScrollView>
       )}

@@ -1,7 +1,8 @@
 import React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 import type { EncodedImage } from "@/lib/media";
+import { useUnitStore } from "@/stores/unit-store";
 
 export type RequestStatus = "pending" | "in_progress" | "completed" | "cancelled";
 
@@ -37,32 +38,60 @@ export type InspectTaskParams = {
   photos?: EncodedImage[];
 };
 
+export type PaginatedRequests = {
+  items: MaintenanceRequest[];
+  nextCursor: string | false;
+  hasMore: boolean;
+};
+
 export function useRequestsStore(options?: {
   enableResidentRequests?: boolean;
   enableWorkerTasks?: boolean;
 }) {
   const queryClient = useQueryClient();
+  const { units } = useUnitStore();
 
   const enableResidentRequests = options?.enableResidentRequests ?? false;
   const enableWorkerTasks = options?.enableWorkerTasks ?? false;
 
   // Queries
-  const residentRequestsQuery = useQuery<MaintenanceRequest[]>({
+  const residentRequestsQuery = useInfiniteQuery<PaginatedRequests>({
     queryKey: ["resident-requests"],
-    queryFn: () => apiRequest("/resident/tickets", { limit: 100 }),
+    queryFn: ({ pageParam }) =>
+      apiRequest<PaginatedRequests>("/resident/tickets", { limit: 20, cursor: pageParam }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableResidentRequests,
   });
 
-  const workerTasksQuery = useQuery<MaintenanceRequest[]>({
+  const workerTasksQuery = useInfiniteQuery<PaginatedRequests>({
     queryKey: ["worker-tasks"],
-    queryFn: () => apiRequest("/worker/tasks", { limit: 100 }),
+    queryFn: ({ pageParam }) =>
+      apiRequest<PaginatedRequests>("/worker/tasks", { limit: 20, cursor: pageParam }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableWorkerTasks,
   });
 
   // Mutations
   const createRequestMutation = useMutation({
-    mutationFn: (params: { category: string; description: string; unitId: string }) =>
-      apiRequest("/resident/tickets/create", params),
+    mutationFn: (params: { category: string; description: string; unitId: string; source?: string }) => {
+      const unitIdNum = parseInt(params.unitId, 10);
+      const isMobile = params.source === "mobile_unit_link";
+      
+      const payload: Record<string, any> = {
+        category: params.category,
+        description: params.description,
+      };
+      
+      if (isMobile) {
+        payload.mobileUnitLinkId = unitIdNum;
+      } else {
+        payload.unitId = unitIdNum;
+      }
+      
+      return apiRequest("/resident/tickets/create", payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
     }
@@ -76,12 +105,17 @@ export function useRequestsStore(options?: {
   });
 
   const addCommentMutation = useMutation({
-    mutationFn: (params: { requestId: string; content: string; image?: RequestCommentImage; imageName?: string | false }) =>
-      apiRequest(`/tickets/${params.requestId}/comments`, {
+    mutationFn: (params: { requestId: string; content: string; image?: RequestCommentImage; imageName?: string | false }) => {
+      let normalizedImage = params.image;
+      if (typeof normalizedImage === "string" && !normalizedImage.startsWith("data:")) {
+        normalizedImage = `data:image/jpeg;base64,${normalizedImage}`;
+      }
+      return apiRequest(`/tickets/${params.requestId}/comments`, {
         content: params.content,
-        image: params.image,
+        image: normalizedImage,
         imageName: params.imageName,
-      }),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
       queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
@@ -96,8 +130,22 @@ export function useRequestsStore(options?: {
   });
 
   const inspectTaskMutation = useMutation({
-    mutationFn: (params: { id: string; inspectParams: InspectTaskParams }) =>
-      apiRequest(`/worker/tasks/${params.id}/inspect`, params.inspectParams),
+    mutationFn: (params: { id: string; inspectParams: InspectTaskParams }) => {
+      const mappedPhotos = params.inspectParams.photos?.map((photo) => {
+        const hasDataUrlHeader = photo.data.startsWith("data:");
+        return {
+          ...photo,
+          data: hasDataUrlHeader ? photo.data : `data:${photo.mimetype};base64,${photo.data}`,
+        };
+      });
+      
+      const inspectParams = {
+        ...params.inspectParams,
+        photos: mappedPhotos,
+      };
+      
+      return apiRequest(`/worker/tasks/${params.id}/inspect`, inspectParams);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
     }
@@ -118,11 +166,21 @@ export function useRequestsStore(options?: {
   });
 
   // State mapping (returns whichever has active queries or data)
-  const requests = residentRequestsQuery.data || workerTasksQuery.data || [];
+  const requests = React.useMemo(() => {
+    if (enableResidentRequests) {
+      return residentRequestsQuery.data?.pages.flatMap((page) => page.items) || [];
+    }
+    if (enableWorkerTasks) {
+      return workerTasksQuery.data?.pages.flatMap((page) => page.items) || [];
+    }
+    return [];
+  }, [enableResidentRequests, enableWorkerTasks, residentRequestsQuery.data, workerTasksQuery.data]);
 
   const loading =
     residentRequestsQuery.isLoading ||
+    residentRequestsQuery.isFetchingNextPage ||
     workerTasksQuery.isLoading ||
+    workerTasksQuery.isFetchingNextPage ||
     createRequestMutation.isPending ||
     cancelRequestMutation.isPending ||
     addCommentMutation.isPending ||
@@ -148,13 +206,27 @@ export function useRequestsStore(options?: {
     await residentRequestsQuery.refetch();
   }, [residentRequestsQuery]);
 
+  const fetchNextResidentRequests = React.useCallback(async () => {
+    if (residentRequestsQuery.hasNextPage && !residentRequestsQuery.isFetchingNextPage) {
+      await residentRequestsQuery.fetchNextPage();
+    }
+  }, [residentRequestsQuery]);
+
   const fetchWorkerTasks = React.useCallback(async () => {
     await workerTasksQuery.refetch();
   }, [workerTasksQuery]);
 
+  const fetchNextWorkerTasks = React.useCallback(async () => {
+    if (workerTasksQuery.hasNextPage && !workerTasksQuery.isFetchingNextPage) {
+      await workerTasksQuery.fetchNextPage();
+    }
+  }, [workerTasksQuery]);
+
   const createRequest = React.useCallback(async (category: string, description: string, unitId: string) => {
-    return await createRequestMutation.mutateAsync({ category, description, unitId });
-  }, [createRequestMutation]);
+    const unit = units.find((u) => u.id === unitId);
+    const source = unit?.source;
+    return await createRequestMutation.mutateAsync({ category, description, unitId, source });
+  }, [createRequestMutation, units]);
 
   const cancelRequest = React.useCallback(async (id: string) => {
     await cancelRequestMutation.mutateAsync(id);
@@ -216,7 +288,11 @@ export function useRequestsStore(options?: {
     loading,
     error,
     fetchResidentRequests,
+    fetchNextResidentRequests,
+    hasNextResidentRequests: residentRequestsQuery.hasNextPage,
     fetchWorkerTasks,
+    fetchNextWorkerTasks,
+    hasNextWorkerTasks: workerTasksQuery.hasNextPage,
     createRequest,
     cancelRequest,
     addRequestComment,

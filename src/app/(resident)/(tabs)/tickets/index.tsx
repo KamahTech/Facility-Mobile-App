@@ -24,7 +24,7 @@ export default function ResidentTicketsScreen() {
   const { resolvedTheme } = useTheme();
   const mutedColor = useThemeToken("--muted-foreground");
   const background = useThemeToken("--background");
-  const { requests, fetchResidentRequests, loading, error, clearError } = useRequestsStore({ enableResidentRequests: true });
+  const { requests, fetchResidentRequests, fetchNextResidentRequests, hasNextResidentRequests, loading, error, clearError } = useRequestsStore({ enableResidentRequests: true });
   const isTransitionFinished = useScreenTransition();
   const navigation = useNavigation();
   const { headerTranslateY, scrollHandler, resetScrollAnimation } = useScrollAnimation();
@@ -248,6 +248,12 @@ export default function ResidentTicketsScreen() {
                   progressViewOffset={insets.top + 138}
                 />
               }
+              onEndReached={() => {
+                if (hasNextResidentRequests) {
+                  fetchNextResidentRequests();
+                }
+              }}
+              onEndReachedThreshold={0.5}
               contentContainerStyle={{
                 paddingTop: insets.top + 138,
                 paddingBottom: insets.bottom + 140,

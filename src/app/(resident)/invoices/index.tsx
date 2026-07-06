@@ -18,7 +18,7 @@ export default function ResidentInvoicesScreen() {
   const { t } = useI18n();
   const { formatCurrency } = useFormatters();
   const insets = useSafeAreaInsets();
-  const { invoices, fetchInvoices, payInvoice, loading, error, clearError } = useInvoicesStore();
+  const { invoices, fetchInvoices, fetchNextPage, hasNextPage, payInvoice, loading, error, clearError } = useInvoicesStore();
   const isTransitionFinished = useScreenTransition();
 
   const [activeFilter, setActiveFilter] = React.useState<"all" | "unpaid" | "paid">("all");
@@ -195,6 +195,12 @@ export default function ResidentInvoicesScreen() {
                   tintColor="#4F46E5"
                 />
               }
+              onEndReached={() => {
+                if (hasNextPage) {
+                  fetchNextPage();
+                }
+              }}
+              onEndReachedThreshold={0.5}
               contentContainerStyle={{
                 paddingTop: 16,
                 paddingBottom: insets.bottom + 40,

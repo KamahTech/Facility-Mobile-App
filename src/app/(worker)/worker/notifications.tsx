@@ -18,6 +18,8 @@ export default function WorkerNotificationsScreen() {
   const {
     notifications,
     fetchNotifications,
+    fetchNextNotifications,
+    hasNextNotifications,
     markNotificationRead,
     markAllNotificationsRead,
     loading,
@@ -198,6 +200,12 @@ export default function WorkerNotificationsScreen() {
                   tintColor="#4F46E5"
                 />
               }
+              onEndReached={() => {
+                if (hasNextNotifications) {
+                  fetchNextNotifications();
+                }
+              }}
+              onEndReachedThreshold={0.5}
               contentContainerStyle={{
                 paddingTop: 16,
                 paddingBottom: insets.bottom + 40,

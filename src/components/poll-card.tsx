@@ -16,7 +16,7 @@ type PollCardProps = {
 export function PollCard({ item, onPressHeader }: PollCardProps) {
   const { direction, t } = useI18n();
   const { votePoll } = useCommunityStore();
-  const [votingOptionId, setVotingOptionId] = React.useState<string | null>(null);
+  const [votingOptionId, setVotingOptionId] = React.useState<string | number | null>(null);
 
   const votedOptionId = item.votedOptionId || null;
   const votesData = item.options || [];
@@ -36,9 +36,9 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
     return translated === key ? item.date : translated;
   })();
 
-  const handleVote = async (optionId: string) => {
+  const handleVote = async (optionId: string | number) => {
     // If clicking same option, do nothing
-    if (votedOptionId === optionId) return;
+    if (votedOptionId !== null && String(votedOptionId) === String(optionId)) return;
 
     setVotingOptionId(optionId);
     try {
@@ -93,8 +93,8 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
       {/* Options List */}
       <View className="flex-col gap-2 w-full mt-1">
         {votesData.map((option) => {
-          const isVotedOption = votedOptionId === option.id;
-          const isVotingForThis = votingOptionId === option.id;
+          const isVotedOption = votedOptionId !== null && String(votedOptionId) === String(option.id);
+          const isVotingForThis = votingOptionId !== null && String(votingOptionId) === String(option.id);
           const percentage =
             totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
 

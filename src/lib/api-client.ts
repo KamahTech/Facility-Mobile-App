@@ -68,7 +68,19 @@ export async function apiRequest<T = ApiResponse>(route: string, params: ApiPara
     headers["Accept-Language"] = currentLanguage === "ar" ? "ar-EG,ar;q=0.9,en;q=0.8" : "en-US,en;q=0.9";
   }
 
-  const requestParams = currentLanguage && params.lang === undefined ? { ...params, lang: currentLanguage } : params;
+  const getBackendLang = (lang: unknown) => {
+    if (lang === "ar" || lang === "ar_001") return "ar_001";
+    if (lang === "en" || lang === "en_US") return "en_US";
+    return lang;
+  };
+
+  const backendLang = getBackendLang(currentLanguage);
+  const requestParams = { ...params } as ApiParams;
+  if (requestParams.lang !== undefined) {
+    requestParams.lang = getBackendLang(requestParams.lang);
+  } else if (backendLang) {
+    requestParams.lang = backendLang;
+  }
 
   const payload = {
     jsonrpc: "2.0",
@@ -77,7 +89,11 @@ export async function apiRequest<T = ApiResponse>(route: string, params: ApiPara
     id: Date.now(),
   };
 
-  const isAuthRoute = route === "/auth/login" || route === "/auth/logout" || route.startsWith("/auth/");
+  const isAuthRoute =
+    route === "/auth/login" ||
+    route === "/auth/worker/login" ||
+    route === "/auth/logout" ||
+    route.startsWith("/auth/");
 
   try {
     const response = await axios.post(url, payload, { headers, timeout: 15000 });

@@ -18,6 +18,8 @@ export default function NotificationsScreen() {
   const {
     notifications,
     fetchNotifications,
+    fetchNextNotifications,
+    hasNextNotifications,
     markNotificationRead,
     markAllNotificationsRead,
     loading,
@@ -204,6 +206,12 @@ export default function NotificationsScreen() {
                   tintColor="#4F46E5"
                 />
               }
+              onEndReached={() => {
+                if (hasNextNotifications) {
+                  fetchNextNotifications();
+                }
+              }}
+              onEndReachedThreshold={0.5}
               contentContainerStyle={{
                 paddingTop: 16,
                 paddingBottom: insets.bottom + 40,

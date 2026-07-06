@@ -21,7 +21,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 export default function AllCommunityUpdatesScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const { updates, loading } = useCommunityStore({ enableUpdates: true });
+  const { updates, loading, fetchNextUpdates, hasNextUpdates } = useCommunityStore({ enableUpdates: true });
   const isTransitionFinished = useScreenTransition();
 
   const handleBack = () => {
@@ -59,6 +59,12 @@ export default function AllCommunityUpdatesScreen() {
             estimatedItemSize={150}
             recycleItems={true}
             showsVerticalScrollIndicator={false}
+            onEndReached={() => {
+              if (hasNextUpdates) {
+                fetchNextUpdates();
+              }
+            }}
+            onEndReachedThreshold={0.5}
             contentContainerStyle={{
               paddingTop: 16,
               paddingBottom: insets.bottom + 40,

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
+import { View, ScrollView, RefreshControl, ActivityIndicator, Pressable } from "react-native";
 import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -16,7 +16,7 @@ export default function ServicesScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const { formatCurrency } = useFormatters();
-  const { services, fetchServices, loading, error, clearError } = useOwnerStore({ enableServices: true });
+  const { services, fetchServices, fetchNextServices, hasNextServices, loading, error, clearError } = useOwnerStore({ enableServices: true });
   const isTransitionFinished = useScreenTransition();
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -138,7 +138,19 @@ export default function ServicesScreen() {
               <AppText className="text-sm text-muted-foreground">{t("ownerUnits.noUnits")}</AppText>
             </View>
           ) : (
-            services.map(renderServiceCard)
+            <>
+              {services.map(renderServiceCard)}
+              {hasNextServices && (
+                <View className="py-2 items-center">
+                  <Pressable
+                    onPress={() => fetchNextServices()}
+                    className="px-4 py-2.5 bg-secondary rounded-xl border border-border/80 active:opacity-75"
+                  >
+                    <AppText className="text-xs font-semibold text-primary">{t("common.loadMore") || "Load More"}</AppText>
+                  </Pressable>
+                </View>
+              )}
+            </>
           )}
         </ScrollView>
       )}
