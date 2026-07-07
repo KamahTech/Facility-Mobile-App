@@ -74,6 +74,7 @@ export default function ResidentHomeDetailsScreen() {
                 themeColor={cardThemeColor}
                 title={t(item.titleKey)}
                 onPress={() => handlePress(item.route)}
+                showArrow={true}
               />
             </View>
           );

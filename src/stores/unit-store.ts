@@ -37,6 +37,80 @@ export type ConnectedUnitsSummary = {
   mobileUnitLinkCount: number;
 };
 
+export type UnitLookupProject = {
+  id: string;
+  name: string;
+};
+
+export type UnitLookupBuilding = {
+  id: string;
+  number: string;
+  name: string;
+  projectId: string;
+  phaseId?: string;
+  phaseName?: string;
+};
+
+export type UnitLookupFloor = {
+  id: string;
+  name: string;
+  subSeq?: string;
+  buildingId: string;
+  projectId?: string;
+  phaseId?: string;
+};
+
+export type UnitLookupUnit = {
+  id: string;
+  unitId: string;
+  number: string;
+  name: string;
+  unitType: string;
+  projectId: string;
+  projectName: string;
+  phaseId?: string;
+  phaseName?: string;
+  buildingId: string;
+  buildingNumber: string;
+  buildingName?: string;
+  floorId?: string;
+  floorName?: string;
+};
+
+export function useProjectsQuery() {
+  return useQuery<UnitLookupProject[]>({
+    queryKey: ["unit-projects"],
+    queryFn: () => apiRequest<UnitLookupProject[]>("/resident/projects", {}),
+  });
+}
+
+export function useBuildingsQuery(projectId?: string) {
+  return useQuery<UnitLookupBuilding[]>({
+    queryKey: ["unit-buildings", projectId],
+    queryFn: () => apiRequest<UnitLookupBuilding[]>(`/resident/projects/${projectId}/buildings`, {}),
+    enabled: !!projectId,
+  });
+}
+
+export function useFloorsQuery(buildingId?: string) {
+  return useQuery<UnitLookupFloor[]>({
+    queryKey: ["unit-floors", buildingId],
+    queryFn: () => apiRequest<UnitLookupFloor[]>(`/resident/buildings/${buildingId}/floors`, {}),
+    enabled: !!buildingId,
+  });
+}
+
+export function useLookupUnitsQuery(buildingId?: string, floorId?: string) {
+  return useQuery<UnitLookupUnit[]>({
+    queryKey: ["unit-lookup-units", buildingId, floorId],
+    queryFn: () => {
+      const payload = floorId ? { floorId: isNaN(Number(floorId)) ? floorId : Number(floorId) } : {};
+      return apiRequest<UnitLookupUnit[]>(`/resident/buildings/${buildingId}/units`, payload);
+    },
+    enabled: !!buildingId,
+  });
+}
+
 export function useUnitStore(options?: { enableUnits?: boolean; enableSummary?: boolean }) {
   const queryClient = useQueryClient();
   const enableUnits = options?.enableUnits ?? true;
@@ -60,6 +134,8 @@ export function useUnitStore(options?: { enableUnits?: boolean; enableSummary?: 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["connected-units"] });
       queryClient.invalidateQueries({ queryKey: ["connected-units-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-units"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-statement"] });
     }
   });
 
@@ -69,6 +145,8 @@ export function useUnitStore(options?: { enableUnits?: boolean; enableSummary?: 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["connected-units"] });
       queryClient.invalidateQueries({ queryKey: ["connected-units-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-units"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-statement"] });
     }
   });
 

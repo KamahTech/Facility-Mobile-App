@@ -1,6 +1,6 @@
 import React from "react";
 import { View, RefreshControl, ActivityIndicator } from "react-native";
-import { Stack, router } from "expo-router";
+import { Stack, router, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegendList } from "@legendapp/list/react-native";
 
@@ -29,6 +29,7 @@ function InlineErrorCard({ message }: InlineErrorCardProps) {
 export default function OwnerUnitsScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const {
     ownerUnits,
     statement,
@@ -55,8 +56,11 @@ export default function OwnerUnitsScreen() {
   }, [fetchOwnerUnits, fetchStatement, clearError]);
 
   React.useEffect(() => {
-    clearError();
-  }, [clearError]);
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadData();
+    });
+    return unsubscribe;
+  }, [navigation, loadData]);
 
   const handleRefresh = async () => {
     setRefreshing(true);

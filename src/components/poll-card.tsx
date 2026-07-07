@@ -103,7 +103,7 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
               key={option.id}
               disabled={!!votingOptionId || isClosed}
               onPress={() => handleVote(option.id)}
-              className="w-full h-12 rounded-xl bg-muted/30 overflow-hidden relative justify-center px-4 animate-fade-in"
+              className="w-full h-12 rounded-xl border border-border bg-muted/30 overflow-hidden relative justify-center px-4 animate-fade-in"
             >
               {/* Voted Progress Bar fill */}
               {showResults && (

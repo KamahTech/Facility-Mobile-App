@@ -4,6 +4,7 @@ import { Pressable, View } from "react-native";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
+import { useI18n } from "@/hooks/use-i18n";
 import type { QuickActionIconName } from "@/constants/quick-actions";
 
 type QuickActionCardProps = {
@@ -11,6 +12,7 @@ type QuickActionCardProps = {
   title: string;
   themeColor: string;
   onPress: () => void;
+  showArrow?: boolean;
 };
 
 export function QuickActionCard({
@@ -18,7 +20,10 @@ export function QuickActionCard({
   title,
   themeColor,
   onPress,
+  showArrow = false,
 }: QuickActionCardProps) {
+  const { isRTL } = useI18n();
+
   return (
     <Pressable
       accessibilityLabel={title}
@@ -46,7 +51,16 @@ export function QuickActionCard({
         >
           {title}
         </AppText>
+
+        {showArrow && (
+          <AppIcon
+            name={isRTL ? "chevronLeft" : "chevronRight"}
+            size={18}
+            colorToken="--muted-foreground"
+          />
+        )}
       </AppRow>
     </Pressable>
   );
 }
+

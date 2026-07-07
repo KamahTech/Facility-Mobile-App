@@ -3,7 +3,7 @@ import { Pressable, View, Alert, ActivityIndicator, RefreshControl } from "react
 import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegendList } from "@legendapp/list/react-native";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -18,12 +18,22 @@ import { FullScreenLoader } from "@/components/full-screen-loader";
 import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { useI18n } from "@/hooks/use-i18n";
 import { useTransitionDelayedLoading } from "@/hooks/use-screen-transition";
-import { useUnitStore } from "@/stores/unit-store";
+import {
+  useUnitStore,
+  useProjectsQuery,
+  useBuildingsQuery,
+  useFloorsQuery,
+  useLookupUnitsQuery,
+} from "@/stores/unit-store";
 import { useThemeToken } from "@/hooks/use-theme-token";
+import { AppSelectField } from "@/components/app-select-field";
+import { GenericSelectBottomSheet } from "@/components/generic-select-bottom-sheet";
 
 type ConnectUnitFormValues = {
-  buildingNumber: string;
-  unitNumber: string;
+  projectId: string;
+  buildingId: string;
+  floorId?: string;
+  unitId: string;
   unitType: "residential" | "office" | "retail";
   ownershipType: "owner" | "tenant";
   contactNumber?: string;
@@ -34,11 +44,14 @@ export default function ConnectUnitScreen() {
   const insets = useSafeAreaInsets();
   const { units, fetchUnits, connectUnit, disconnectUnit, loading, error, clearError } = useUnitStore();
   const mutedForeground = useThemeToken("--muted-foreground");
+
   const connectUnitSchema = React.useMemo(
     () =>
       z.object({
-        buildingNumber: z.string().min(1, t("validation.required")),
-        unitNumber: z.string().min(1, t("validation.required")),
+        projectId: z.string().min(1, t("validation.required")),
+        buildingId: z.string().min(1, t("validation.required")),
+        floorId: z.string().optional(),
+        unitId: z.string().min(1, t("validation.required")),
         unitType: z.enum(["residential", "office", "retail"]),
         ownershipType: z.enum(["owner", "tenant"]),
         contactNumber: z.string().optional(),
@@ -51,16 +64,65 @@ export default function ConnectUnitScreen() {
   const [refreshing, setRefreshing] = React.useState(false);
   const showInitialUnitsLoader = useTransitionDelayedLoading(loading && units.length === 0);
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<ConnectUnitFormValues>({
+  const [isProjectSheetPresented, setIsProjectSheetPresented] = React.useState(false);
+  const [isBuildingSheetPresented, setIsBuildingSheetPresented] = React.useState(false);
+  const [isFloorSheetPresented, setIsFloorSheetPresented] = React.useState(false);
+  const [isUnitSheetPresented, setIsUnitSheetPresented] = React.useState(false);
+
+  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ConnectUnitFormValues>({
     resolver: zodResolver(connectUnitSchema),
     defaultValues: {
-      buildingNumber: "",
-      unitNumber: "",
+      projectId: "",
+      buildingId: "",
+      floorId: "",
+      unitId: "",
       unitType: "residential",
       ownershipType: "owner",
       contactNumber: "",
     },
   });
+
+  const selectedProjectId = useWatch({ control, name: "projectId" });
+  const selectedBuildingId = useWatch({ control, name: "buildingId" });
+  const selectedFloorId = useWatch({ control, name: "floorId" });
+  const selectedUnitId = useWatch({ control, name: "unitId" });
+
+  const projectsQuery = useProjectsQuery();
+  const buildingsQuery = useBuildingsQuery(selectedProjectId);
+  const floorsQuery = useFloorsQuery(selectedBuildingId);
+  const unitsLookupQuery = useLookupUnitsQuery(selectedBuildingId, selectedFloorId);
+
+  const selectedProject = projectsQuery.data?.find(p => p.id === selectedProjectId);
+  const selectedBuilding = buildingsQuery.data?.find(b => b.id === selectedBuildingId);
+  const selectedFloor = floorsQuery.data?.find(f => f.id === selectedFloorId);
+  const selectedUnit = unitsLookupQuery.data?.find(u => u.unitId === selectedUnitId || u.id === selectedUnitId);
+
+  const handleSelectProject = (projectId: string) => {
+    setValue("projectId", projectId);
+    setValue("buildingId", "");
+    setValue("floorId", "");
+    setValue("unitId", "");
+  };
+
+  const handleSelectBuilding = (buildingId: string) => {
+    setValue("buildingId", buildingId);
+    setValue("floorId", "");
+    setValue("unitId", "");
+  };
+
+  const handleSelectFloor = (floorId: string) => {
+    setValue("floorId", floorId);
+    setValue("unitId", "");
+  };
+
+  const handleClearFloor = () => {
+    setValue("floorId", "");
+    setValue("unitId", "");
+  };
+
+  const handleSelectUnit = (unitId: string) => {
+    setValue("unitId", unitId);
+  };
 
   const loadUnits = React.useCallback(async () => {
     clearError();
@@ -82,8 +144,7 @@ export default function ConnectUnitScreen() {
     setActionLoading(true);
     try {
       await connectUnit({
-        buildingNumber: data.buildingNumber.trim(),
-        unitNumber: data.unitNumber.trim(),
+        unitId: data.unitId,
         unitType: data.unitType,
         ownershipType: data.ownershipType,
         contactNumber: data.contactNumber?.trim() || undefined,
@@ -190,30 +251,96 @@ export default function ConnectUnitScreen() {
             <View className="flex-col gap-6">
               <Controller
                 control={control}
-                name="buildingNumber"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <AppInput
-                    label={t("connectUnit.buildingNumber")}
-                    placeholder={t("connectUnit.buildingNumberPlaceholder")}
-                    value={value}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    error={errors.buildingNumber?.message}
+                name="projectId"
+                render={() => (
+                  <AppSelectField
+                    label={t("connectUnit.project")}
+                    placeholder={projectsQuery.isLoading ? "Loading..." : t("connectUnit.projectPlaceholder")}
+                    value={selectedProject?.name}
+                    error={errors.projectId?.message}
+                    onPress={() => setIsProjectSheetPresented(true)}
+                    disabled={projectsQuery.isLoading}
                   />
                 )}
               />
 
               <Controller
                 control={control}
-                name="unitNumber"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <AppInput
-                    label={t("connectUnit.unitNumber")}
-                    placeholder={t("connectUnit.unitNumberPlaceholder")}
-                    value={value}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    error={errors.unitNumber?.message}
+                name="buildingId"
+                render={() => (
+                  <AppSelectField
+                    label={t("connectUnit.building")}
+                    placeholder={
+                      !selectedProjectId
+                        ? t("connectUnit.projectPlaceholder")
+                        : buildingsQuery.isFetching
+                        ? "Loading..."
+                        : t("connectUnit.buildingPlaceholder")
+                    }
+                    value={selectedBuilding ? (selectedBuilding.name || selectedBuilding.number) : ""}
+                    error={errors.buildingId?.message}
+                    onPress={() => {
+                      if (selectedProjectId) {
+                        setIsBuildingSheetPresented(true);
+                      } else {
+                        Alert.alert(t("common.error"), t("connectUnit.projectPlaceholder"));
+                      }
+                    }}
+                    disabled={!selectedProjectId || buildingsQuery.isFetching}
+                  />
+                )}
+              />
+
+              <Controller
+                control={control}
+                name="floorId"
+                render={() => (
+                  <AppSelectField
+                    label={t("connectUnit.floor")}
+                    placeholder={
+                      !selectedBuildingId
+                        ? t("connectUnit.buildingPlaceholder")
+                        : floorsQuery.isFetching
+                        ? "Loading..."
+                        : t("connectUnit.floorPlaceholder")
+                    }
+                    value={selectedFloor?.name || ""}
+                    error={errors.floorId?.message}
+                    onPress={() => {
+                      if (selectedBuildingId) {
+                        setIsFloorSheetPresented(true);
+                      } else {
+                        Alert.alert(t("common.error"), t("connectUnit.buildingPlaceholder"));
+                      }
+                    }}
+                    disabled={!selectedBuildingId || floorsQuery.isFetching}
+                  />
+                )}
+              />
+
+              <Controller
+                control={control}
+                name="unitId"
+                render={() => (
+                  <AppSelectField
+                    label={t("connectUnit.unit")}
+                    placeholder={
+                      !selectedBuildingId
+                        ? t("connectUnit.buildingPlaceholder")
+                        : unitsLookupQuery.isFetching
+                        ? "Loading..."
+                        : t("connectUnit.unitPlaceholder")
+                    }
+                    value={selectedUnit ? (selectedUnit.name || selectedUnit.number) : ""}
+                    error={errors.unitId?.message}
+                    onPress={() => {
+                      if (selectedBuildingId) {
+                        setIsUnitSheetPresented(true);
+                      } else {
+                        Alert.alert(t("common.error"), t("connectUnit.buildingPlaceholder"));
+                      }
+                    }}
+                    disabled={!selectedBuildingId || unitsLookupQuery.isFetching}
                   />
                 )}
               />
@@ -332,6 +459,54 @@ export default function ConnectUnitScreen() {
           </View>
         )}
       </View>
+
+      <GenericSelectBottomSheet
+        isPresented={isProjectSheetPresented}
+        title={t("connectUnit.project")}
+        items={projectsQuery.data || []}
+        selectedId={selectedProjectId}
+        onDismiss={() => setIsProjectSheetPresented(false)}
+        onSelect={(item) => handleSelectProject(item.id)}
+        keyExtractor={(item) => item.id}
+        labelExtractor={(item) => item.name}
+      />
+
+      <GenericSelectBottomSheet
+        isPresented={isBuildingSheetPresented}
+        title={t("connectUnit.building")}
+        items={buildingsQuery.data || []}
+        selectedId={selectedBuildingId}
+        onDismiss={() => setIsBuildingSheetPresented(false)}
+        onSelect={(item) => handleSelectBuilding(item.id)}
+        keyExtractor={(item) => item.id}
+        labelExtractor={(item) => item.name || item.number}
+      />
+
+      <GenericSelectBottomSheet
+        isPresented={isFloorSheetPresented}
+        title={t("connectUnit.floor")}
+        items={floorsQuery.data || []}
+        selectedId={selectedFloorId}
+        onDismiss={() => setIsFloorSheetPresented(false)}
+        onSelect={(item) => handleSelectFloor(item.id)}
+        keyExtractor={(item) => item.id}
+        labelExtractor={(item) => item.name}
+        showClearOption={true}
+        onClear={handleClearFloor}
+        clearLabel={t("connectUnit.clearFilters")}
+      />
+
+      <GenericSelectBottomSheet
+        isPresented={isUnitSheetPresented}
+        title={t("connectUnit.unit")}
+        items={unitsLookupQuery.data || []}
+        selectedId={selectedUnitId}
+        onDismiss={() => setIsUnitSheetPresented(false)}
+        onSelect={(item) => handleSelectUnit(item.unitId || item.id)}
+        keyExtractor={(item) => item.unitId || item.id}
+        labelExtractor={(item) => item.name || item.number}
+        subLabelExtractor={(item) => item.unitType}
+      />
     </View>
   );
 }
