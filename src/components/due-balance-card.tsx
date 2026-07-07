@@ -38,7 +38,7 @@ export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
   }, [language]);
 
   const handlePress = () => {
-    router.push("/profile/owner-units" as Href);
+    router.push("/home/connect-unit" as Href);
   };
 
   return (

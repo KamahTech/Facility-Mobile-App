@@ -1,9 +1,7 @@
 import React from "react";
-import { View, ActivityIndicator, Pressable, Alert, Platform } from "react-native";
+import { View, ActivityIndicator, Pressable } from "react-native";
 import { Stack, useLocalSearchParams, router, type Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import * as AppleAuthentication from "expo-apple-authentication";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
@@ -22,19 +20,7 @@ type LoginFormValues = {
   password: string;
 };
 
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-});
 
-function formatAppleFullName(fullName: AppleAuthentication.AppleAuthenticationFullName | null) {
-  if (!fullName) return undefined;
-
-  return [fullName.givenName, fullName.middleName, fullName.familyName]
-    .filter(Boolean)
-    .join(" ")
-    .trim() || undefined;
-}
 
 export default function LoginScreen() {
   const { t } = useI18n();
@@ -42,7 +28,7 @@ export default function LoginScreen() {
   const { type } = useLocalSearchParams<{ type: "resident" | "worker" }>();
   const accountType = type || "resident";
 
-  const { login, googleLogin, appleLogin, loading, error, clearError } = useUserStore();
+  const { login, loading, error, clearError } = useUserStore();
   const loginSchema = React.useMemo(
     () =>
       z.object({
@@ -79,56 +65,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    clearError();
-    try {
-      if (Platform.OS === "android") {
-        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      }
 
-      const response = await GoogleSignin.signIn();
-      if (response.type === "cancelled") return;
-
-      const idToken = response.data.idToken;
-      if (!idToken) {
-        throw new Error(t("errors.googleLoginFailed"));
-      }
-
-      await googleLogin(idToken);
-      router.replace("/home" as Href);
-    } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.googleLoginFailed"));
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    clearError();
-    try {
-      const isAvailable = await AppleAuthentication.isAvailableAsync();
-      if (!isAvailable) {
-        Alert.alert(t("auth.socialLoginUnavailableTitle"), t("auth.socialLoginUnavailableMessage"));
-        return;
-      }
-
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-
-      if (!credential.identityToken) {
-        throw new Error(t("errors.appleLoginFailed"));
-      }
-
-      await appleLogin(credential.identityToken, formatAppleFullName(credential.fullName));
-      router.replace("/home" as Href);
-    } catch (e: unknown) {
-      const code = typeof e === "object" && e && "code" in e ? String(e.code) : "";
-      if (code === "ERR_REQUEST_CANCELED") return;
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.appleLoginFailed"));
-    }
-  };
 
   return (
     <View
@@ -247,32 +184,7 @@ export default function LoginScreen() {
 
 
 
-          {/* Social login for residents only */}
-          {accountType === "resident" && (
-            <View className="flex-col gap-3 mt-6 pt-6">
-              {/* Google login */}
-              <Pressable
-                onPress={handleGoogleLogin}
-                disabled={loading}
-                className="min-h-14 items-center justify-center rounded-lg bg-card px-5 active:opacity-85"
-              >
-                <AppText className="text-center text-base font-semibold text-card-foreground">
-                  {t("auth.loginWithGoogle")}
-                </AppText>
-              </Pressable>
 
-              {/* Apple login */}
-              <Pressable
-                onPress={handleAppleLogin}
-                disabled={loading}
-                className="min-h-14 items-center justify-center rounded-lg bg-black px-5 active:opacity-85"
-              >
-                <AppText className="text-center text-base font-semibold text-white">
-                  {t("auth.loginWithApple")}
-                </AppText>
-              </Pressable>
-            </View>
-          )}
         </View>
       </KeyboardAwareScrollContent>
     </View>

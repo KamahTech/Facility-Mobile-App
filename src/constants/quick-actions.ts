@@ -21,6 +21,12 @@ export const quickActions: QuickActionItem[] = [
     route: "/home/connect-unit",
   },
   {
+    titleKey: "quickActions.ownerFinancials",
+    descriptionKey: "quickActions.ownerFinancialsDescription",
+    icon: "facility",
+    route: "/profile/owner-units",
+  },
+  {
     titleKey: "quickActions.viewInvoices",
     descriptionKey: "quickActions.viewInvoicesDescription",
     icon: "invoices",

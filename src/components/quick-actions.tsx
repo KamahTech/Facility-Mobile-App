@@ -15,7 +15,7 @@ type QuickActionsProps = {
 };
 
 const CARD_COLORS: Record<
-  "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "tickets",
+  "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "tickets" | "facility",
   string
 > = {
   linkUnit: "#6366F1",      // Indigo
@@ -24,6 +24,7 @@ const CARD_COLORS: Record<
   inviteVisitor: "#8B5CF6",   // Violet
   feedback: "#F43F5E",        // Rose
   tickets: "#F97316",         // Orange
+  facility: "#0EA5E9",        // Sky
 };
 
 const DEFAULT_CARD_COLOR = "#6B7280";

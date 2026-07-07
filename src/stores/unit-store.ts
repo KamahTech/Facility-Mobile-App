@@ -26,7 +26,6 @@ export type ConnectUnitParams = {
   unitId?: number | string;
   buildingNumber?: string;
   unitNumber?: string;
-  unitType: "residential" | "office" | "retail";
   ownershipType: "owner" | "tenant";
   contactNumber?: string;
 };

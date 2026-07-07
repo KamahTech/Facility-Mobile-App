@@ -34,7 +34,6 @@ type ConnectUnitFormValues = {
   buildingId: string;
   floorId?: string;
   unitId: string;
-  unitType: "residential" | "office" | "retail";
   ownershipType: "owner" | "tenant";
   contactNumber?: string;
 };
@@ -52,7 +51,6 @@ export default function ConnectUnitScreen() {
         buildingId: z.string().min(1, t("validation.required")),
         floorId: z.string().optional(),
         unitId: z.string().min(1, t("validation.required")),
-        unitType: z.enum(["residential", "office", "retail"]),
         ownershipType: z.enum(["owner", "tenant"]),
         contactNumber: z.string().optional(),
       }),
@@ -76,7 +74,6 @@ export default function ConnectUnitScreen() {
       buildingId: "",
       floorId: "",
       unitId: "",
-      unitType: "residential",
       ownershipType: "owner",
       contactNumber: "",
     },
@@ -145,7 +142,6 @@ export default function ConnectUnitScreen() {
     try {
       await connectUnit({
         unitId: data.unitId,
-        unitType: data.unitType,
         ownershipType: data.ownershipType,
         contactNumber: data.contactNumber?.trim() || undefined,
       });
@@ -194,11 +190,7 @@ export default function ConnectUnitScreen() {
     { label: t("connectUnit.tenant"), value: "tenant" },
   ];
 
-  const unitTypeOptions = [
-    { label: t("connectUnit.residential"), value: "residential" },
-    { label: t("connectUnit.office"), value: "office" },
-    { label: t("connectUnit.retail"), value: "retail" },
-  ];
+
 
   const headerRightAction = !isAdding ? (
     <Pressable
@@ -345,18 +337,7 @@ export default function ConnectUnitScreen() {
                 )}
               />
 
-              <Controller
-                control={control}
-                name="unitType"
-                render={({ field: { onChange, value } }) => (
-                  <AppSegmentSelector
-                    label={t("connectUnit.unitType")}
-                    options={unitTypeOptions}
-                    selectedValue={value}
-                    onSelect={onChange}
-                  />
-                )}
-              />
+
 
               <Controller
                 control={control}
