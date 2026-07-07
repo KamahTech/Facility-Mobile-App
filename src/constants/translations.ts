@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    "actions.getStarted": "Get started",
+    "actions.getStarted": "Get Started",
     "actions.back": "Back",
     "actions.close": "Close",
     "actions.download": "Download",
@@ -50,9 +50,8 @@ export const translations = {
     "auth.changeEmail": "Change Email",
     "auth.otpSent": "Verification code sent to your email!",
     "language.toggleLabel": "Change language",
-    "onboarding.description":
-      "Manage service requests and daily facility work from one place.",
-    "onboarding.title": "Facility Management",
+    "onboarding.title": "Discover Your Perfect Sanctuary and Manage Facilities With Ease",
+    "onboarding.description": "Premium residences and community services at your fingertips.",
     "profile.description": "Resident account and preferences.",
     "profile.settingsDescription":
       "Choose how the app appearance should follow your device or preference.",
@@ -521,9 +520,8 @@ export const translations = {
     "auth.changeEmail": "تغيير البريد الإلكتروني",
     "auth.otpSent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني!",
     "language.toggleLabel": "تغيير اللغة",
-    "onboarding.description":
-      "أدر الطلبات والبلاغات وأعمال المرافق اليومية من مكان واحد.",
-    "onboarding.title": "إدارة المرافق",
+    "onboarding.title": "اكتشف ملاذك المثالي وأدر مرافقك بكل سهولة",
+    "onboarding.description": "مساكن فاخرة وخدمات مجتمعية بين يديك مباشرة.",
     "profile.description": "حساب المقيم وتفضيلاته.",
     "profile.settingsDescription":
       "اختر كيف يتبع مظهر التطبيق إعدادات جهازك أو تفضيلك.",
