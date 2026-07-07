@@ -79,9 +79,9 @@ export default function OnBoardingScreen() {
             onPressOut={handlePressOut}
             onPress={handleGetStarted}
             style={[buttonAnimatedStyle]}
-            className="w-full h-16 bg-[#DEEC7D] rounded-2xl items-center justify-center shadow-lg active:opacity-90"
+            className="w-full h-16 bg-primary rounded-2xl items-center justify-center shadow-lg active:opacity-90"
           >
-            <AppText className="text-center text-xl font-extrabold text-neutral-900 leading-none">
+            <AppText className="text-center text-xl font-extrabold text-primary-foreground leading-none">
               {t("actions.getStarted")}
             </AppText>
           </AnimatedPressable>
