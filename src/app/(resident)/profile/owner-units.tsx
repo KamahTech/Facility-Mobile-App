@@ -76,32 +76,19 @@ export default function OwnerUnitsScreen() {
           {t("ownerUnits.description")}
         </AppText>
 
+        {/* Financial Summary (Moved to Header) */}
+        {statementError ? (
+          <InlineErrorCard message={t("ownerFinancials.summaryLoadFailed")} />
+        ) : statement ? (
+          <OwnerFinancialOverview statement={statement} />
+        ) : null}
+
         {/* List Header Title */}
         {ownerUnits.length > 0 && (
-          <AppText className="text-start text-base font-bold text-foreground px-1">
+          <AppText className="text-start text-base font-bold text-foreground px-1 mt-4">
             {t("ownerUnits.title")}
           </AppText>
         )}
-      </View>
-    );
-  };
-
-  const renderFooter = () => {
-    if (statementError) {
-      return (
-        <View className="pt-4">
-          <InlineErrorCard message={t("ownerFinancials.summaryLoadFailed")} />
-        </View>
-      );
-    }
-
-    if (!statement) {
-      return null;
-    }
-
-    return (
-      <View className="pt-4">
-        <OwnerFinancialOverview statement={statement} />
       </View>
     );
   };
@@ -167,7 +154,6 @@ export default function OwnerUnitsScreen() {
             }}
             className="flex-1 w-full max-w-xl self-center"
             ListHeaderComponent={renderHeader}
-            ListFooterComponent={renderFooter}
             ListEmptyComponent={renderEmpty}
           />
         </View>
