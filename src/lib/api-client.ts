@@ -1,6 +1,8 @@
 import axios, { isAxiosError } from "axios";
 import * as SecureStore from "expo-secure-store";
 import { API_BASE_URL } from "@/constants/api";
+import { useToastStore } from "@/stores/toast-store";
+import { getFriendlyErrorMessage } from "@/lib/error-formatter";
 
 let currentSessionId: string | null = null;
 let currentLanguage: string | null = null;
@@ -146,6 +148,9 @@ export async function apiRequest<T = ApiResponse>(route: string, params: ApiPara
     ) {
       handleSessionExpired();
     }
+
+    const friendly = getFriendlyErrorMessage(error);
+    useToastStore.getState().showToast(friendly, "error");
 
     console.error(`[API Error] ${route}:`, error instanceof Error ? error.message : error);
     throw error;

@@ -28,7 +28,7 @@ export default function LoginScreen() {
   const { type } = useLocalSearchParams<{ type: "resident" | "worker" }>();
   const accountType = type || "resident";
 
-  const { login, loading, error, clearError } = useUserStore();
+  const { login, loading, clearError } = useUserStore();
   const loginSchema = React.useMemo(
     () =>
       z.object({
@@ -145,15 +145,6 @@ export default function LoginScreen() {
               />
             )}
           />
-
-          {/* API error messages */}
-          {error && (
-            <View className="bg-destructive/10 p-4 rounded-xl">
-              <AppText className="text-sm font-semibold text-destructive text-start">
-                {error}
-              </AppText>
-            </View>
-          )}
 
           {/* Login button */}
           <View className="mt-4">

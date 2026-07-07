@@ -41,7 +41,7 @@ type ConnectUnitFormValues = {
 export default function ConnectUnitScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const { units, fetchUnits, connectUnit, disconnectUnit, loading, error, clearError } = useUnitStore();
+  const { units, fetchUnits, connectUnit, disconnectUnit, loading, clearError } = useUnitStore();
   const mutedForeground = useThemeToken("--muted-foreground");
 
   const connectUnitSchema = React.useMemo(
@@ -368,13 +368,7 @@ export default function ConnectUnitScreen() {
                 )}
               />
 
-              {error && (
-                <View className="bg-destructive/10 p-4 rounded-xl mt-2">
-                  <AppText className="text-sm font-semibold text-destructive text-start">
-                    {error}
-                  </AppText>
-                </View>
-              )}
+
 
               <View className="mt-4">
                 <AppButton
@@ -406,13 +400,7 @@ export default function ConnectUnitScreen() {
               </View>
             ) : (
               <View className="flex-1">
-                {error && (
-                  <View className="bg-destructive/10 p-3 rounded-xl mb-4 mt-2">
-                    <AppText className="text-sm font-semibold text-destructive text-start">
-                      {error}
-                    </AppText>
-                  </View>
-                )}
+
                 <LegendList
                   data={units}
                   keyExtractor={(item) => item.id}

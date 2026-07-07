@@ -28,7 +28,7 @@ export default function SignupScreen() {
   const insets = useSafeAreaInsets();
   const [step, setStep] = React.useState<1 | 2>(1);
 
-  const { requestOtp, signup, loading, error, clearError } = useUserStore();
+  const { requestOtp, signup, loading, clearError } = useUserStore();
   const stepOneSchema = React.useMemo(
     () =>
       z.object({
@@ -230,15 +230,6 @@ export default function SignupScreen() {
                 )}
               />
 
-              {/* API error messages */}
-              {error && (
-                <View className="bg-destructive/10 p-4 rounded-xl">
-                  <AppText className="text-sm font-semibold text-destructive text-start">
-                    {error}
-                  </AppText>
-                </View>
-              )}
-
               {/* OTP request button */}
               <View className="mt-4">
                 {loading ? (
@@ -304,15 +295,6 @@ export default function SignupScreen() {
                   />
                 )}
               />
-
-              {/* API error messages */}
-              {error && (
-                <View className="bg-destructive/10 p-4 rounded-xl">
-                  <AppText className="text-sm font-semibold text-destructive text-start">
-                    {error}
-                  </AppText>
-                </View>
-              )}
 
               {/* Final signup submit button */}
               <View className="mt-4">

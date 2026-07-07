@@ -8,6 +8,7 @@ import { createStackScreenOptions } from "@/constants/navigation";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { I18nProvider } from "@/providers/i18n-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { AppToast } from "@/components/app-toast";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -31,6 +32,7 @@ export default function RootLayout() {
             <ThemeProvider>
               <I18nProvider>
                 <RootStack />
+                <AppToast />
               </I18nProvider>
             </ThemeProvider>
           </KeyboardProvider>

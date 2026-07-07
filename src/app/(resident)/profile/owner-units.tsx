@@ -12,19 +12,7 @@ import { OwnerFinancialOverview } from "@/components/owner-financial-overview";
 import { useI18n } from "@/hooks/use-i18n";
 import { useOwnerStore } from "@/stores/owner-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
-
 const SECTION_GAP = 16;
-type InlineErrorCardProps = {
-  message: string;
-};
-
-function InlineErrorCard({ message }: InlineErrorCardProps) {
-  return (
-    <View className="bg-destructive/10 p-4 rounded-2xl">
-      <AppText className="text-sm font-semibold text-destructive text-start">{message}</AppText>
-    </View>
-  );
-}
 
 export default function OwnerUnitsScreen() {
   const { t } = useI18n();
@@ -36,8 +24,6 @@ export default function OwnerUnitsScreen() {
     fetchOwnerUnits,
     fetchStatement,
     loading,
-    ownerUnitsError,
-    statementError,
     clearError,
   } = useOwnerStore({ 
     enableOwnerUnits: true, 
@@ -77,9 +63,7 @@ export default function OwnerUnitsScreen() {
         </AppText>
 
         {/* Financial Summary (Moved to Header) */}
-        {statementError ? (
-          <InlineErrorCard message={t("ownerFinancials.summaryLoadFailed")} />
-        ) : statement ? (
+        {statement ? (
           <OwnerFinancialOverview statement={statement} />
         ) : null}
 
@@ -130,11 +114,7 @@ export default function OwnerUnitsScreen() {
         </View>
       ) : (
         <View className="flex-1">
-          {ownerUnitsError && (
-            <View className="mx-5 mb-4">
-              <InlineErrorCard message={t("ownerUnits.loadFailed")} />
-            </View>
-          )}
+
 
           <LegendList
             data={ownerUnits}
