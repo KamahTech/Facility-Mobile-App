@@ -238,7 +238,7 @@ export default function OnBoardingScreen() {
             <AppText className="text-white text-base font-black tracking-widest leading-none">
               KAMAH
             </AppText>
-            <AppText className="text-[#DEEC7D] text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none">
+            <AppText className="text-[#DBEE69] text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none">
               PROPERTIES
             </AppText>
           </View>

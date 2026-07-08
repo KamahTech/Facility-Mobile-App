@@ -16,6 +16,8 @@ type ConnectedUnitCardProps = {
 export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps) {
   const { t } = useI18n();
   const destructiveColor = useThemeToken("--destructive");
+  const primaryColor = useThemeToken("--primary");
+  const primaryBgTranslucent = primaryColor ? `${primaryColor}25` : "rgba(219, 238, 105, 0.15)";
 
   const handleDeletePress = () => {
     Alert.alert(
@@ -46,8 +48,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
 
     return {
       icon,
-      bgClass: "bg-transparent",
-      iconColorToken: "--primary" as const,
+      iconColor: "#7A891B",
     };
   };
 
@@ -56,8 +57,11 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
   return (
     <AppRow className="w-full bg-card rounded-[24px] p-4 items-center justify-between mb-4 shadow-2xs">
       <AppRow className="items-center gap-3.5 flex-1 min-w-0">
-        <View className={`w-12 h-12 rounded-xl items-center justify-center ${config.bgClass}`}>
-          <AppIcon name={config.icon} size={24} colorToken={config.iconColorToken} />
+        <View 
+          style={{ backgroundColor: primaryBgTranslucent }}
+          className="w-12 h-12 rounded-xl items-center justify-center"
+        >
+          <AppIcon name={config.icon} size={24} color={config.iconColor} />
         </View>
 
         <View className="flex-1 flex-col gap-1 text-start">

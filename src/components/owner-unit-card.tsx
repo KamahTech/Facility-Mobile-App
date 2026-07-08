@@ -57,7 +57,7 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
     >
       {/* Decorative vertical gradient bar on the start side (Primary Color Theme) */}
       <LinearGradient
-        colors={["#DEEC7D", "#A5B53B"]}
+        colors={["#DBEE69", "#A2B527"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{ width: 5 }}

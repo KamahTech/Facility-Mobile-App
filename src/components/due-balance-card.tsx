@@ -50,14 +50,14 @@ export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
       style={{
         borderRadius: 24,
         padding: 24,
-        backgroundColor: primaryColor || "#DEEC7D",
+        backgroundColor: primaryColor || "#DBEE69",
         minHeight: 160,
       }}
       className="w-full overflow-hidden shadow-lg relative flex-col justify-between"
     >
       {/* Background Gradient */}
       <LinearGradient
-        colors={["#DCE986", "#C6D370"]}
+        colors={["#DFEE7C", "#D0DE5A"]}
         locations={[0, 0.35]}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 0.8, y: 1 }}
