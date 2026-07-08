@@ -9,6 +9,7 @@ export const translations = {
     "actions.openTicketDetails": "Open ticket details",
     "actions.openWorkerDetails": "Open worker task details",
     "actions.seeAll": "See all",
+    "actions.continue": "Continue",
     "auth.chooseAccountDescription":
       "Select the experience that matches how you use the facility.",
     "auth.chooseAccountTitle": "Choose your account type",
@@ -483,6 +484,7 @@ export const translations = {
     "actions.openTicketDetails": "فتح تفاصيل الطلب",
     "actions.openWorkerDetails": "فتح تفاصيل مهمة العامل",
     "actions.seeAll": "عرض الكل",
+    "actions.continue": "متابعة",
     "auth.chooseAccountDescription":
       "اختر التجربة التي تناسب طريقة استخدامك للمرفق.",
     "auth.chooseAccountTitle": "اختر نوع حسابك",
