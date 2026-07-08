@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { Stack, router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useSharedValue,
@@ -39,22 +40,16 @@ function RoleOption({ title, description, icon, selected, onPress }: RoleOptionP
       accessibilityState={{ selected }}
       className={`flex-row items-center p-5 rounded-2xl border transition-all duration-200 ${
         selected
-          ? "border-primary bg-primary/[0.04]"
+          ? "border-primary bg-primary"
           : "border-border bg-card active:bg-muted/40"
       }`}
     >
       {/* Start Icon Container */}
-      <View
-        className={`w-12 h-12 rounded-xl items-center justify-center border shrink-0 ${
-          selected
-            ? "bg-primary/20 border-primary/30"
-            : "bg-secondary border-border"
-        }`}
-      >
+      <View className="w-12 h-12 rounded-xl items-center justify-center shrink-0">
         <AppIcon
           name={icon}
           size={24}
-          colorToken={selected ? "--primary" : "--foreground"}
+          colorToken={selected ? "--primary-foreground" : "--foreground"}
         />
       </View>
 
@@ -62,13 +57,15 @@ function RoleOption({ title, description, icon, selected, onPress }: RoleOptionP
       <View className="flex-1 min-w-0 ms-4 me-4 flex-col justify-center">
         <AppText
           className={`text-start text-base font-bold leading-tight ${
-            selected ? "text-foreground font-black" : "text-card-foreground"
+            selected ? "text-primary-foreground" : "text-card-foreground"
           }`}
         >
           {title}
         </AppText>
         <AppText
-          className="text-start text-xs text-muted-foreground mt-1 leading-normal"
+          className={`text-start text-xs mt-1 leading-normal ${
+            selected ? "text-primary-foreground/80" : "text-muted-foreground"
+          }`}
           numberOfLines={2}
         >
           {description}
@@ -78,11 +75,11 @@ function RoleOption({ title, description, icon, selected, onPress }: RoleOptionP
       {/* End Radio Indicator */}
       <View
         className={`w-6 h-6 rounded-full border items-center justify-center shrink-0 ${
-          selected ? "border-primary bg-primary" : "border-border bg-transparent"
+          selected ? "border-primary-foreground bg-primary-foreground" : "border-border bg-transparent"
         }`}
       >
         {selected && (
-          <View className="w-2.5 h-2.5 rounded-full bg-primary-foreground" />
+          <View className="w-2.5 h-2.5 rounded-full bg-primary" />
         )}
       </View>
     </Pressable>
@@ -128,7 +125,6 @@ export default function ChooseLoginMethodScreen() {
 
   const contentAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: contentOpacity.value,
       transform: [{ translateY: contentTranslateY.value }],
     };
   });
@@ -141,12 +137,8 @@ export default function ChooseLoginMethodScreen() {
   });
 
   const handleSelectType = (type: "resident" | "worker") => {
-    if (selectedType === type) {
-      handleContinue(type);
-    } else {
-      setSelectedType(type);
-      Haptics.selectionAsync().catch(() => {});
-    }
+    setSelectedType(type);
+    Haptics.selectionAsync().catch(() => {});
   };
 
   const handleContinue = (overrideType?: "resident" | "worker") => {
@@ -162,39 +154,34 @@ export default function ChooseLoginMethodScreen() {
   return (
     <View className="flex-1 bg-background">
       <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar style="light" />
 
-      {/* Premium adaptive background gradient */}
-      <LinearGradient
-        colors={
-          resolvedTheme === "dark"
-            ? ["#18181b", "#09090b", "#09090b"]
-            : ["#ffffff", "#f5f6f8", "#f5f6f8"]
-        }
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
+      {/* Top half image header with floating back button and logo */}
+      <View className="w-full h-[46%] relative overflow-hidden bg-zinc-950">
+        <Image
+          source={backgroundImage}
+          style={StyleSheet.absoluteFill}
+          contentFit="cover"
+        />
+        {/* Soft top gradient overlay to protect text readability */}
+        <LinearGradient
+          colors={["rgba(9, 9, 11, 0.85)", "rgba(9, 9, 11, 0.35)", "rgba(9, 9, 11, 0)"]}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 0.95 }}
+        />
 
-      {/* Main Interactive Screen Layout */}
-      <Animated.View
-        style={[
-          {
-            flex: 1,
-            paddingTop: insets.top + 16,
-            paddingBottom: insets.bottom + 16,
-          },
-          contentAnimatedStyle,
-        ]}
-        className="px-6 justify-between"
-      >
-        {/* Top Header Row with Back Button & Brand Logo */}
-        <View className="flex-row items-center justify-between w-full">
+        {/* Floating Header */}
+        <View
+          style={{ paddingTop: insets.top + 16 }}
+          className="absolute top-0 start-0 end-0 px-6 flex-row items-center justify-between z-10"
+        >
           {/* Back Button */}
           <Pressable
             onPress={() => router.back()}
-            className="w-10 h-10 rounded-xl bg-card border border-border items-center justify-center active:bg-muted active:opacity-90"
+            className="w-10 h-10 rounded-xl bg-black/35 items-center justify-center active:bg-black/50"
           >
-            <AppChevron type="back" size={16} colorToken="--foreground" />
+            <AppChevron type="back" size={16} color="#FFFFFF" />
           </Pressable>
 
           {/* Brand Logo Group */}
@@ -206,7 +193,7 @@ export default function ChooseLoginMethodScreen() {
               tintColor={primaryColor}
             />
             <View className="flex-col">
-              <AppText className="text-foreground text-base font-black tracking-widest leading-none">
+              <AppText className="text-white text-base font-black tracking-widest leading-none">
                 KAMAH
               </AppText>
               <AppText className="text-primary text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none">
@@ -215,20 +202,23 @@ export default function ChooseLoginMethodScreen() {
             </View>
           </View>
         </View>
+      </View>
 
+      {/* Bottom Content Sheet (Rounded Top Corners) */}
+      <Animated.View
+        style={[
+          {
+            flex: 1,
+            paddingBottom: insets.bottom + 16,
+          },
+          contentAnimatedStyle,
+        ]}
+        className="bg-card rounded-t-[32px] -mt-8 px-6 pt-12 justify-between"
+      >
         {/* Content Area */}
-        <View className="flex-1 justify-center w-full max-w-xl self-center gap-5 mt-4">
-          {/* Increased Height Illustrative Image Card */}
-          <View className="w-full h-64 sm:h-76 rounded-2xl overflow-hidden border border-border/80 shadow-2xs">
-            <Image
-              source={backgroundImage}
-              style={StyleSheet.absoluteFill}
-              contentFit="cover"
-            />
-          </View>
-
+        <View className="flex-1 justify-start gap-6">
           {/* Title & Description Group */}
-          <View className="flex-col gap-2 mt-1">
+          <View className="flex-col gap-2">
             <AppText
               className="text-start text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-none"
             >
@@ -261,7 +251,7 @@ export default function ChooseLoginMethodScreen() {
 
         {/* Bottom CTA Continue Button */}
         <Animated.View
-          style={[continueAnimatedStyle, { marginTop: 12 }]}
+          style={[continueAnimatedStyle, { marginTop: 16 }]}
           pointerEvents={selectedType ? "auto" : "none"}
         >
           <Pressable

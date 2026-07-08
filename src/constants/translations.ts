@@ -12,7 +12,7 @@ export const translations = {
     "actions.continue": "Continue",
     "auth.chooseAccountDescription":
       "Select the experience that matches how you use the facility.",
-    "auth.chooseAccountTitle": "Choose your account type",
+    "auth.chooseAccountTitle": "Choose Your Account Type",
     "auth.residentDescription": "Open resident home, requests, and profile.",
     "auth.residentTitle": "Resident",
     "auth.workerDescription": "Open the worker home workflow.",
