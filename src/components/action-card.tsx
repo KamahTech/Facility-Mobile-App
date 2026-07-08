@@ -26,7 +26,7 @@ export function ActionCard({
   return (
     <Pressable
       accessibilityRole="button"
-      className={`min-h-24 rounded-2xl px-5 py-4.5 border ${
+      className={`min-h-24 rounded-2xl px-5 py-5 border ${
         selected
           ? "border-primary bg-primary/10 active:bg-primary/20"
           : isTranslucent

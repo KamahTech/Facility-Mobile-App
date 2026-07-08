@@ -257,7 +257,7 @@ export default function ConnectUnitScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Form Card wrapper matching the Login Redesign */}
-            <View className="w-full bg-card rounded-3xl border border-border/60 p-6 shadow-2xs flex-col gap-6">
+            <View className="w-full bg-card rounded-3xl p-6 shadow-2xs flex-col gap-6">
               <View className="flex-col gap-1.5">
                 <AppText className="text-start text-xl font-black text-foreground">
                   {t("quickActions.connectUnit")}
