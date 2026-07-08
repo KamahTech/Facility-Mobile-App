@@ -1,13 +1,16 @@
-import { BottomSheet, BottomSheetView } from "@expo/ui/community/bottom-sheet";
-import type { BottomSheetMethods } from "@expo/ui/community/bottom-sheet";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { Portal } from "@gorhom/portal";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppBottomSheetBackdrop } from "@/components/app-bottom-sheet-backdrop";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import { Avatar } from "@/components/avatar";
+import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
+import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 
@@ -18,6 +21,7 @@ type LogoutBottomSheetProps = {
   userName?: string;
   userRole?: string;
   avatarSource?: any;
+  hostName?: string;
 };
 
 export function LogoutBottomSheet({
@@ -27,27 +31,12 @@ export function LogoutBottomSheet({
   userName,
   userRole,
   avatarSource,
+  hostName,
 }: LogoutBottomSheetProps) {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const sheetRef = React.useRef<BottomSheetMethods>(null);
-  const handledActionRef = React.useRef(false);
+  useBottomSheetLayer(isPresented);
   const destructiveColor = useThemeToken("--destructive");
-
-  React.useEffect(() => {
-    if (isPresented) {
-      handledActionRef.current = false;
-    }
-  }, [isPresented]);
-
-  const runSheetAction = React.useCallback((action: () => void) => {
-    if (handledActionRef.current) {
-      return;
-    }
-
-    handledActionRef.current = true;
-    action();
-  }, []);
 
   const handleConfirm = React.useCallback(() => {
     onConfirm();
@@ -58,13 +47,14 @@ export function LogoutBottomSheet({
     onDismiss();
   }, [onDismiss]);
 
-  return (
+  const content = (
     <BottomSheet
-      ref={sheetRef}
       index={isPresented ? 0 : -1}
-      snapPoints={["45%", "90%"]}
+      snapPoints={defaultBottomSheetSnapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose
+      backdropComponent={AppBottomSheetBackdrop}
+      containerStyle={bottomSheetContainerStyle}
       onClose={onDismiss}
     >
       <BottomSheetView
@@ -90,8 +80,7 @@ export function LogoutBottomSheet({
             <Pressable
               accessibilityRole="button"
               className="min-h-14 w-full justify-center px-4 py-4"
-              onPress={() => runSheetAction(handleConfirm)}
-              onPressIn={() => runSheetAction(handleConfirm)}
+              onPress={handleConfirm}
             >
               <AppRow className="w-full items-center justify-between gap-3">
                 <AppRow className="flex-1 items-center gap-3">
@@ -108,8 +97,7 @@ export function LogoutBottomSheet({
             <Pressable
               accessibilityRole="button"
               className="min-h-14 w-full justify-center px-4 py-4"
-              onPress={() => runSheetAction(handleDismiss)}
-              onPressIn={() => runSheetAction(handleDismiss)}
+              onPress={handleDismiss}
             >
               <AppRow className="w-full items-center justify-between gap-3">
                 <AppText className="flex-1 text-base font-medium text-card-foreground">
@@ -122,4 +110,10 @@ export function LogoutBottomSheet({
       </BottomSheetView>
     </BottomSheet>
   );
+
+  if (hostName) {
+    return <Portal hostName={hostName}>{content}</Portal>;
+  }
+
+  return content;
 }

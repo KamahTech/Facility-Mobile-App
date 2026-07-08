@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { useWindowDimensions, View } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import { PortalHost, PortalProvider } from "@gorhom/portal";
 
 import { AnimatedTabBarButton } from "@/components/animated-tab-bar-button";
 import { AppIcon } from "@/components/app-icon";
@@ -31,6 +32,7 @@ function CollapsibleTabBar({ state, descriptors, navigation }: any) {
 
   return (
     <Animated.View
+      pointerEvents="auto"
       style={[
         animatedStyle,
         {
@@ -47,6 +49,7 @@ function CollapsibleTabBar({ state, descriptors, navigation }: any) {
           alignItems: "center",
           justifyContent: "space-around",
           paddingHorizontal: 8,
+          opacity: 1,
           zIndex: 100,
           elevation: 8,
           shadowColor: "#000000",
@@ -123,67 +126,72 @@ function TabsContent() {
   const background = useThemeToken("--background");
 
   return (
-    <Tabs
-      tabBar={(props) => <CollapsibleTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-        lazy: true,
-        freezeOnBlur: true,
-        sceneStyle: {
-          backgroundColor: background,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: t("tabs.home"),
-          tabBarIcon: ({ color, size }) => (
-            <AppIcon
-              accessibilityLabel={t("tabs.home")}
-              color={color}
-              name="home"
-              size={size}
-            />
-          ),
+    <View style={{ flex: 1 }}>
+      <Tabs
+        tabBar={(props) => <CollapsibleTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+          lazy: true,
+          freezeOnBlur: true,
+          sceneStyle: {
+            backgroundColor: background,
+          },
         }}
-      />
-      <Tabs.Screen
-        name="tickets"
-        options={{
-          title: t("tabs.tickets"),
-          tabBarIcon: ({ color, size }) => (
-            <AppIcon
-              accessibilityLabel={t("tabs.tickets")}
-              color={color}
-              name="tickets"
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: t("tabs.profile"),
-          tabBarIcon: ({ color, size }) => (
-            <AppIcon
-              accessibilityLabel={t("tabs.profile")}
-              color={color}
-              name="profile"
-              size={size}
-            />
-          ),
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="home"
+          options={{
+            title: t("tabs.home"),
+            tabBarIcon: ({ color, size }) => (
+              <AppIcon
+                accessibilityLabel={t("tabs.home")}
+                color={color}
+                name="home"
+                size={size}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="tickets"
+          options={{
+            title: t("tabs.tickets"),
+            tabBarIcon: ({ color, size }) => (
+              <AppIcon
+                accessibilityLabel={t("tabs.tickets")}
+                color={color}
+                name="tickets"
+                size={size}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: t("tabs.profile"),
+            tabBarIcon: ({ color, size }) => (
+              <AppIcon
+                accessibilityLabel={t("tabs.profile")}
+                color={color}
+                name="profile"
+                size={size}
+              />
+            ),
+          }}
+        />
+      </Tabs>
+      <PortalHost name="tabs-root" />
+    </View>
   );
 }
 
 export default function ResidentTabsLayout() {
   return (
     <ScrollAnimationProvider>
-      <TabsContent />
+      <PortalProvider>
+        <TabsContent />
+      </PortalProvider>
     </ScrollAnimationProvider>
   );
 }

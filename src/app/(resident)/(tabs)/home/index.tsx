@@ -170,6 +170,7 @@ export default function ResidentHomeScreen() {
         userName={profile?.name || ""}
         userRole={t("auth.residentTitle")}
         avatarSource={avatarSource}
+        hostName="tabs-root"
       />
     </View>
   );

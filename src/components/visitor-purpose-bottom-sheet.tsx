@@ -1,12 +1,14 @@
-import { BottomSheet, BottomSheetView } from "@expo/ui/community/bottom-sheet";
-import type { BottomSheetMethods } from "@expo/ui/community/bottom-sheet";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import React from "react";
 import { Pressable, View } from "react-native";
 
+import { AppBottomSheetBackdrop } from "@/components/app-bottom-sheet-backdrop";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
+import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
 import { visitorPurposeOptions, type VisitorPurposeId } from "@/constants/visitor-purposes";
+import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
 
 type VisitorPurposeBottomSheetProps = {
@@ -23,7 +25,7 @@ export function VisitorPurposeBottomSheet({
   onSelect,
 }: VisitorPurposeBottomSheetProps) {
   const { t } = useI18n();
-  const sheetRef = React.useRef<BottomSheetMethods>(null);
+  useBottomSheetLayer(isPresented);
 
   const handleSelect = (purpose: VisitorPurposeId) => {
     onSelect(purpose);
@@ -32,15 +34,16 @@ export function VisitorPurposeBottomSheet({
 
   return (
     <BottomSheet
-      ref={sheetRef}
       index={isPresented ? 0 : -1}
-      snapPoints={["45%", "90%"]}
+      snapPoints={defaultBottomSheetSnapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose
+      backdropComponent={AppBottomSheetBackdrop}
+      containerStyle={bottomSheetContainerStyle}
       onClose={onDismiss}
     >
       <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24 }}>
-        <AppText className="mb-4 text-xl font-semibold text-foreground">
+        <AppText className="mb-4 text-xl font-semibold text-foreground text-start">
           {t("inviteVisitor.purpose")}
         </AppText>
 
@@ -60,7 +63,7 @@ export function VisitorPurposeBottomSheet({
                 onPress={() => handleSelect(option.id)}
               >
                 <AppRow className="w-full items-center justify-between gap-3">
-                  <AppText className="flex-1 text-base font-medium text-card-foreground">
+                  <AppText className="flex-1 text-base font-medium text-card-foreground text-start">
                     {t(option.labelKey)}
                   </AppText>
                   {isSelected && (

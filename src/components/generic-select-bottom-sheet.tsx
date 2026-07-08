@@ -1,11 +1,13 @@
-import { BottomSheet, BottomSheetView } from "@expo/ui/community/bottom-sheet";
-import type { BottomSheetMethods } from "@expo/ui/community/bottom-sheet";
+import BottomSheet, { BottomSheetScrollView, BottomSheetView } from "@gorhom/bottom-sheet";
 import React from "react";
-import { Pressable, View, ScrollView } from "react-native";
+import { Pressable, View } from "react-native";
 
+import { AppBottomSheetBackdrop } from "@/components/app-bottom-sheet-backdrop";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
+import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
+import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
 
 type GenericSelectBottomSheetProps<T> = {
@@ -38,7 +40,7 @@ export function GenericSelectBottomSheet<T>({
   clearLabel,
 }: GenericSelectBottomSheetProps<T>) {
   const { t } = useI18n();
-  const sheetRef = React.useRef<BottomSheetMethods>(null);
+  useBottomSheetLayer(isPresented);
 
   const handleSelect = (item: T) => {
     onSelect(item);
@@ -54,11 +56,12 @@ export function GenericSelectBottomSheet<T>({
 
   return (
     <BottomSheet
-      ref={sheetRef}
       index={isPresented ? 0 : -1}
-      snapPoints={["45%", "90%"]}
+      snapPoints={defaultBottomSheetSnapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose
+      backdropComponent={AppBottomSheetBackdrop}
+      containerStyle={bottomSheetContainerStyle}
       onClose={onDismiss}
     >
       <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24, flex: 1 }}>
@@ -66,7 +69,7 @@ export function GenericSelectBottomSheet<T>({
           {title}
         </AppText>
 
-        <ScrollView className="flex-1 w-full" showsVerticalScrollIndicator={false}>
+        <BottomSheetScrollView className="flex-1 w-full" showsVerticalScrollIndicator={false}>
           <View className="w-full overflow-hidden rounded-xl bg-card mb-6">
             {showClearOption && onClear && (
               <Pressable
@@ -132,7 +135,7 @@ export function GenericSelectBottomSheet<T>({
               </View>
             )}
           </View>
-        </ScrollView>
+        </BottomSheetScrollView>
       </BottomSheetView>
     </BottomSheet>
   );
