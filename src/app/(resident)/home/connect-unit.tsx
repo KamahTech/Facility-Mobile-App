@@ -1,6 +1,9 @@
 import React from "react";
-import { Pressable, View, Alert, ActivityIndicator, RefreshControl } from "react-native";
+import { Pressable, View, Alert, ActivityIndicator, RefreshControl, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { StatusBar } from "expo-status-bar";
+import { useTheme } from "@/hooks/use-theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegendList } from "@legendapp/list/react-native";
 import { useForm, Controller, useWatch } from "react-hook-form";
@@ -41,6 +44,7 @@ type ConnectUnitFormValues = {
 export default function ConnectUnitScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
+  const { resolvedTheme } = useTheme();
   const { units, fetchUnits, connectUnit, disconnectUnit, loading, clearError } = useUnitStore();
   const mutedForeground = useThemeToken("--muted-foreground");
 
@@ -208,167 +212,188 @@ export default function ConnectUnitScreen() {
   ) : null;
 
   return (
-    <View
-      className="flex-1 bg-background"
-      style={{
-        paddingTop: insets.top,
-        paddingStart: insets.left,
-        paddingEnd: insets.right,
-      }}
-    >
+    <View className="flex-1 bg-background">
       <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
 
-      <ScreenHeader
-        title={t(isAdding ? "quickActions.connectUnit" : "connectUnit.connectedTitle")}
-        onBack={isAdding ? () => setIsAdding(false) : () => router.back()}
-        rightAction={headerRightAction}
+      {/* Adaptive Background Gradient */}
+      <LinearGradient
+        colors={
+          resolvedTheme === "dark"
+            ? ["#18181b", "#09090b", "#09090b"]
+            : ["#ffffff", "#f5f6f8", "#f5f6f8"]
+        }
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       />
 
-      <View className="flex-1 w-full max-w-xl self-center px-5">
-        <FullScreenLoader visible={actionLoading} />
+      <View
+        className="flex-1"
+        style={{
+          paddingTop: insets.top,
+          paddingStart: insets.left,
+          paddingEnd: insets.right,
+        }}
+      >
+        <ScreenHeader
+          title={t(isAdding ? "quickActions.connectUnit" : "connectUnit.connectedTitle")}
+          onBack={isAdding ? () => setIsAdding(false) : () => router.back()}
+          rightAction={headerRightAction}
+          showBorder={false}
+        />
+
+        <View className="flex-1 w-full max-w-xl self-center px-5">
+          <FullScreenLoader visible={actionLoading} />
 
         {isAdding ? (
           <KeyboardAwareScrollContent
             bottomOffset={insets.bottom + 24}
             contentContainerStyle={{
-              paddingTop: 24,
+              paddingTop: 16,
               paddingBottom: insets.bottom + 40,
             }}
             className="flex-1"
+            showsVerticalScrollIndicator={false}
           >
-            <AppText className="text-start text-base leading-6 text-muted-foreground mb-8">
-              {t("quickActions.connectUnitDescription")}
-            </AppText>
+            {/* Form Card wrapper matching the Login Redesign */}
+            <View className="w-full bg-card rounded-3xl border border-border/60 p-6 shadow-2xs flex-col gap-6">
+              <View className="flex-col gap-1.5">
+                <AppText className="text-start text-xl font-black text-foreground">
+                  {t("quickActions.connectUnit")}
+                </AppText>
+                <AppText className="text-start text-xs text-muted-foreground leading-normal">
+                  {t("quickActions.connectUnitDescription")}
+                </AppText>
+              </View>
 
-            <View className="flex-col gap-6">
-              <Controller
-                control={control}
-                name="projectId"
-                render={() => (
-                  <AppSelectField
-                    label={t("connectUnit.project")}
-                    placeholder={projectsQuery.isLoading ? "Loading..." : t("connectUnit.projectPlaceholder")}
-                    value={selectedProject?.name}
-                    error={errors.projectId?.message}
-                    onPress={() => setIsProjectSheetPresented(true)}
-                    disabled={projectsQuery.isLoading}
-                  />
-                )}
-              />
+              <View className="flex-col gap-5">
+                <Controller
+                  control={control}
+                  name="projectId"
+                  render={() => (
+                    <AppSelectField
+                      label={t("connectUnit.project")}
+                      placeholder={projectsQuery.isLoading ? "Loading..." : t("connectUnit.projectPlaceholder")}
+                      value={selectedProject?.name}
+                      error={errors.projectId?.message}
+                      onPress={() => setIsProjectSheetPresented(true)}
+                      disabled={projectsQuery.isLoading}
+                    />
+                  )}
+                />
 
-              <Controller
-                control={control}
-                name="buildingId"
-                render={() => (
-                  <AppSelectField
-                    label={t("connectUnit.building")}
-                    placeholder={
-                      !selectedProjectId
-                        ? t("connectUnit.projectPlaceholder")
-                        : buildingsQuery.isFetching
-                        ? "Loading..."
-                        : t("connectUnit.buildingPlaceholder")
-                    }
-                    value={selectedBuilding ? (selectedBuilding.name || selectedBuilding.number) : ""}
-                    error={errors.buildingId?.message}
-                    onPress={() => {
-                      if (selectedProjectId) {
-                        setIsBuildingSheetPresented(true);
-                      } else {
-                        Alert.alert(t("common.error"), t("connectUnit.projectPlaceholder"));
+                <Controller
+                  control={control}
+                  name="buildingId"
+                  render={() => (
+                    <AppSelectField
+                      label={t("connectUnit.building")}
+                      placeholder={
+                        !selectedProjectId
+                          ? t("connectUnit.projectPlaceholder")
+                          : buildingsQuery.isFetching
+                          ? "Loading..."
+                          : t("connectUnit.buildingPlaceholder")
                       }
-                    }}
-                    disabled={!selectedProjectId || buildingsQuery.isFetching}
-                  />
-                )}
-              />
+                      value={selectedBuilding ? (selectedBuilding.name || selectedBuilding.number) : ""}
+                      error={errors.buildingId?.message}
+                      onPress={() => {
+                        if (selectedProjectId) {
+                          setIsBuildingSheetPresented(true);
+                        } else {
+                          Alert.alert(t("common.error"), t("connectUnit.projectPlaceholder"));
+                        }
+                      }}
+                      disabled={!selectedProjectId || buildingsQuery.isFetching}
+                    />
+                  )}
+                />
 
-              <Controller
-                control={control}
-                name="floorId"
-                render={() => (
-                  <AppSelectField
-                    label={t("connectUnit.floor")}
-                    placeholder={
-                      !selectedBuildingId
-                        ? t("connectUnit.buildingPlaceholder")
-                        : floorsQuery.isFetching
-                        ? "Loading..."
-                        : t("connectUnit.floorPlaceholder")
-                    }
-                    value={selectedFloor?.name || ""}
-                    error={errors.floorId?.message}
-                    onPress={() => {
-                      if (selectedBuildingId) {
-                        setIsFloorSheetPresented(true);
-                      } else {
-                        Alert.alert(t("common.error"), t("connectUnit.buildingPlaceholder"));
+                <Controller
+                  control={control}
+                  name="floorId"
+                  render={() => (
+                    <AppSelectField
+                      label={t("connectUnit.floor")}
+                      placeholder={
+                        !selectedBuildingId
+                          ? t("connectUnit.buildingPlaceholder")
+                          : floorsQuery.isFetching
+                          ? "Loading..."
+                          : t("connectUnit.floorPlaceholder")
                       }
-                    }}
-                    disabled={!selectedBuildingId || floorsQuery.isFetching}
-                  />
-                )}
-              />
+                      value={selectedFloor?.name || ""}
+                      error={errors.floorId?.message}
+                      onPress={() => {
+                        if (selectedBuildingId) {
+                          setIsFloorSheetPresented(true);
+                        } else {
+                          Alert.alert(t("common.error"), t("connectUnit.buildingPlaceholder"));
+                        }
+                      }}
+                      disabled={!selectedBuildingId || floorsQuery.isFetching}
+                    />
+                  )}
+                />
 
-              <Controller
-                control={control}
-                name="unitId"
-                render={() => (
-                  <AppSelectField
-                    label={t("connectUnit.unit")}
-                    placeholder={
-                      !selectedBuildingId
-                        ? t("connectUnit.buildingPlaceholder")
-                        : unitsLookupQuery.isFetching
-                        ? "Loading..."
-                        : t("connectUnit.unitPlaceholder")
-                    }
-                    value={selectedUnit ? (selectedUnit.name || selectedUnit.number) : ""}
-                    error={errors.unitId?.message}
-                    onPress={() => {
-                      if (selectedBuildingId) {
-                        setIsUnitSheetPresented(true);
-                      } else {
-                        Alert.alert(t("common.error"), t("connectUnit.buildingPlaceholder"));
+                <Controller
+                  control={control}
+                  name="unitId"
+                  render={() => (
+                    <AppSelectField
+                      label={t("connectUnit.unit")}
+                      placeholder={
+                        !selectedBuildingId
+                          ? t("connectUnit.buildingPlaceholder")
+                          : unitsLookupQuery.isFetching
+                          ? "Loading..."
+                          : t("connectUnit.unitPlaceholder")
                       }
-                    }}
-                    disabled={!selectedBuildingId || unitsLookupQuery.isFetching}
-                  />
-                )}
-              />
+                      value={selectedUnit ? (selectedUnit.name || selectedUnit.number) : ""}
+                      error={errors.unitId?.message}
+                      onPress={() => {
+                        if (selectedBuildingId) {
+                          setIsUnitSheetPresented(true);
+                        } else {
+                          Alert.alert(t("common.error"), t("connectUnit.buildingPlaceholder"));
+                        }
+                      }}
+                      disabled={!selectedBuildingId || unitsLookupQuery.isFetching}
+                    />
+                  )}
+                />
 
+                <Controller
+                  control={control}
+                  name="ownershipType"
+                  render={({ field: { onChange, value } }) => (
+                    <AppSegmentSelector
+                      label={t("connectUnit.ownershipType")}
+                      options={ownershipOptions}
+                      selectedValue={value}
+                      onSelect={onChange}
+                    />
+                  )}
+                />
 
-
-              <Controller
-                control={control}
-                name="ownershipType"
-                render={({ field: { onChange, value } }) => (
-                  <AppSegmentSelector
-                    label={t("connectUnit.ownershipType")}
-                    options={ownershipOptions}
-                    selectedValue={value}
-                    onSelect={onChange}
-                  />
-                )}
-              />
-
-              <Controller
-                control={control}
-                name="contactNumber"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <AppInput
-                    label={t("connectUnit.contactNumber")}
-                    placeholder={t("connectUnit.contactNumberPlaceholder")}
-                    value={value}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    error={errors.contactNumber?.message}
-                    keyboardType="phone-pad"
-                  />
-                )}
-              />
-
-
+                <Controller
+                  control={control}
+                  name="contactNumber"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <AppInput
+                      label={t("connectUnit.contactNumber")}
+                      placeholder={t("connectUnit.contactNumberPlaceholder")}
+                      value={value}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      error={errors.contactNumber?.message}
+                      keyboardType="phone-pad"
+                      icon="phone"
+                    />
+                  )}
+                />
+              </View>
 
               <View className="mt-4">
                 <AppButton
@@ -476,6 +501,7 @@ export default function ConnectUnitScreen() {
         labelExtractor={(item) => item.name || item.number}
         subLabelExtractor={(item) => item.unitType}
       />
+      </View>
     </View>
   );
 }

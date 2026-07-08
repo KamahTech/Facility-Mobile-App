@@ -20,12 +20,18 @@ export function AppSelectField({
 }: AppSelectFieldProps) {
   return (
     <View className="w-full flex-col gap-1.5">
-      <AppText className="text-sm font-semibold text-muted-foreground">
-        {label}
-      </AppText>
+      {label && (
+        <AppText className="text-sm font-semibold text-muted-foreground">
+          {label}
+        </AppText>
+      )}
       <Pressable
         accessibilityRole="button"
-        className="min-h-[50px] w-full justify-center rounded-xl bg-card px-4 py-3.5 active:opacity-80"
+        className={`h-14 w-full justify-center rounded-2xl border transition-all px-4 ${
+          value
+            ? "bg-card border-border/80"
+            : "bg-secondary border-transparent"
+        } active:opacity-80`}
         {...props}
       >
         <AppRow className="items-center justify-between gap-3">
@@ -40,7 +46,7 @@ export function AppSelectField({
           <AppIcon
             name="chevronDown"
             size={18}
-            colorToken="--foreground"
+            colorToken="--muted-foreground"
             accessibilityLabel={placeholder}
           />
         </AppRow>

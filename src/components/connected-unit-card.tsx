@@ -37,49 +37,27 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
   const isOwner = unit.ownershipType === "owner";
 
   const getUnitTypeConfig = () => {
-    switch (unit.unitType) {
-      case "residential":
-        return {
-          icon: "home" as const,
-          bgClass: "bg-violet-50 dark:bg-violet-950/20",
-          iconColor: "#8B5CF6",
-          badgeBg: "bg-violet-50 dark:bg-violet-950/30",
-          badgeText: "text-violet-600 dark:text-violet-400",
-        };
-      case "office":
-        return {
-          icon: "facility" as const,
-          bgClass: "bg-blue-50 dark:bg-blue-950/20",
-          iconColor: "#3B82F6",
-          badgeBg: "bg-blue-50 dark:bg-blue-950/30",
-          badgeText: "text-blue-600 dark:text-blue-400",
-        };
-      case "retail":
-        return {
-          icon: "retail" as const,
-          bgClass: "bg-amber-50 dark:bg-amber-950/20",
-          iconColor: "#D97706",
-          badgeBg: "bg-amber-50 dark:bg-amber-950/30",
-          badgeText: "text-amber-600 dark:text-amber-400",
-        };
-      default:
-        return {
-          icon: "home" as const,
-          bgClass: "bg-violet-50 dark:bg-violet-950/20",
-          iconColor: "#8B5CF6",
-          badgeBg: "bg-violet-50 dark:bg-violet-950/30",
-          badgeText: "text-violet-600 dark:text-violet-400",
-        };
-    }
+    const icon =
+      unit.unitType === "office"
+        ? ("facility" as const)
+        : unit.unitType === "retail"
+        ? ("retail" as const)
+        : ("home" as const);
+
+    return {
+      icon,
+      bgClass: "bg-transparent",
+      iconColorToken: "--primary" as const,
+    };
   };
 
   const config = getUnitTypeConfig();
 
   return (
-    <AppRow className="w-full bg-card rounded-2xl p-4 items-center justify-between mb-4 shadow-sm">
+    <AppRow className="w-full bg-card rounded-[24px] p-4 items-center justify-between mb-4 shadow-2xs">
       <AppRow className="items-center gap-3.5 flex-1 min-w-0">
         <View className={`w-12 h-12 rounded-xl items-center justify-center ${config.bgClass}`}>
-          <AppIcon name={config.icon} size={24} color={config.iconColor} />
+          <AppIcon name={config.icon} size={24} colorToken={config.iconColorToken} />
         </View>
 
         <View className="flex-1 flex-col gap-1 text-start">
@@ -88,24 +66,23 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
           </AppText>
           <AppRow className="items-center gap-1.5 flex-wrap">
             {/* Unit Type Badge */}
-            <View className={`px-2.5 py-0.5 rounded-full ${config.badgeBg}`}>
-              <AppText className={`text-xs font-semibold ${config.badgeText}`}>
+            <View className="px-2 py-0.5 rounded-lg bg-secondary">
+              <AppText className="text-[11px] font-bold text-muted-foreground">
                 {t(`connectUnit.${unit.unitType}` as any) === `connectUnit.${unit.unitType}` ? unit.unitType : t(`connectUnit.${unit.unitType}` as any)}
               </AppText>
             </View>
 
             {/* Ownership Type Badge */}
             <View
-              className={`px-2.5 py-0.5 rounded-full ${
-                isOwner
-                  ? "bg-green-50 dark:bg-green-950/30"
-                  : "bg-blue-50 dark:bg-blue-950/30"
-              }`}
+              className="px-2 py-0.5 rounded-lg"
+              style={{
+                backgroundColor: isOwner ? "rgba(16, 185, 129, 0.1)" : "rgba(59, 130, 246, 0.1)",
+              }}
             >
               <AppText
-                className={`text-xs font-semibold ${
+                className={`text-[11px] font-bold ${
                   isOwner
-                    ? "text-green-600 dark:text-green-400"
+                    ? "text-emerald-600 dark:text-emerald-400"
                     : "text-blue-600 dark:text-blue-400"
                 }`}
               >
@@ -119,7 +96,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
       {unit.source !== "odoo_unit" && (
         <Pressable
           onPress={handleDeletePress}
-          className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/30 items-center justify-center active:opacity-75"
+          className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 items-center justify-center active:bg-rose-500/20 active:opacity-90"
         >
           <AppIcon name="trash" size={18} color={destructiveColor} />
         </Pressable>
