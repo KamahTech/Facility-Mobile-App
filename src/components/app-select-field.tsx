@@ -27,11 +27,7 @@ export function AppSelectField({
       )}
       <Pressable
         accessibilityRole="button"
-        className={`h-14 w-full justify-center rounded-2xl border transition-all px-4 ${
-          value
-            ? "bg-card border-border/80"
-            : "bg-secondary border-transparent"
-        } active:opacity-80`}
+        className="h-14 w-full justify-center rounded-2xl border border-transparent bg-secondary px-4 active:opacity-80"
         {...props}
       >
         <AppRow className="items-center justify-between gap-3">
