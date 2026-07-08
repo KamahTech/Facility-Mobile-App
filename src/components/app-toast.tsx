@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
+  Easing,
 } from "react-native-reanimated";
 
 import { AppText } from "@/components/app-text";
@@ -22,8 +22,14 @@ export function AppToast() {
 
   React.useEffect(() => {
     if (visible) {
-      translateY.value = withSpring(0, { damping: 15, stiffness: 120 });
-      opacity.value = withTiming(1, { duration: 250 });
+      translateY.value = withTiming(0, {
+        duration: 350,
+        easing: Easing.out(Easing.quad),
+      });
+      opacity.value = withTiming(1, {
+        duration: 350,
+        easing: Easing.out(Easing.quad),
+      });
 
       const timer = setTimeout(() => {
         hideToast();
@@ -31,8 +37,14 @@ export function AppToast() {
 
       return () => clearTimeout(timer);
     } else {
-      translateY.value = withTiming(-120, { duration: 250 });
-      opacity.value = withTiming(0, { duration: 200 });
+      translateY.value = withTiming(-120, {
+        duration: 300,
+        easing: Easing.in(Easing.quad),
+      });
+      opacity.value = withTiming(0, {
+        duration: 250,
+        easing: Easing.in(Easing.quad),
+      });
     }
   }, [visible, hideToast, translateY, opacity]);
 
@@ -78,9 +90,8 @@ export function AppToast() {
       ]}
       pointerEvents={visible ? "auto" : "none"}
     >
-      <Pressable
-        onPress={hideToast}
-        className={`w-full flex-row items-center gap-3 px-4 py-3.5 rounded-2xl ${bgClass} active:opacity-90`}
+      <View
+        className={`w-full flex-row items-center gap-3 px-4 py-2.5 rounded-2xl ${bgClass}`}
       >
         <View className="w-6 h-6 rounded-full bg-white/20 items-center justify-center shrink-0">
           <AppIcon
@@ -97,10 +108,14 @@ export function AppToast() {
           {message}
         </AppText>
 
-        <View className="w-5 h-5 items-center justify-center opacity-60 active:opacity-100 shrink-0">
-          <AppIcon name="close" size={12} color="#FFFFFF" />
-        </View>
-      </Pressable>
+        <Pressable
+          onPress={hideToast}
+          hitSlop={12}
+          className="w-8 h-8 items-center justify-center rounded-full opacity-60 active:opacity-100 shrink-0 active:bg-white/10"
+        >
+          <AppIcon name="close" size={14} color="#FFFFFF" />
+        </Pressable>
+      </View>
     </Animated.View>
   );
 }

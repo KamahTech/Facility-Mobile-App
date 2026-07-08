@@ -4,7 +4,6 @@ import Animated, {
   useAnimatedStyle,
   withRepeat,
   withTiming,
-  withSequence,
 } from "react-native-reanimated";
 
 type ShimmerPlaceholderProps = {
@@ -21,10 +20,7 @@ export function ShimmerPlaceholder({ className, style }: ShimmerPlaceholderProps
 
   React.useEffect(() => {
     opacity.value = withRepeat(
-      withSequence(
-        withTiming(0.65, { duration: 650 }),
-        withTiming(0.3, { duration: 650 })
-      ),
+      withTiming(0.65, { duration: 800 }),
       -1, // Loop infinitely
       true // Reverse direction
     );
