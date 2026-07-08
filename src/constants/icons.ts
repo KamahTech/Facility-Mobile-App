@@ -163,6 +163,22 @@ export const appIcons = {
     ios: "cart.fill",
     android: "shopping_cart",
   },
+  password: {
+    ios: "lock.fill",
+    android: "lock",
+  },
+  phone: {
+    ios: "phone.fill",
+    android: "phone",
+  },
+  key: {
+    ios: "key.fill",
+    android: "key",
+  },
+  email: {
+    ios: "envelope.fill",
+    android: "mail",
+  },
 } as const;
 
 export type AppIconName = keyof typeof appIcons;

@@ -171,6 +171,7 @@ export default function SignupScreen() {
                     onChangeText={onChange}
                     error={errors.name?.message}
                     autoCapitalize="words"
+                    icon="profile"
                   />
                 )}
               />
@@ -190,6 +191,7 @@ export default function SignupScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
+                    icon="email"
                   />
                 )}
               />
@@ -209,6 +211,7 @@ export default function SignupScreen() {
                     secureTextEntry
                     autoCapitalize="none"
                     autoCorrect={false}
+                    icon="password"
                   />
                 )}
               />
@@ -226,6 +229,7 @@ export default function SignupScreen() {
                     onChangeText={onChange}
                     error={errors.phone?.message}
                     keyboardType="phone-pad"
+                    icon="phone"
                   />
                 )}
               />
@@ -292,6 +296,7 @@ export default function SignupScreen() {
                     maxLength={6}
                     autoCapitalize="none"
                     autoCorrect={false}
+                    icon="key"
                   />
                 )}
               />

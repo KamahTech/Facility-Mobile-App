@@ -31,18 +31,18 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
       case "active":
       case "connected":
         return {
-          bg: "bg-emerald-50 dark:bg-emerald-950/20",
-          text: "text-emerald-700 dark:text-emerald-400",
+          bg: "bg-emerald-950/40 border border-emerald-800/30",
+          text: "text-emerald-400",
         };
       case "pending":
         return {
-          bg: "bg-amber-50 dark:bg-amber-950/20",
-          text: "text-amber-700 dark:text-amber-400",
+          bg: "bg-amber-950/40 border border-amber-800/30",
+          text: "text-amber-400",
         };
       default:
         return {
-          bg: "bg-secondary",
-          text: "text-muted-foreground",
+          bg: "bg-zinc-800 border border-zinc-700/30",
+          text: "text-zinc-400",
         };
     }
   };
@@ -52,12 +52,12 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
   return (
     <Pressable
       onPress={handlePress}
-      className="w-full bg-card rounded-[24px] shadow-sm overflow-hidden active:opacity-90"
+      className="w-full bg-zinc-900 rounded-[24px] shadow-md overflow-hidden active:opacity-90"
       style={[getDirectionalRowStyle(direction), { marginBottom: 16 }]}
     >
-      {/* Decorative vertical gradient bar on the start side */}
+      {/* Decorative vertical gradient bar on the start side (Primary Color Theme) */}
       <LinearGradient
-        colors={["#4f46e5", "#818cf8"]}
+        colors={["#DEEC7D", "#A5B53B"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{ width: 5 }}
@@ -67,14 +67,18 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
         {/* Header Row */}
         <AppRow className="items-center justify-between" style={{ columnGap: 12 }}>
           <AppRow className="items-center flex-1 min-w-0" style={{ columnGap: 12 }}>
-            <View className="w-10 h-10 rounded-xl items-center justify-center bg-primary/10">
+            <View className="w-10 h-10 rounded-xl items-center justify-center bg-zinc-800">
               <AppIcon name="facility" size={20} colorToken="--primary" />
             </View>
             <View className="flex-col flex-1 min-w-0 text-start">
-              <AppText className="text-base font-bold text-foreground text-start leading-5">
+              <AppText className="text-base font-bold text-white text-start leading-5">
                 {unit.name}
               </AppText>
-              <AppText className="text-xs text-muted-foreground text-start mt-0.5">
+              <AppText
+                className="text-xs text-zinc-400 text-start mt-0.5"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {unit.projectName} • {unit.phaseName}
               </AppText>
             </View>
@@ -92,18 +96,18 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
         {/* Details Grid-like Row */}
         <View className="flex-col" style={{ rowGap: 12 }}>
           <AppRow className="justify-between items-center">
-            <AppText className="text-xs text-muted-foreground text-start">{t("ownerUnits.area")}</AppText>
-            <AppText className="text-xs font-semibold text-foreground">{unit.totalArea} m²</AppText>
+            <AppText className="text-xs text-zinc-400 text-start">{t("ownerUnits.area")}</AppText>
+            <AppText className="text-xs font-semibold text-white">{unit.totalArea} m²</AppText>
           </AppRow>
 
           <AppRow className="justify-between items-center">
-            <AppText className="text-xs text-muted-foreground text-start">{t("ownerUnits.operationalArea")}</AppText>
-            <AppText className="text-xs font-semibold text-foreground">{unit.operationalArea} m²</AppText>
+            <AppText className="text-xs text-zinc-400 text-start">{t("ownerUnits.operationalArea")}</AppText>
+            <AppText className="text-xs font-semibold text-white">{unit.operationalArea} m²</AppText>
           </AppRow>
 
           <AppRow className="justify-between items-center">
-            <AppText className="text-xs text-muted-foreground text-start">{t("ownerUnits.annualDeposit")}</AppText>
-            <AppText className="text-xs font-bold text-primary">{formatCurrency(unit.annualMaintenanceDeposit)}</AppText>
+            <AppText className="text-xs text-zinc-400 text-start">{t("ownerUnits.annualDeposit")}</AppText>
+            <AppText className="text-xs font-bold text-white">{formatCurrency(unit.annualMaintenanceDeposit)}</AppText>
           </AppRow>
         </View>
 
@@ -112,8 +116,8 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
           className="justify-end items-center"
           style={{ columnGap: 4, paddingTop: 12 }}
         >
-          <AppText className="text-xs font-bold text-primary">{t("ownerFinancials.title")}</AppText>
-          <AppIcon name="chevronRight" size={14} colorToken="--primary" />
+          <AppText className="text-xs font-bold text-white">{t("ownerFinancials.title")}</AppText>
+          <AppIcon name="chevronRight" size={14} color="#FFFFFF" />
         </AppRow>
       </View>
     </Pressable>

@@ -8,6 +8,7 @@ import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
+import { useThemeToken } from "@/hooks/use-theme-token";
 
 const houseIcon = require("@/assets/icons/house.png");
 
@@ -18,6 +19,8 @@ type DueBalanceCardProps = {
 
 export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
   const { isRTL, language, t } = useI18n();
+  const primaryColor = useThemeToken("--primary") as string;
+  const primaryForeground = useThemeToken("--primary-foreground") as string;
 
   const formattedCount = React.useMemo(() => {
     const formatter = new Intl.NumberFormat(language);
@@ -47,16 +50,17 @@ export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
       style={{
         borderRadius: 24,
         padding: 24,
-        backgroundColor: "#2E5A44",
+        backgroundColor: primaryColor || "#DEEC7D",
         minHeight: 160,
       }}
       className="w-full overflow-hidden shadow-lg relative flex-col justify-between"
     >
       {/* Background Gradient */}
       <LinearGradient
-        colors={["#2E5A44", "#1f4a34"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        colors={["#DCE986", "#C6D370"]}
+        locations={[0, 0.35]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
@@ -71,19 +75,19 @@ export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
             alignSelf: "flex-start",
           }}
         >
-          <AppText className="text-base font-bold text-emerald-100/90 uppercase tracking-wider">
+          <AppText className="text-base font-bold text-primary-foreground/80 uppercase tracking-wider">
             {t("connectUnit.connectedTitle")}
           </AppText>
           <AppIcon
             name={isRTL ? "arrowUpLeft" : "arrowUpRight"}
             size={18}
-            color="rgba(167, 243, 208, 0.9)"
+            color={primaryForeground}
           />
         </AppRow>
 
         {/* Connected Units Count Number */}
         <AppText 
-          className="text-4xl font-bold text-white tracking-tight"
+          className="text-4xl font-extrabold text-primary-foreground tracking-tight"
           style={{
             alignSelf: "flex-start",
           }}
