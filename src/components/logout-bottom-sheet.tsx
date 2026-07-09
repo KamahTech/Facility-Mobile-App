@@ -40,6 +40,16 @@ export function LogoutBottomSheet({
   const backgroundColor = useThemeToken("--card");
   const borderColor = useThemeToken("--border");
 
+  const bottomSheetRef = React.useRef<BottomSheet>(null);
+
+  React.useEffect(() => {
+    if (isPresented) {
+      bottomSheetRef.current?.snapToIndex(0);
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, [isPresented]);
+
   const handleConfirm = React.useCallback(() => {
     onConfirm();
     onDismiss();
@@ -51,7 +61,8 @@ export function LogoutBottomSheet({
 
   const content = (
     <BottomSheet
-      index={isPresented ? 0 : -1}
+      ref={bottomSheetRef}
+      index={-1}
       snapPoints={defaultBottomSheetSnapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose

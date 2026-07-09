@@ -45,6 +45,16 @@ export function GenericSelectBottomSheet<T>({
   const backgroundColor = useThemeToken("--card");
   const borderColor = useThemeToken("--border");
 
+  const bottomSheetRef = React.useRef<BottomSheet>(null);
+
+  React.useEffect(() => {
+    if (isPresented) {
+      bottomSheetRef.current?.snapToIndex(0);
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, [isPresented]);
+
   const handleSelect = (item: T) => {
     onSelect(item);
     onDismiss();
@@ -59,7 +69,8 @@ export function GenericSelectBottomSheet<T>({
 
   return (
     <BottomSheet
-      index={isPresented ? 0 : -1}
+      ref={bottomSheetRef}
+      index={-1}
       snapPoints={defaultBottomSheetSnapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose
