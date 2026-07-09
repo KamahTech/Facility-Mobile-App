@@ -1,10 +1,11 @@
 import React from "react";
 import { View, ScrollView, Alert, Pressable, KeyboardAvoidingView, Platform } from "react-native";
-import { useLocalSearchParams, Stack, router } from "expo-router";
+import { useLocalSearchParams, Stack, router, type Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 
 import { ScreenHeader } from "@/components/screen-header";
+import { AppChevron } from "@/components/app-chevron";
 import { MediaSourceSheet } from "@/components/media-source-sheet";
 import { FullscreenImageViewer } from "@/components/fullscreen-image-viewer";
 import { AppText } from "@/components/app-text";
@@ -380,6 +381,39 @@ export default function WorkerDetailsScreen() {
             {task.description}
           </AppText>
         </View>
+
+        {/* Comments Section Button */}
+        <Pressable
+          onPress={() => {
+            router.push({
+              pathname: "/(worker)/worker/messages",
+              params: { id: task.id },
+            } as Href);
+          }}
+          className="w-full bg-card rounded-2xl p-4 shadow-sm mb-6 active:opacity-80 border border-border/10"
+        >
+          <AppRow className="items-center justify-between">
+            <AppRow className="items-center gap-3">
+              <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
+                <AppIcon name="tickets" size={16} colorToken="--primary" />
+              </View>
+              <AppText className="text-base font-bold text-foreground text-start">
+                {t("tickets.comments")}
+              </AppText>
+            </AppRow>
+
+            <AppRow className="items-center gap-2">
+              {task.comments && task.comments.length > 0 && (
+                <View className="bg-primary px-2.5 py-0.5 rounded-full">
+                  <AppText className="text-xs font-bold text-primary-foreground">
+                    {task.comments.length}
+                  </AppText>
+                </View>
+              )}
+              <AppChevron size={14} color={mutedToken} />
+            </AppRow>
+          </AppRow>
+        </Pressable>
 
         {/* WORKFLOW VIEW CHANGER */}
 

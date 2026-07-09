@@ -9,17 +9,17 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useRequestsStore } from "@/stores/requests-store";
 import { ChatView } from "@/components/chat-view";
 
-export default function ResidentTicketMessagesScreen() {
+export default function WorkerTicketMessagesScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const requestId = params.id as string;
+  const taskId = params.id as string;
 
-  const { requests, addRequestComment } = useRequestsStore({ enableResidentRequests: true });
+  const { requests, addRequestComment } = useRequestsStore({ enableWorkerTasks: true });
 
-  const request = requests.find((r) => r.id === requestId);
+  const task = requests.find((r) => r.id === taskId);
 
-  if (!request) {
+  if (!task) {
     return (
       <View
         className="flex-1 bg-background"
@@ -33,7 +33,7 @@ export default function ResidentTicketMessagesScreen() {
         <ScreenHeader title={t("tickets.comments")} onBack={() => router.back()} />
         <View className="flex-1 items-center justify-center p-6">
           <AppText className="text-base text-muted-foreground">
-            {t("tickets.notFound")}
+            {t("worker.notFound")}
           </AppText>
         </View>
       </View>
@@ -45,16 +45,16 @@ export default function ResidentTicketMessagesScreen() {
     imageBase64: string | false,
     imageName: string | false
   ) => {
-    await addRequestComment(request.id, content, imageBase64, imageName);
+    await addRequestComment(task.id, content, imageBase64, imageName);
   };
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ChatView
-        ticketId={request.id}
-        comments={request.comments}
-        accountType="resident"
+        ticketId={task.id}
+        comments={task.comments}
+        accountType="worker"
         onSendComment={handleSendComment}
         onBack={() => router.back()}
       />
