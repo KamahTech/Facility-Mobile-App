@@ -244,6 +244,7 @@ export default function ResidentTicketMessagesScreen() {
           keyExtractor={(item) => item.id}
           estimatedItemSize={120}
           recycleItems={true}
+          alignItemsAtEnd={true}
           initialScrollAtEnd={true}
           maintainScrollAtEnd={{ animated: true }}
           showsVerticalScrollIndicator={false}
