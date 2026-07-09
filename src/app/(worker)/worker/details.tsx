@@ -63,7 +63,12 @@ export default function WorkerDetailsScreen() {
       z.object({
         notes: z.string().min(1, t("validation.inspectionNotesRequired")),
         materials: z.string().optional(),
-        deadline: z.string().optional(),
+        deadline: z
+          .string()
+          .optional()
+          .refine((val) => !val || /^\d{4}-\d{2}-\d{2}$/.test(val), {
+            message: t("validation.dateFormat"),
+          }),
       }),
     [t],
   );
