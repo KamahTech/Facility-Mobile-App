@@ -5,7 +5,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { LegendList } from "@legendapp/list/react-native";
 import type { LegendListRef } from "@legendapp/list/react-native";
-import { KeyboardStickyView } from "react-native-keyboard-controller";
+import { KeyboardStickyView, useReanimatedKeyboardAnimation } from "react-native-keyboard-controller";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { MediaSourceSheet } from "@/components/media-source-sheet";
@@ -40,10 +41,17 @@ export default function ResidentTicketMessagesScreen() {
   const [isViewerVisible, setIsViewerVisible] = React.useState(false);
   const [sendLoading, setSendLoading] = React.useState(false);
   const listRef = React.useRef<LegendListRef>(null);
+  const { height: keyboardAnimationHeight } = useReanimatedKeyboardAnimation();
 
   const comments = React.useMemo(() => {
     return request?.comments ?? [];
   }, [request]);
+
+  const listKeyboardStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: keyboardAnimationHeight.value }],
+    };
+  });
 
   if (!request) {
     return (
@@ -237,7 +245,7 @@ export default function ResidentTicketMessagesScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ScreenHeader title={t("tickets.comments")} onBack={() => router.back()} />
 
-      <View className="flex-1 w-full max-w-xl self-center px-5">
+      <Animated.View className="flex-1 w-full max-w-xl self-center px-5" style={listKeyboardStyle}>
         <LegendList
           ref={listRef}
           data={comments}
@@ -267,7 +275,7 @@ export default function ResidentTicketMessagesScreen() {
           renderItem={renderCommentItem}
           className="flex-1 w-full"
         />
-      </View>
+      </Animated.View>
 
       {/* Sticky Comment Input Box at the bottom */}
       <KeyboardStickyView
