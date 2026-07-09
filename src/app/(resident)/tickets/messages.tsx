@@ -5,8 +5,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { LegendList } from "@legendapp/list/react-native";
 import type { LegendListRef } from "@legendapp/list/react-native";
-import { KeyboardStickyView, useReanimatedKeyboardAnimation } from "react-native-keyboard-controller";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import { useGenericKeyboardHandler } from "react-native-keyboard-controller";
+import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { MediaSourceSheet } from "@/components/media-source-sheet";
@@ -41,15 +41,47 @@ export default function ResidentTicketMessagesScreen() {
   const [isViewerVisible, setIsViewerVisible] = React.useState(false);
   const [sendLoading, setSendLoading] = React.useState(false);
   const listRef = React.useRef<LegendListRef>(null);
-  const { height: keyboardAnimationHeight } = useReanimatedKeyboardAnimation();
+  const keyboardTranslateY = useSharedValue(0);
 
   const comments = React.useMemo(() => {
     return request?.comments ?? [];
   }, [request]);
 
+  useGenericKeyboardHandler(
+    {
+      onStart: (event) => {
+        "worklet";
+
+        keyboardTranslateY.value = -event.height;
+      },
+      onMove: (event) => {
+        "worklet";
+
+        keyboardTranslateY.value = -event.height;
+      },
+      onInteractive: (event) => {
+        "worklet";
+
+        keyboardTranslateY.value = -event.height;
+      },
+      onEnd: (event) => {
+        "worklet";
+
+        keyboardTranslateY.value = -event.height;
+      },
+    },
+    [],
+  );
+
   const listKeyboardStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateY: keyboardAnimationHeight.value }],
+      transform: [{ translateY: keyboardTranslateY.value }],
+    };
+  });
+
+  const composerKeyboardStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: keyboardTranslateY.value }],
     };
   });
 
@@ -245,44 +277,49 @@ export default function ResidentTicketMessagesScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ScreenHeader title={t("tickets.comments")} onBack={() => router.back()} />
 
-      <Animated.View className="flex-1 w-full max-w-xl self-center px-5" style={listKeyboardStyle}>
-        <LegendList
-          ref={listRef}
-          data={comments}
-          keyExtractor={(item) => item.id}
-          estimatedItemSize={120}
-          recycleItems={true}
-          alignItemsAtEnd={true}
-          initialScrollAtEnd={true}
-          maintainScrollAtEnd={{ animated: true }}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingTop: 24,
-            paddingBottom: 16,
-          }}
-          ListEmptyComponent={
-            <View
-              className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 border border-border/30 shadow-3xs"
-            >
-              <View className="w-12 h-12 rounded-full bg-secondary/50 items-center justify-center mb-3">
-                <AppIcon name="tickets" size={22} colorToken="--muted-foreground" />
+      <View className="flex-1 w-full overflow-hidden">
+        <Animated.View className="flex-1 w-full max-w-xl self-center px-5" style={listKeyboardStyle}>
+          <LegendList
+            ref={listRef}
+            data={comments}
+            keyExtractor={(item) => item.id}
+            estimatedItemSize={120}
+            recycleItems={true}
+            alignItemsAtEnd={true}
+            initialScrollAtEnd={true}
+            maintainScrollAtEnd={{ animated: true }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingTop: 24,
+              paddingBottom: 16,
+            }}
+            ListEmptyComponent={
+              <View
+                className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 border border-border/30 shadow-3xs"
+              >
+                <View className="w-12 h-12 rounded-full bg-secondary/50 items-center justify-center mb-3">
+                  <AppIcon name="tickets" size={22} colorToken="--muted-foreground" />
+                </View>
+                <AppText className="text-sm text-muted-foreground text-center">
+                  {t("tickets.noComments")}
+                </AppText>
               </View>
-              <AppText className="text-sm text-muted-foreground text-center">
-                {t("tickets.noComments")}
-              </AppText>
-            </View>
-          }
-          renderItem={renderCommentItem}
-          className="flex-1 w-full"
-        />
-      </Animated.View>
+            }
+            renderItem={renderCommentItem}
+            className="flex-1 w-full"
+          />
+        </Animated.View>
+      </View>
 
       {/* Sticky Comment Input Box at the bottom */}
-      <KeyboardStickyView
+      <Animated.View
         className="w-full bg-card border-t border-border/30"
-        style={{
-          paddingBottom: Math.max(insets.bottom, 12),
-        }}
+        style={[
+          {
+            paddingBottom: Math.max(insets.bottom, 12),
+          },
+          composerKeyboardStyle,
+        ]}
       >
         {/* Selected Photo Preview */}
         {selectedPhoto && (
@@ -349,7 +386,7 @@ export default function ResidentTicketMessagesScreen() {
             )}
           </Pressable>
         </AppRow>
-      </KeyboardStickyView>
+      </Animated.View>
 
       <MediaSourceSheet
         isPresented={isMediaSheetVisible}
