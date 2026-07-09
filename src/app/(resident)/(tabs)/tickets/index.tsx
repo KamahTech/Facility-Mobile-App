@@ -1,6 +1,5 @@
 import React from "react";
 import { View, ScrollView, Pressable, ActivityIndicator, RefreshControl } from "react-native";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, type Href, useNavigation } from "expo-router";
 import { AnimatedLegendList } from "@legendapp/list/reanimated";
@@ -27,7 +26,7 @@ export default function ResidentTicketsScreen() {
   const { requests, fetchResidentRequests, fetchNextResidentRequests, hasNextResidentRequests, loading, error, clearError } = useRequestsStore({ enableResidentRequests: true });
   const isTransitionFinished = useScreenTransition();
   const navigation = useNavigation();
-  const { headerTranslateY, scrollHandler, resetScrollAnimation } = useScrollAnimation();
+  const { scrollHandler, resetScrollAnimation } = useScrollAnimation();
   const listRef = React.useRef<any>(null);
 
   const [activeFilter, setActiveFilter] = React.useState<RequestStatus | "all">("all");
@@ -67,11 +66,7 @@ export default function ResidentTicketsScreen() {
     return unsubscribe;
   }, [navigation, resetScrollAnimation]);
 
-  const headerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: headerTranslateY.value }],
-    };
-  });
+
 
   const filterOptions: { labelKey: string; value: RequestStatus | "all" }[] = [
     { labelKey: "tickets.status.all", value: "all" },
@@ -114,9 +109,13 @@ export default function ResidentTicketsScreen() {
   const renderEmptyState = () => (
     <ScrollView
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#4F46E5" />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor="#4F46E5"
+        />
       }
-      contentContainerStyle={{ paddingTop: insets.top + 130, flexGrow: 1 }}
+      contentContainerStyle={{ paddingTop: 32, flexGrow: 1 }}
       className="flex-1"
     >
       <View className="items-center justify-center py-16 px-6">
@@ -147,31 +146,13 @@ export default function ResidentTicketsScreen() {
       }}
     >
       <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
+
+      {/* Static Header Container */}
       <View
         style={{
-          height: insets.top,
+          paddingTop: insets.top,
           backgroundColor: background,
-          position: "absolute",
-          top: 0,
-          start: 0,
-          end: 0,
-          zIndex: 100,
         }}
-      />
-      {/* Absolute Collapsible Header Container */}
-      <Animated.View
-        style={[
-          headerAnimatedStyle,
-          {
-            position: "absolute",
-            top: 0,
-            start: 0,
-            end: 0,
-            paddingTop: insets.top,
-            backgroundColor: background,
-            zIndex: 10,
-          }
-        ]}
         className="shadow-sm"
       >
         {/* Tab Screen Header */}
@@ -208,12 +189,12 @@ export default function ResidentTicketsScreen() {
             {filterOptions.map(renderFilterItem)}
           </ScrollView>
         </View>
-      </Animated.View>
+      </View>
 
       {/* Requests List */}
       <View className="flex-1 w-full max-w-xl self-center px-5">
         {loading && requests.length === 0 ? (
-          <View style={{ paddingTop: insets.top + 180 }} className="flex-1 items-center justify-center">
+          <View className="flex-1 items-center justify-center py-12">
             {isTransitionFinished && <ActivityIndicator size="large" color="#4F46E5" />}
           </View>
         ) : filteredRequests.length === 0 ? (
@@ -221,7 +202,7 @@ export default function ResidentTicketsScreen() {
         ) : (
           <View className="flex-1">
             {error && (
-              <View style={{ marginTop: insets.top + 140 }} className="bg-destructive/10 p-3 rounded-xl mb-2 mx-1">
+              <View className="bg-destructive/10 p-3 rounded-xl mb-2 mx-1 mt-2">
                 <AppText className="text-sm font-semibold text-destructive text-start">
                   {error}
                 </AppText>
@@ -242,7 +223,6 @@ export default function ResidentTicketsScreen() {
                   refreshing={refreshing}
                   onRefresh={handleRefresh}
                   tintColor="#4F46E5"
-                  progressViewOffset={insets.top + 138}
                 />
               }
               onEndReached={() => {
@@ -252,7 +232,7 @@ export default function ResidentTicketsScreen() {
               }}
               onEndReachedThreshold={0.5}
               contentContainerStyle={{
-                paddingTop: insets.top + 138,
+                paddingTop: 16,
                 paddingBottom: insets.bottom + 140,
               }}
               className="flex-1 w-full"

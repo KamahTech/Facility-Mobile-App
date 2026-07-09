@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Pressable } from "react-native";
 import { router, type Href } from "expo-router";
 
@@ -7,7 +6,10 @@ import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 import { useUnitStore } from "@/stores/unit-store";
-import type { MaintenanceRequest, RequestStatus } from "@/stores/requests-store";
+import type {
+  MaintenanceRequest,
+  RequestStatus,
+} from "@/stores/requests-store";
 
 type WorkerTaskCardProps = {
   task: MaintenanceRequest;
@@ -109,15 +111,27 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
     >
       <AppRow className="items-center justify-between gap-3">
         <AppRow className="items-center gap-3 flex-1 min-w-0">
-          <View className={`w-11 h-11 rounded-xl items-center justify-center ${categoryConfig.bgClass}`}>
-            <AppIcon name={categoryConfig.icon} size={22} color={categoryConfig.iconColor} />
+          <View
+            className={`w-11 h-11 rounded-xl items-center justify-center ${categoryConfig.bgClass}`}
+          >
+            <AppIcon
+              name={categoryConfig.icon}
+              size={22}
+              color={categoryConfig.iconColor}
+            />
           </View>
           <View className="flex-1 min-w-0 text-start">
-            <AppText className="text-base font-bold text-foreground text-start" numberOfLines={1}>
+            <AppText
+              className="text-base font-bold text-foreground text-start"
+              numberOfLines={1}
+            >
               {t(`services.${task.category}` as any)}
             </AppText>
             {unitLabel ? (
-              <AppText className="text-xs text-muted-foreground mt-0.5 text-start" numberOfLines={1}>
+              <AppText
+                className="text-xs text-muted-foreground mt-0.5 text-start"
+                numberOfLines={1}
+              >
                 {unitLabel}
               </AppText>
             ) : null}
@@ -126,14 +140,19 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
 
         {/* Status Badge */}
         <View className={`px-2.5 py-1 rounded-full ${statusConfig.bgClass}`}>
-          <AppText className={`text-xs font-semibold uppercase tracking-wider ${statusConfig.textClass}`}>
+          <AppText
+            className={`text-xs font-semibold uppercase tracking-wider ${statusConfig.textClass}`}
+          >
             {t(`tickets.status.${task.status}` as any)}
           </AppText>
         </View>
       </AppRow>
 
       {/* Preview details */}
-      <AppText className="text-sm text-card-foreground/80 leading-5 text-start" numberOfLines={2}>
+      <AppText
+        className="text-sm text-card-foreground/80 leading-5 text-start"
+        numberOfLines={2}
+      >
         {task.description}
       </AppText>
 

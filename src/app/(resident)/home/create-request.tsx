@@ -153,11 +153,11 @@ export default function CreateRequestScreen() {
         <View className="flex-col gap-6">
           {/* Category summary */}
           {selectedCategoryItem && (
-            <View className="p-4 rounded-xl bg-secondary/50">
-              <AppText className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-start">
+            <View className="flex-col gap-1.5">
+              <AppText className="text-sm font-semibold text-muted-foreground text-start">
                 {t("tickets.categoryLabel")}
               </AppText>
-              <AppText className="text-lg font-bold text-foreground mt-1 text-start">
+              <AppText className="text-base font-semibold text-foreground text-start px-0.5">
                 {t(selectedCategoryItem.titleKey)}
               </AppText>
             </View>

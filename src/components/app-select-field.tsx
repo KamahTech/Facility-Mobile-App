@@ -9,6 +9,7 @@ type AppSelectFieldProps = Omit<PressableProps, "children"> & {
   value?: string;
   placeholder: string;
   error?: string;
+  showArrow?: boolean;
 };
 
 export function AppSelectField({
@@ -16,6 +17,8 @@ export function AppSelectField({
   value,
   placeholder,
   error,
+  disabled,
+  showArrow = true,
   ...props
 }: AppSelectFieldProps) {
   return (
@@ -27,7 +30,12 @@ export function AppSelectField({
       )}
       <Pressable
         accessibilityRole="button"
-        className="h-14 w-full justify-center rounded-2xl border border-transparent bg-secondary px-4 active:opacity-80"
+        disabled={disabled}
+        className={`h-14 w-full justify-center rounded-2xl border border-transparent px-4 ${
+          disabled
+            ? "bg-secondary/50 opacity-50"
+            : "bg-secondary active:opacity-80"
+        }`}
         {...props}
       >
         <AppRow className="items-center justify-between gap-3">
@@ -39,12 +47,14 @@ export function AppSelectField({
           >
             {value || placeholder}
           </AppText>
-          <AppIcon
-            name="chevronDown"
-            size={18}
-            colorToken="--muted-foreground"
-            accessibilityLabel={placeholder}
-          />
+          {showArrow && (
+            <AppIcon
+              name="chevronDown"
+              size={18}
+              colorToken="--muted-foreground"
+              accessibilityLabel={placeholder}
+            />
+          )}
         </AppRow>
       </Pressable>
       {error && (
