@@ -10,6 +10,7 @@ import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/const
 import { visitorPurposeOptions, type VisitorPurposeId } from "@/constants/visitor-purposes";
 import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
+import { useThemeToken } from "@/hooks/use-theme-token";
 
 type VisitorPurposeBottomSheetProps = {
   isPresented: boolean;
@@ -26,6 +27,8 @@ export function VisitorPurposeBottomSheet({
 }: VisitorPurposeBottomSheetProps) {
   const { t } = useI18n();
   useBottomSheetLayer(isPresented);
+  const backgroundColor = useThemeToken("--card");
+  const borderColor = useThemeToken("--border");
 
   const handleSelect = (purpose: VisitorPurposeId) => {
     onSelect(purpose);
@@ -40,6 +43,8 @@ export function VisitorPurposeBottomSheet({
       enablePanDownToClose
       backdropComponent={AppBottomSheetBackdrop}
       containerStyle={bottomSheetContainerStyle}
+      backgroundStyle={{ backgroundColor }}
+      handleIndicatorStyle={{ backgroundColor: borderColor }}
       onClose={onDismiss}
     >
       <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24 }}>
@@ -47,7 +52,7 @@ export function VisitorPurposeBottomSheet({
           {t("inviteVisitor.purpose")}
         </AppText>
 
-        <View className="w-full overflow-hidden rounded-xl bg-card">
+        <View className="w-full overflow-hidden rounded-xl bg-secondary">
           {visitorPurposeOptions.map((option, index) => {
             const isSelected = selectedPurpose === option.id;
             const isLast = index === visitorPurposeOptions.length - 1;
@@ -63,7 +68,7 @@ export function VisitorPurposeBottomSheet({
                 onPress={() => handleSelect(option.id)}
               >
                 <AppRow className="w-full items-center justify-between gap-3">
-                  <AppText className="flex-1 text-base font-medium text-card-foreground text-start">
+                  <AppText className="flex-1 text-base font-medium text-secondary-foreground text-start">
                     {t(option.labelKey)}
                   </AppText>
                   {isSelected && (

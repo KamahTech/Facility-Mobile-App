@@ -9,6 +9,7 @@ import { AppText } from "@/components/app-text";
 import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
 import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
+import { useThemeToken } from "@/hooks/use-theme-token";
 
 type GenericSelectBottomSheetProps<T> = {
   isPresented: boolean;
@@ -41,6 +42,8 @@ export function GenericSelectBottomSheet<T>({
 }: GenericSelectBottomSheetProps<T>) {
   const { t } = useI18n();
   useBottomSheetLayer(isPresented);
+  const backgroundColor = useThemeToken("--card");
+  const borderColor = useThemeToken("--border");
 
   const handleSelect = (item: T) => {
     onSelect(item);
@@ -62,6 +65,8 @@ export function GenericSelectBottomSheet<T>({
       enablePanDownToClose
       backdropComponent={AppBottomSheetBackdrop}
       containerStyle={bottomSheetContainerStyle}
+      backgroundStyle={{ backgroundColor }}
+      handleIndicatorStyle={{ backgroundColor: borderColor }}
       onClose={onDismiss}
     >
       <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24, flex: 1 }}>
@@ -70,7 +75,7 @@ export function GenericSelectBottomSheet<T>({
         </AppText>
 
         <BottomSheetScrollView className="flex-1 w-full" showsVerticalScrollIndicator={false}>
-          <View className="w-full overflow-hidden rounded-xl bg-card mb-6">
+          <View className="w-full overflow-hidden rounded-xl bg-secondary mb-6">
             {showClearOption && onClear && (
               <Pressable
                 accessibilityRole="button"
@@ -105,7 +110,7 @@ export function GenericSelectBottomSheet<T>({
                 >
                   <AppRow className="w-full items-center justify-between gap-3">
                     <View className="flex-1 flex-col gap-0.5 text-start">
-                      <AppText className="text-base font-medium text-card-foreground text-start">
+                      <AppText className="text-base font-medium text-secondary-foreground text-start">
                         {label}
                       </AppText>
                       {subLabel && (

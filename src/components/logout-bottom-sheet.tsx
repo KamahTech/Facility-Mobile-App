@@ -37,6 +37,8 @@ export function LogoutBottomSheet({
   const insets = useSafeAreaInsets();
   useBottomSheetLayer(isPresented);
   const destructiveColor = useThemeToken("--destructive");
+  const backgroundColor = useThemeToken("--card");
+  const borderColor = useThemeToken("--border");
 
   const handleConfirm = React.useCallback(() => {
     onConfirm();
@@ -55,6 +57,8 @@ export function LogoutBottomSheet({
       enablePanDownToClose
       backdropComponent={AppBottomSheetBackdrop}
       containerStyle={bottomSheetContainerStyle}
+      backgroundStyle={{ backgroundColor }}
+      handleIndicatorStyle={{ backgroundColor: borderColor }}
       onClose={onDismiss}
     >
       <BottomSheetView
@@ -76,34 +80,28 @@ export function LogoutBottomSheet({
             {userRole || t("auth.workerTitle")}
           </AppText>
 
-          <View className="w-full overflow-hidden rounded-xl bg-card">
+          <View className="w-full gap-3">
             <Pressable
               accessibilityRole="button"
-              className="min-h-14 w-full justify-center px-4 py-4"
+              className="min-h-14 w-full justify-center items-center px-4 py-4 rounded-xl bg-rose-600"
               onPress={handleConfirm}
             >
-              <AppRow className="w-full items-center justify-between gap-3">
-                <AppRow className="flex-1 items-center gap-3">
-                  <View className="h-9 w-9 items-center justify-center rounded-full bg-rose-600/10">
-                    <AppIcon name="logout" size={18} color={destructiveColor} />
-                  </View>
-                  <AppText className="text-base font-semibold text-rose-600">
-                    {t("profile.signOut")}
-                  </AppText>
-                </AppRow>
+              <AppRow className="items-center gap-2">
+                <AppIcon name="logout" size={18} color="#ffffff" />
+                <AppText className="text-base font-semibold text-white">
+                  {t("profile.signOut")}
+                </AppText>
               </AppRow>
             </Pressable>
 
             <Pressable
               accessibilityRole="button"
-              className="min-h-14 w-full justify-center px-4 py-4"
+              className="min-h-14 w-full justify-center items-center px-4 py-4 rounded-xl bg-secondary"
               onPress={handleDismiss}
             >
-              <AppRow className="w-full items-center justify-between gap-3">
-                <AppText className="flex-1 text-base font-medium text-card-foreground">
-                  {t("actions.cancel")}
-                </AppText>
-              </AppRow>
+              <AppText className="text-base font-semibold text-secondary-foreground">
+                {t("actions.cancel")}
+              </AppText>
             </Pressable>
           </View>
         </View>

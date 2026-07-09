@@ -9,6 +9,7 @@ import { AppText } from "@/components/app-text";
 import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
 import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
+import { useThemeToken } from "@/hooks/use-theme-token";
 import type { ConnectedUnit } from "@/stores/unit-store";
 
 type UnitSelectBottomSheetProps = {
@@ -28,6 +29,8 @@ export function UnitSelectBottomSheet({
 }: UnitSelectBottomSheetProps) {
   const { t } = useI18n();
   useBottomSheetLayer(isPresented);
+  const backgroundColor = useThemeToken("--card");
+  const borderColor = useThemeToken("--border");
 
   const handleSelect = (unit: ConnectedUnit) => {
     onSelect(unit);
@@ -42,6 +45,8 @@ export function UnitSelectBottomSheet({
       enablePanDownToClose
       backdropComponent={AppBottomSheetBackdrop}
       containerStyle={bottomSheetContainerStyle}
+      backgroundStyle={{ backgroundColor }}
+      handleIndicatorStyle={{ backgroundColor: borderColor }}
       onClose={onDismiss}
     >
       <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24 }}>
@@ -49,7 +54,7 @@ export function UnitSelectBottomSheet({
           {t("tickets.selectUnit")}
         </AppText>
 
-        <View className="w-full overflow-hidden rounded-xl bg-card">
+        <View className="w-full overflow-hidden rounded-xl bg-secondary">
           {units.map((unit, index) => {
             const isSelected = selectedUnitId === unit.id;
             const isLast = index === units.length - 1;
@@ -67,7 +72,7 @@ export function UnitSelectBottomSheet({
               >
                 <AppRow className="w-full items-center justify-between gap-3">
                   <View className="flex-1 flex-col gap-0.5 text-start">
-                    <AppText className="text-base font-medium text-card-foreground text-start">
+                    <AppText className="text-base font-medium text-secondary-foreground text-start">
                       {unitLabel}
                     </AppText>
                     <AppText className="text-xs text-muted-foreground text-start">
