@@ -3,7 +3,7 @@ import { Pressable, View, Alert, ActivityIndicator, RefreshControl, StyleSheet }
 import { Stack, router, type Href } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
@@ -20,7 +20,7 @@ import { useUnitStore } from "@/stores/unit-store";
 
 export default function ConnectUnitScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
   const { units, fetchUnits, disconnectUnit, loading, clearError } = useUnitStore();
   const mutedForeground = useThemeToken("--muted-foreground");

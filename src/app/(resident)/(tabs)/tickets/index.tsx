@@ -1,6 +1,6 @@
 import React from "react";
 import { View, ScrollView, Pressable, ActivityIndicator, RefreshControl } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { router, type Href, useNavigation } from "expo-router";
 import { AnimatedLegendList } from "@legendapp/list/reanimated";
 import { StatusBar } from "expo-status-bar";
@@ -19,7 +19,7 @@ import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 
 export default function ResidentTicketsScreen() {
   const { t, direction } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
   const mutedColor = useThemeToken("--muted-foreground");
   const background = useThemeToken("--background");

@@ -3,7 +3,7 @@ import { View, Alert, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -38,7 +38,7 @@ type ConnectUnitFormValues = {
 
 export default function AddUnitScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
   const { connectUnit, clearError } = useUnitStore();
 

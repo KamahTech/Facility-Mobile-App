@@ -1,6 +1,6 @@
 import React from "react";
-import { View, Pressable, StyleSheet, useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Pressable, useWindowDimensions } from "react-native";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -14,7 +14,7 @@ import { useToastStore } from "@/stores/toast-store";
 
 export function AppToast() {
   const { message, type, visible, hideToast } = useToastStore();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { width } = useWindowDimensions();
 
   const translateY = useSharedValue(-120);
@@ -72,7 +72,6 @@ export function AppToast() {
   return (
     <Animated.View
       style={[
-        StyleSheet.absoluteFill,
         animatedStyle,
         {
           position: "absolute",

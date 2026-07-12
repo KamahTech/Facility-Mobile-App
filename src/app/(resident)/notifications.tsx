@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, View, Alert, ActivityIndicator, RefreshControl } from "react-native";
 import { Stack, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { AppIcon } from "@/components/app-icon";
@@ -14,7 +14,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 
 export default function NotificationsScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const {
     notifications,
     fetchNotifications,

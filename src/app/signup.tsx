@@ -1,7 +1,7 @@
 import React from "react";
 import { View, ActivityIndicator, Pressable, Alert } from "react-native";
 import { Stack, router, type Href } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
@@ -25,7 +25,7 @@ type SignupFormValues = {
 
 export default function SignupScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const [step, setStep] = React.useState<1 | 2>(1);
 
   const { requestOtp, signup, loading, clearError } = useUserStore();

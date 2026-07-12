@@ -1,8 +1,9 @@
 import React from "react";
-import { View, ScrollView, Alert, Pressable, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Alert, Pressable } from "react-native";
 import { useLocalSearchParams, Stack, router, type Href } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { Image } from "expo-image";
+import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppChevron } from "@/components/app-chevron";
@@ -34,7 +35,7 @@ type InspectFormValues = {
 
 export default function WorkerDetailsScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const params = useLocalSearchParams();
   const taskId = params.id as string;
   const isTransitionFinished = useScreenTransition();
@@ -307,9 +308,7 @@ export default function WorkerDetailsScreen() {
   const isCompleted = task.status === "completed" || task.workerPhase === "completed";
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+    <View
       className="flex-1 bg-background"
       style={{
         paddingTop: insets.top,
@@ -320,7 +319,7 @@ export default function WorkerDetailsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ScreenHeader title={t("worker.detailsTitle")} onBack={() => router.back()} />
 
-      <ScrollView
+      <KeyboardAwareScrollContent
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop: 24,
@@ -619,7 +618,7 @@ export default function WorkerDetailsScreen() {
             </AppText>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollContent>
 
       <FullScreenLoader visible={actionLoading || (loading && isTransitionFinished)} />
 
@@ -635,6 +634,6 @@ export default function WorkerDetailsScreen() {
         imageUri={selectedViewerImage}
         onClose={() => setIsViewerVisible(false)}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }

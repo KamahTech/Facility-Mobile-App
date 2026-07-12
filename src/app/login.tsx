@@ -1,7 +1,7 @@
 import React from "react";
 import { View, ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { Stack, useLocalSearchParams, router, type Href } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
@@ -22,13 +22,13 @@ const backgroundImage = require("../../assets/images/choose-account-illustration
 const appLogo = require("@/assets/app-brand/logo-light.svg");
 
 type LoginFormValues = {
-  email: z.infer<typeof z.string>;
-  password: z.infer<typeof z.string>;
+  email: string;
+  password: string;
 };
 
 export default function LoginScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { type } = useLocalSearchParams<{ type: "resident" | "worker" }>();
   const accountType = type || "resident";
   const primaryColor = useThemeToken("--primary") as string;

@@ -1,7 +1,7 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { Pressable, View, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { router, type Href } from "expo-router";
 import { LegendList } from "@legendapp/list/react-native";
 
@@ -22,7 +22,7 @@ import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 
 export default function WorkerHomeScreen() {
   const { t, direction } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
   const isTransitionFinished = useScreenTransition();
   const mutedColor = useThemeToken("--muted-foreground");

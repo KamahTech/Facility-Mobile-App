@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { Stack, router, type Href } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -26,7 +26,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function OnBoardingScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const primaryColor = useThemeToken("--primary") as string;
 
   // Background Ken Burns effect

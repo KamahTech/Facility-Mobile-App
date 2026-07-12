@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, StyleSheet, View, Pressable, ScrollView, Alert, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppChevron } from "@/components/app-chevron";
@@ -20,7 +20,7 @@ export function FullscreenImageViewer({
   imageUri,
   onClose,
 }: FullscreenImageViewerProps) {
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { t } = useI18n();
   const { width, height } = useWindowDimensions();
 

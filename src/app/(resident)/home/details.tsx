@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { Stack, router, type Href } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
@@ -27,7 +27,7 @@ const DEFAULT_CARD_COLOR = "#6B7280";
 
 export default function ResidentHomeDetailsScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
 
   const handlePress = (route: string) => {
     router.push(route as Href);

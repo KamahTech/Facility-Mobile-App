@@ -10,7 +10,7 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
   React.useEffect(() => {
     let ws: WebSocket | null = null;
     let isDestroyed = false;
-    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
     let reconnectDelay = 1000;
 
     const connect = async () => {
@@ -39,9 +39,10 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
         console.log(`[WS] Connecting to Odoo websocket: ${wsUrl}`);
         
         // Pass headers in the options object (supported by React Native's WebSocket client)
-        ws = new WebSocket(wsUrl, undefined, headers ? { headers } : undefined);
+        const socket = new (WebSocket as any)(wsUrl, undefined, headers ? { headers } : undefined);
+        ws = socket;
 
-        ws.onopen = () => {
+        socket.onopen = () => {
           console.log(`[WS] Connection established for ticket ${ticketId}`);
           reconnectDelay = 1000; // Reset reconnect delay on successful connection
           
@@ -53,10 +54,10 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
               last: 0,
             },
           };
-          ws?.send(JSON.stringify(subscribePayload));
+          socket.send(JSON.stringify(subscribePayload));
         };
 
-        ws.onmessage = (event) => {
+        socket.onmessage = (event: any) => {
           try {
             const rawData = JSON.parse(event.data);
             console.log(`[WS] Received message:`, JSON.stringify(rawData));
@@ -132,14 +133,14 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
           }
         };
 
-        ws.onclose = (event) => {
+        socket.onclose = (event: any) => {
           console.log(`[WS] Connection closed for ticket ${ticketId}. Code: ${event.code}, Reason: ${event.reason}`);
           if (!isDestroyed) {
             scheduleReconnect();
           }
         };
 
-        ws.onerror = (error) => {
+        socket.onerror = (error: any) => {
           console.error(`[WS] Error on ticket ${ticketId}:`, error);
         };
       } catch (err) {

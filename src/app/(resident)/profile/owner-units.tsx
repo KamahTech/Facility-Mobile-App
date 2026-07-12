@@ -1,7 +1,7 @@
 import React from "react";
 import { View, RefreshControl, ActivityIndicator } from "react-native";
 import { Stack, router, useNavigation } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
@@ -16,7 +16,7 @@ const SECTION_GAP = 16;
 
 export default function OwnerUnitsScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const navigation = useNavigation();
   const {
     ownerUnits,

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, RefreshControl, ActivityIndicator } from "react-native";
 import { Stack, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
@@ -13,7 +13,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 
 export default function ClaimsScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { claims, currentClaim, fetchClaims, fetchNextClaims, hasNextClaims, fetchClaimDetails, submitInquiry, loading, error, clearError } = useOwnerStore({ enableClaims: true });
   const isTransitionFinished = useScreenTransition();
 

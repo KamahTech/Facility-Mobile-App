@@ -2,7 +2,7 @@ import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { Portal } from "@gorhom/portal";
 import React from "react";
 import { Pressable, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppBottomSheetBackdrop } from "@/components/app-bottom-sheet-backdrop";
 import { AppIcon } from "@/components/app-icon";
@@ -34,7 +34,7 @@ export function LogoutBottomSheet({
   hostName,
 }: LogoutBottomSheetProps) {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   useBottomSheetLayer(isPresented);
   const destructiveColor = useThemeToken("--destructive");
   const backgroundColor = useThemeToken("--card");

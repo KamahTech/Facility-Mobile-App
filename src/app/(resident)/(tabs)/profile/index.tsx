@@ -2,7 +2,7 @@ import React from "react";
 import { View, Pressable, Alert } from "react-native";
 import Animated from "react-native-reanimated";
 import { router, type Href, useNavigation } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppText } from "@/components/app-text";
@@ -22,7 +22,7 @@ const johnDoeAvatar = require("@/assets/temp/john-doe-avatar.png");
 
 export default function ResidentProfileScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const foregroundColor = useThemeToken("--foreground");
   const { profile, logout, loading, updateProfileImage } = useUserStore();
   const { pickImage } = useAppImagePicker();

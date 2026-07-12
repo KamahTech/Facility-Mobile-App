@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, View, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, Stack, router, type Href } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppChevron } from "@/components/app-chevron";
@@ -15,7 +15,7 @@ import { useUnitStore } from "@/stores/unit-store";
 
 export default function ResidentTicketDetailsScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const params = useLocalSearchParams();
   const requestId = params.id as string;
 

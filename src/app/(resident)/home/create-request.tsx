@@ -2,7 +2,7 @@ import React from "react";
 import { View, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,7 +33,7 @@ export default function CreateRequestScreen() {
   const { t } = useI18n();
   const { resolvedTheme } = useTheme();
   const background = useThemeToken("--background");
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { units } = useUnitStore();
   const { createRequest } = useRequestsStore();
   const [actionLoading, setActionLoading] = React.useState(false);

@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Stack, router, type Href } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
@@ -19,7 +19,7 @@ export default function RequestServiceScreen() {
   const { t } = useI18n();
   const { resolvedTheme } = useTheme();
   const background = useThemeToken("--background");
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { units } = useUnitStore();
 
   const services = React.useMemo(() => {

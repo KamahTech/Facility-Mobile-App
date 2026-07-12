@@ -8,7 +8,12 @@
     "scheme": "facilitymanagement",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.moxas3d.facilitymanagement",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires camera access to take photos of maintenance issues and unit inspections.",
+        "NSPhotoLibraryUsageDescription": "This app requires photo library access to upload photos for maintenance requests and task updates."
+      }
     },
     "android": {
       "adaptiveIcon": {

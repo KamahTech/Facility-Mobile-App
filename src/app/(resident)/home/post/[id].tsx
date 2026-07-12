@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView, View, StyleSheet } from "react-native";
 import { Stack, useLocalSearchParams, router } from "expo-router";
 import { Image } from "expo-image";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { useQuery } from "@tanstack/react-query";
 
 import { AppIcon } from "@/components/app-icon";
@@ -18,7 +18,7 @@ import { useCommunityStore, type CommunityPoll } from "@/stores/community-store"
 export default function PostDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { updates, fetchUpdateDetails, loading } = useCommunityStore({ enableUpdates: true });
   const updateId = Array.isArray(id) ? id[0] : id;
 

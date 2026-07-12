@@ -1,7 +1,7 @@
 import React from "react";
 import { View, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
 import { Stack, useLocalSearchParams, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
@@ -13,7 +13,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 
 export default function UnitDetailScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { formatCurrency } = useFormatters();
   const { unitId } = useLocalSearchParams<{ unitId: string }>();
   const { fetchOwnerUnitDetails, loading, error, clearError } = useOwnerStore();

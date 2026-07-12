@@ -1,6 +1,5 @@
 import { StatusBar } from "expo-status-bar";
 import { Pressable, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
 import { AppButton } from "@/components/app-button";
@@ -10,6 +9,7 @@ import { AppText } from "@/components/app-text";
 import { languages } from "@/constants/languages";
 import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "@/hooks/use-theme";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 type AppScreenProps = {
   action?: {
@@ -33,7 +33,7 @@ export function AppScreen({
 }: AppScreenProps) {
   const { language, t } = useI18n();
   const { resolvedTheme } = useTheme();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
 
   return (
     <View

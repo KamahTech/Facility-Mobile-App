@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { useLocalSearchParams, Stack, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
@@ -11,7 +11,7 @@ import { ChatView } from "@/components/chat-view";
 
 export default function ResidentTicketMessagesScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const params = useLocalSearchParams();
   const requestId = params.id as string;
 

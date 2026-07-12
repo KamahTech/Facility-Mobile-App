@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
@@ -33,7 +33,7 @@ export function MediaSourceSheet({
   onSelectLibrary,
 }: MediaSourceSheetProps) {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const primaryColor = useThemeToken("--primary");
 
   const translateY = useSharedValue(SCREEN_HEIGHT);

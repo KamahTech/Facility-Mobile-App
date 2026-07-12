@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, View, ActivityIndicator, RefreshControl, Alert } from "react-native";
 import { Stack, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { AppRow } from "@/components/app-row";
@@ -17,7 +17,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 export default function ResidentInvoicesScreen() {
   const { t } = useI18n();
   const { formatCurrency } = useFormatters();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { invoices, fetchInvoices, fetchNextPage, hasNextPage, payInvoice, loading, error, clearError } = useInvoicesStore();
   const isTransitionFinished = useScreenTransition();
 

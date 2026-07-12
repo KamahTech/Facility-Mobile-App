@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Alert } from "react-native";
 import { Stack, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -24,7 +24,7 @@ type FeedbackFormValues = {
 
 export default function FeedbackScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { submitFeedback, loading, error, clearError } = useCommunityStore();
   const [localLoading, setLocalLoading] = React.useState(false);
   const feedbackSchema = React.useMemo(

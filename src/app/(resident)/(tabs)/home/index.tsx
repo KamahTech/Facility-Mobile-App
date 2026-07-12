@@ -2,7 +2,7 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { router, type Href, useNavigation } from "expo-router";
 
 import { HomeHeader } from "@/components/home-header";
@@ -25,7 +25,7 @@ const johnDoeAvatar = require("@/assets/temp/john-doe-avatar.png");
 export default function ResidentHomeScreen() {
   const { t } = useI18n();
   const { resolvedTheme } = useTheme();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const background = useThemeToken("--background");
   const { headerTranslateY, scrollHandler, resetScrollAnimation } = useScrollAnimation();
   const navigation = useNavigation();

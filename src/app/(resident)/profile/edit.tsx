@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Alert } from "react-native";
 import { Stack, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,7 +21,7 @@ type EditProfileFormValues = {
 
 export default function EditProfileScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { profile, updateProfile, loading, error } = useUserStore();
   const editProfileSchema = React.useMemo(
     () =>

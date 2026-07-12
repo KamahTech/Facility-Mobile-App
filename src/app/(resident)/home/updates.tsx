@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { Stack, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
@@ -20,7 +20,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
  */
 export default function AllCommunityUpdatesScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { updates, loading, fetchNextUpdates, hasNextUpdates } = useCommunityStore({ enableUpdates: true });
   const isTransitionFinished = useScreenTransition();
 

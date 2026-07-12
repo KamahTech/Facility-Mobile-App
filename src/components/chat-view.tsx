@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Pressable, TextInput, Alert, ActivityIndicator } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import { Image } from "expo-image";
 import { LegendList } from "@legendapp/list/react-native";
 import type { LegendListRef } from "@legendapp/list/react-native";
@@ -37,7 +37,7 @@ export function ChatView({
   onBack,
 }: ChatViewProps) {
   const { t, direction } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { pickImage } = useAppImagePicker();
   
   // Register/activate WebSocket connection for realtime chat updates

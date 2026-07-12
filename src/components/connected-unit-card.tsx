@@ -17,7 +17,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
   const { t } = useI18n();
   const destructiveColor = useThemeToken("--destructive");
   const primaryColor = useThemeToken("--primary");
-  const primaryBgTranslucent = primaryColor ? `${primaryColor}25` : "rgba(219, 238, 105, 0.15)";
+  const primaryBgTranslucent = typeof primaryColor === "string" ? `${primaryColor}25` : "rgba(219, 238, 105, 0.15)";
 
   const handleDeletePress = () => {
     Alert.alert(

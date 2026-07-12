@@ -1,7 +1,7 @@
 import React from "react";
 import { View, ScrollView } from "react-native";
 import { Stack, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
@@ -9,7 +9,7 @@ import { useI18n } from "@/hooks/use-i18n";
 
 export default function TermsAndConditionsScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
 
   const sections = [
     { title: "terms.sec1.title", desc: "terms.sec1.desc" },

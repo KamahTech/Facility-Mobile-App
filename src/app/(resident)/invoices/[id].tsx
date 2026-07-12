@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, ScrollView, View, Alert } from "react-native";
 import { Stack, useLocalSearchParams, router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
@@ -16,7 +16,7 @@ export default function InvoiceDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useI18n();
   const { formatDate, formatCurrency } = useFormatters();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const { invoices, payInvoice } = useInvoicesStore();
   const [localLoading, setLocalLoading] = React.useState(false);
 

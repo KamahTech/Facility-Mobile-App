@@ -3,7 +3,7 @@ import { View, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppInsets } from "@/hooks/use-app-insets";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -88,7 +88,7 @@ function RoleOption({ title, description, icon, selected, onPress }: RoleOptionP
 
 export default function ChooseLoginMethodScreen() {
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
+  const insets = useAppInsets();
   const primaryColor = useThemeToken("--primary") as string;
   const { resolvedTheme } = useTheme();
 
