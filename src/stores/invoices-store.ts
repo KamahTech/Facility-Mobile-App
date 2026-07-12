@@ -39,6 +39,9 @@ export function useInvoicesStore() {
       apiRequest(`/resident/invoices/${params.id}/pay`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-statement"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-units"] });
+      queryClient.invalidateQueries({ queryKey: ["connected-units-summary"] });
     }
   });
 

@@ -180,6 +180,9 @@ export function useOwnerStore(options?: {
   // Mutations
   const submitInquiryMutation = useMutation({
     mutationFn: (params: OwnerInquiryParams) => apiRequest("/resident/owner-inquiries/submit", params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
+    }
   });
 
   const removeTenantMutation = useMutation({
@@ -187,6 +190,7 @@ export function useOwnerStore(options?: {
       apiRequest(`/resident/owner-units/${params.unitId}/tenants/${params.unitLinkId}/remove`, {}),
     onSuccess: (_, params) => {
       queryClient.invalidateQueries({ queryKey: ["unit-tenants", params.unitId] });
+      queryClient.invalidateQueries({ queryKey: ["family-members", params.unitId] });
     }
   });
 
