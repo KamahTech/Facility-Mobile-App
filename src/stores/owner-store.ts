@@ -117,11 +117,11 @@ export type TenantsResponse = {
   items: MobileUnitLinkItem[];
 };
 
-export function useTenantsQuery(unitId?: string) {
+export function useTenantsQuery(unitId?: string, enabled = true) {
   return useQuery<TenantsResponse>({
     queryKey: ["unit-tenants", unitId],
     queryFn: () => apiRequest<TenantsResponse>(`/resident/owner-units/${unitId}/tenants`, {}),
-    enabled: !!unitId,
+    enabled: enabled && !!unitId,
   });
 }
 

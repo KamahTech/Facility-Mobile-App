@@ -54,8 +54,15 @@ const handleSessionExpired = () => {
 
 export type ApiParams = Record<string, unknown>;
 export type ApiResponse = unknown;
+export type ApiRequestOptions = {
+  showErrorToast?: boolean;
+};
 
-export async function apiRequest<T = ApiResponse>(route: string, params: ApiParams = {}): Promise<T> {
+export async function apiRequest<T = ApiResponse>(
+  route: string,
+  params: ApiParams = {},
+  options: ApiRequestOptions = {},
+): Promise<T> {
   const url = `${API_BASE_URL}${route}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -149,8 +156,10 @@ export async function apiRequest<T = ApiResponse>(route: string, params: ApiPara
       handleSessionExpired();
     }
 
-    const friendly = getFriendlyErrorMessage(error);
-    useToastStore.getState().showToast(friendly, "error");
+    if (options.showErrorToast !== false) {
+      const friendly = getFriendlyErrorMessage(error);
+      useToastStore.getState().showToast(friendly, "error");
+    }
 
     console.error(`[API Error] ${route}:`, error instanceof Error ? error.message : error);
     throw error;

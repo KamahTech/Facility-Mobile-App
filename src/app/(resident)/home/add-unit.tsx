@@ -11,7 +11,6 @@ import * as z from "zod";
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
 import { AppInput } from "@/components/app-input";
-import { AppSegmentSelector } from "@/components/app-segment-selector";
 import { AppButton } from "@/components/app-button";
 import { FullScreenLoader } from "@/components/full-screen-loader";
 import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
@@ -19,6 +18,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "@/hooks/use-theme";
 import { AppSelectField } from "@/components/app-select-field";
 import { GenericSelectBottomSheet } from "@/components/generic-select-bottom-sheet";
+import { allowsFamilyMembers } from "@/lib/family-member-eligibility";
 import {
   useUnitStore,
   useProjectsQuery,
@@ -69,6 +69,7 @@ export default function AddUnitScreen() {
   const [isBuildingSheetPresented, setIsBuildingSheetPresented] = React.useState(false);
   const [isFloorSheetPresented, setIsFloorSheetPresented] = React.useState(false);
   const [isUnitSheetPresented, setIsUnitSheetPresented] = React.useState(false);
+  const [isOwnershipSheetPresented, setIsOwnershipSheetPresented] = React.useState(false);
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ConnectUnitFormValues>({
     resolver: zodResolver(connectUnitSchema),
@@ -96,6 +97,14 @@ export default function AddUnitScreen() {
   const selectedBuilding = buildingsQuery.data?.find(b => b.id === selectedBuildingId);
   const selectedFloor = floorsQuery.data?.find(f => f.id === selectedFloorId);
   const selectedUnit = unitsLookupQuery.data?.find(u => u.unitId === selectedUnitId || u.id === selectedUnitId);
+  const selectedOwnershipType = useWatch({ control, name: "ownershipType" });
+  const familyMembersAllowed = allowsFamilyMembers(selectedUnit?.unitType);
+
+  React.useEffect(() => {
+    if (selectedOwnershipType === "family_member" && !familyMembersAllowed) {
+      setValue("ownershipType", "owner", { shouldValidate: true });
+    }
+  }, [familyMembersAllowed, selectedOwnershipType, setValue]);
 
   React.useEffect(() => {
     clearError();
@@ -130,6 +139,10 @@ export default function AddUnitScreen() {
 
   const onSubmit = async (data: ConnectUnitFormValues) => {
     clearError();
+    if (data.ownershipType === "family_member" && !allowsFamilyMembers(selectedUnit?.unitType)) {
+      Alert.alert(t("common.error"), t("connectUnit.familyMemberUnitTypeError"));
+      return;
+    }
     setActionLoading(true);
     try {
       await connectUnit({
@@ -153,10 +166,12 @@ export default function AddUnitScreen() {
     }
   };
 
-  const ownershipOptions = [
+  const ownershipOptions: { label: string; value: ConnectUnitFormValues["ownershipType"] }[] = [
     { label: t("connectUnit.owner"), value: "owner" },
     { label: t("connectUnit.tenant"), value: "tenant" },
-    { label: t("connectUnit.familyMember"), value: "family_member" },
+    ...(familyMembersAllowed
+      ? [{ label: t("connectUnit.familyMember"), value: "family_member" as const }]
+      : []),
   ];
 
   return (
@@ -313,12 +328,13 @@ export default function AddUnitScreen() {
                 <Controller
                   control={control}
                   name="ownershipType"
-                  render={({ field: { onChange, value } }) => (
-                    <AppSegmentSelector
+                  render={({ field: { value } }) => (
+                    <AppSelectField
                       label={t("connectUnit.ownershipType")}
-                      options={ownershipOptions}
-                      selectedValue={value}
-                      onSelect={onChange}
+                      placeholder={t("connectUnit.ownershipTypePlaceholder")}
+                      value={ownershipOptions.find(o => o.value === value)?.label}
+                      error={errors.ownershipType?.message}
+                      onPress={() => setIsOwnershipSheetPresented(true)}
                     />
                   )}
                 />
@@ -398,6 +414,17 @@ export default function AddUnitScreen() {
         keyExtractor={(item) => item.unitId || item.id}
         labelExtractor={(item) => item.name || item.number}
         subLabelExtractor={(item) => item.unitType}
+      />
+
+      <GenericSelectBottomSheet
+        isPresented={isOwnershipSheetPresented}
+        title={t("connectUnit.ownershipType")}
+        items={ownershipOptions}
+        selectedId={selectedOwnershipType}
+        onDismiss={() => setIsOwnershipSheetPresented(false)}
+        onSelect={(item) => setValue("ownershipType", item.value, { shouldValidate: true })}
+        keyExtractor={(item) => item.value}
+        labelExtractor={(item) => item.label}
       />
     </View>
   );

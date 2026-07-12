@@ -7,6 +7,8 @@ import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
+import { allowsFamilyMembers } from "@/lib/family-member-eligibility";
+import { useTenantsQuery } from "@/stores/owner-store";
 import type { ConnectedUnit } from "@/stores/unit-store";
 
 type ConnectedUnitCardProps = {
@@ -38,6 +40,15 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
   };
 
   const isOwner = unit.ownershipType === "owner";
+  const isFamilyEligible = allowsFamilyMembers(unit.unitType);
+  const tenantsQuery = useTenantsQuery(unit.id, isOwner && isFamilyEligible);
+  const ownerCanManageFamily =
+    isOwner &&
+    isFamilyEligible &&
+    tenantsQuery.isSuccess &&
+    tenantsQuery.data.items.length === 0;
+  const canManageFamily =
+    isFamilyEligible && (unit.ownershipType === "tenant" || ownerCanManageFamily);
 
   const getUnitTypeConfig = () => {
     const icon =
@@ -109,7 +120,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
       )}
       </AppRow>
 
-      {unit.ownershipType === "tenant" ? (
+      {canManageFamily ? (
         <Pressable
           onPress={() =>
             router.push({

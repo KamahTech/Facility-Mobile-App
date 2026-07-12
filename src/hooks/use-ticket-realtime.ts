@@ -1,193 +1,253 @@
 import React from "react";
+import { AppState, type AppStateStatus } from "react-native";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import { apiRequest, getSessionId } from "@/lib/api-client";
+
 import { API_BASE_URL } from "@/constants/api";
+import { apiRequest, getSessionId } from "@/lib/api-client";
 import type { PaginatedRequests } from "@/stores/requests-store";
+
+type RealtimeCommentPayload = {
+  ticketId: string;
+  comment: {
+    id: string;
+    [key: string]: unknown;
+  };
+};
+
+function findCommentPayload(
+  value: unknown,
+  commentCreatedType: string,
+): RealtimeCommentPayload | null {
+  if (!value || typeof value !== "object") return null;
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const payload = findCommentPayload(item, commentCreatedType);
+      if (payload) return payload;
+    }
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  if (
+    record.type === commentCreatedType &&
+    record.payload &&
+    typeof record.payload === "object"
+  ) {
+    const payload = record.payload as Partial<RealtimeCommentPayload>;
+    if (payload.ticketId && payload.comment?.id) {
+      return payload as RealtimeCommentPayload;
+    }
+  }
+
+  for (const child of Object.values(record)) {
+    const payload = findCommentPayload(child, commentCreatedType);
+    if (payload) return payload;
+  }
+
+  return null;
+}
 
 export function useTicketRealtime(ticketId: string, accountType: "resident" | "worker") {
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
-    let ws: WebSocket | null = null;
-    let isDestroyed = false;
+    let socket: WebSocket | null = null;
     let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
     let reconnectDelay = 1000;
+    let connectionGeneration = 0;
+    let isConnecting = false;
+    let isDestroyed = false;
+    let appState: AppStateStatus = AppState.currentState;
 
-    const connect = async () => {
-      if (isDestroyed) return;
+    const isActive = () => !isDestroyed && appState === "active";
+
+    const clearReconnect = () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+      }
+    };
+
+    const closeSocket = () => {
+      connectionGeneration += 1;
+      isConnecting = false;
+      const currentSocket = socket;
+      socket = null;
+      if (!currentSocket) return;
+
+      currentSocket.onopen = null;
+      currentSocket.onmessage = null;
+      currentSocket.onerror = null;
+      currentSocket.onclose = null;
+      if (
+        currentSocket.readyState === WebSocket.OPEN ||
+        currentSocket.readyState === WebSocket.CONNECTING
+      ) {
+        currentSocket.close();
+      }
+    };
+
+    const applyComment = (payload: RealtimeCommentPayload) => {
+      if (String(payload.ticketId) !== String(ticketId)) return;
+
+      const commentsQueryKey = ["ticket-comments", String(ticketId)];
+      queryClient.setQueryData<any>(commentsQueryKey, (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any, index: number) => {
+            if (index !== 0) return page;
+            const exists = page.items.some(
+              (comment: any) => String(comment.id) === String(payload.comment.id),
+            );
+            return exists ? page : { ...page, items: [...page.items, payload.comment] };
+          }),
+        };
+      });
+
+      const requestsQueryKey = [
+        accountType === "resident" ? "resident-requests" : "worker-tasks",
+      ];
+      queryClient.setQueryData<InfiniteData<PaginatedRequests>>(
+        requestsQueryKey,
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              items: page.items.map((item) =>
+                String(item.id) === String(ticketId)
+                  ? {
+                      ...item,
+                      comments: item.comments.some(
+                        (comment) => String(comment.id) === String(payload.comment.id),
+                      )
+                        ? item.comments
+                        : [...item.comments, payload.comment as any],
+                    }
+                  : item,
+              ),
+            })),
+          };
+        },
+      );
+    };
+
+    let connect: () => Promise<void>;
+
+    const scheduleReconnect = () => {
+      if (!isActive() || reconnectTimeout) return;
+      reconnectTimeout = setTimeout(() => {
+        reconnectTimeout = null;
+        reconnectDelay = Math.min(reconnectDelay * 2, 30_000);
+        void connect();
+      }, reconnectDelay);
+    };
+
+    connect = async () => {
+      if (!isActive() || isConnecting) return;
+      if (
+        socket?.readyState === WebSocket.OPEN ||
+        socket?.readyState === WebSocket.CONNECTING
+      ) {
+        return;
+      }
+
+      isConnecting = true;
+      const generation = ++connectionGeneration;
+
       try {
-        console.log(`[WS] Fetching realtime info for ticket ${ticketId}`);
-        // Fetch channel info from backend
         const realtimeData = await apiRequest<{
           websocketUrl: string;
           channel: string;
           commentCreatedType: string;
-        }>(`/tickets/${ticketId}/realtime`, {});
+        }>(`/tickets/${ticketId}/realtime`, {}, { showErrorToast: false });
 
-        if (isDestroyed) return;
+        if (!isActive() || generation !== connectionGeneration) return;
 
-        // Construct WebSocket URL
-        const origin = API_BASE_URL.replace("/facility_mobile_api/v1", "");
+        const origin = API_BASE_URL.replace(/\/facility_mobile_api\/v1\/?$/, "");
         const wsProtocol = origin.startsWith("https:") ? "wss:" : "ws:";
-        const cleanOrigin = origin.replace(/^https?:\/\//, "");
-        const wsUrl = `${wsProtocol}//${cleanOrigin}${realtimeData.websocketUrl}`;
-
-        // Get session ID for cookies header
+        const wsUrl = `${wsProtocol}//${origin.replace(/^https?:\/\//, "")}${realtimeData.websocketUrl}`;
         const sessionId = getSessionId();
         const headers = sessionId ? { Cookie: `session_id=${sessionId}` } : undefined;
+        const nextSocket = new (WebSocket as any)(
+          wsUrl,
+          undefined,
+          headers ? { headers } : undefined,
+        ) as WebSocket;
+        socket = nextSocket;
 
-        console.log(`[WS] Connecting to Odoo websocket: ${wsUrl}`);
-        
-        // Pass headers in the options object (supported by React Native's WebSocket client)
-        const socket = new (WebSocket as any)(wsUrl, undefined, headers ? { headers } : undefined);
-        ws = socket;
-
-        socket.onopen = () => {
-          console.log(`[WS] Connection established for ticket ${ticketId}`);
-          reconnectDelay = 1000; // Reset reconnect delay on successful connection
-          
-          // Send Odoo subscription request
-          const subscribePayload = {
-            event_name: "subscribe",
-            data: {
-              channels: [realtimeData.channel],
-              last: 0,
-            },
-          };
-          socket.send(JSON.stringify(subscribePayload));
+        nextSocket.onopen = () => {
+          if (!isActive() || generation !== connectionGeneration || socket !== nextSocket) {
+            closeSocket();
+            return;
+          }
+          isConnecting = false;
+          reconnectDelay = 1000;
+          nextSocket.send(
+            JSON.stringify({
+              event_name: "subscribe",
+              data: { channels: [realtimeData.channel], last: 0 },
+            }),
+          );
         };
 
-        socket.onmessage = (event: any) => {
+        nextSocket.onmessage = (event) => {
+          if (!isActive() || generation !== connectionGeneration) return;
           try {
-            const rawData = JSON.parse(event.data);
-            console.log(`[WS] Received message:`, JSON.stringify(rawData));
-            
-            // Helper to recursively search the parsed JSON structure to find the comment payload
-            const findCommentPayload = (obj: any): { ticketId: string; comment: any } | null => {
-              if (!obj || typeof obj !== "object") return null;
-              if (Array.isArray(obj)) {
-                for (const item of obj) {
-                  const res = findCommentPayload(item);
-                  if (res) return res;
-                }
-              }
-              if (
-                obj.type === realtimeData.commentCreatedType &&
-                obj.payload &&
-                obj.payload.ticketId &&
-                obj.payload.comment
-              ) {
-                return obj.payload;
-              }
-              if (obj.message && typeof obj.message === "object") {
-                const res = findCommentPayload(obj.message);
-                if (res) return res;
-              }
-              if (obj.payload && typeof obj.payload === "object") {
-                const res = findCommentPayload(obj.payload);
-                if (res) return res;
-              }
-              for (const key of Object.keys(obj)) {
-                if (typeof obj[key] === "object") {
-                  const res = findCommentPayload(obj[key]);
-                  if (res) return res;
-                }
-              }
-              return null;
-            };
-
-            const payload = findCommentPayload(rawData);
-            if (payload && String(payload.ticketId) === String(ticketId)) {
-              console.log(`[WS] Parsed comment payload for ticket ${ticketId}:`, payload.comment);
-              
-              // Update comments query cache
-              const commentsQueryKey = ["ticket-comments", String(ticketId)];
-              queryClient.setQueryData<any>(commentsQueryKey, (oldData: any) => {
-                if (!oldData) return oldData;
-                return {
-                  ...oldData,
-                  pages: oldData.pages.map((page: any, idx: number) => {
-                    if (idx !== 0) return page;
-                    const exists = page.items.some((c: any) => String(c.id) === String(payload.comment.id));
-                    if (exists) return page;
-                    return {
-                      ...page,
-                      items: [...page.items, payload.comment],
-                    };
-                  }),
-                };
-              });
-
-              // Update React Query infinite query cache dynamically
-              const queryKey = [accountType === "resident" ? "resident-requests" : "worker-tasks"];
-              queryClient.setQueryData<InfiniteData<PaginatedRequests>>(
-                queryKey,
-                (oldData) => {
-                  if (!oldData) return oldData;
-                  return {
-                    ...oldData,
-                    pages: oldData.pages.map((page) => ({
-                      ...page,
-                      items: page.items.map((item) => {
-                        if (String(item.id) === String(ticketId)) {
-                          const exists = item.comments.some(
-                            (c) => String(c.id) === String(payload.comment.id)
-                          );
-                          if (exists) return item;
-                          return {
-                            ...item,
-                            comments: [...item.comments, payload.comment],
-                          };
-                        }
-                        return item;
-                      }),
-                    })),
-                  };
-                }
-              );
-            }
-          } catch (err) {
-            console.error("[WS] Error parsing message:", err);
+            const payload = findCommentPayload(
+              JSON.parse(String(event.data)),
+              realtimeData.commentCreatedType,
+            );
+            if (payload) applyComment(payload);
+          } catch {
+            // Ignore non-JSON websocket keepalive frames.
           }
         };
 
-        socket.onclose = (event: any) => {
-          console.log(`[WS] Connection closed for ticket ${ticketId}. Code: ${event.code}, Reason: ${event.reason}`);
-          if (!isDestroyed) {
-            scheduleReconnect();
-          }
+        nextSocket.onerror = () => {
+          // The close callback owns reconnection. Background socket errors are expected.
         };
 
-        socket.onerror = (error: any) => {
-          console.error(`[WS] Error on ticket ${ticketId}:`, error);
+        nextSocket.onclose = () => {
+          if (socket === nextSocket) socket = null;
+          isConnecting = false;
+          if (generation === connectionGeneration) scheduleReconnect();
         };
-      } catch (err) {
-        console.error(`[WS] Failed to establish realtime connection for ticket ${ticketId}:`, err);
-        if (!isDestroyed) {
-          scheduleReconnect();
-        }
+      } catch {
+        isConnecting = false;
+        if (generation === connectionGeneration) scheduleReconnect();
       }
     };
 
-    const scheduleReconnect = () => {
-      if (isDestroyed) return;
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-      console.log(`[WS] Reconnecting in ${reconnectDelay}ms...`);
-      reconnectTimeout = setTimeout(() => {
-        reconnectDelay = Math.min(reconnectDelay * 2, 30000); // Exponential backoff max 30s
+    const appStateSubscription = AppState.addEventListener("change", (nextState) => {
+      const wasBackgrounded = appState !== "active";
+      appState = nextState;
+
+      if (nextState !== "active") {
+        clearReconnect();
+        closeSocket();
+        return;
+      }
+
+      if (wasBackgrounded) {
+        reconnectDelay = 1000;
+        void queryClient.invalidateQueries({
+          queryKey: ["ticket-comments", String(ticketId)],
+        });
         void connect();
-      }, reconnectDelay);
-    };
+      }
+    });
 
     void connect();
 
     return () => {
       isDestroyed = true;
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-      if (ws) {
-        console.log(`[WS] Disconnecting from ticket ${ticketId}`);
-        ws.close();
-      }
+      appStateSubscription.remove();
+      clearReconnect();
+      closeSocket();
     };
   }, [ticketId, accountType, queryClient]);
 }
