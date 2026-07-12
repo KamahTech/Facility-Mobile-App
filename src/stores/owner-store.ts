@@ -113,11 +113,8 @@ export type PaginatedServices = {
 };
 
 export type TenantsResponse = {
-  ok: boolean;
-  data: {
-    unitId: string;
-    items: MobileUnitLinkItem[];
-  };
+  unitId: string;
+  items: MobileUnitLinkItem[];
 };
 
 export function useTenantsQuery(unitId?: string) {

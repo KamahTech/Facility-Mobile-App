@@ -39,7 +39,7 @@ export default function LoginScreen() {
     () =>
       z.object({
         email: z.string().min(1, t("validation.required")).email(t("auth.validation.email")),
-        password: z.string().min(6, t("auth.validation.passwordMin")),
+        password: z.string().min(1, t("validation.required")),
       }),
     [t],
   );

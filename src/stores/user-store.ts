@@ -20,8 +20,6 @@ type UserState = {
 
   initialize: () => Promise<void>;
   login: (email: string, password: string, accountType: "resident" | "worker") => Promise<void>;
-  googleLogin: (idToken: string) => Promise<void>;
-  appleLogin: (identityToken: string, fullName?: string) => Promise<void>;
   requestOtp: (name: string, email: string, password: string, phone?: string) => Promise<any>;
   signup: (name: string, email: string, password: string, otp: string, phone?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -136,54 +134,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
-  googleLogin: async (idToken) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await apiRequest<AuthResponse>("/auth/google", { idToken });
-      const { sessionId, profile, accountType } = response;
-
-      await setSessionId(sessionId);
-      await SecureStore.setItemAsync("account_type", accountType || "resident");
-      await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
-      await SecureStore.deleteItemAsync("logged_out");
-
-      set({
-        sessionId,
-        accountType: accountType || "resident",
-        profile,
-        loading: false,
-        error: null,
-      });
-    } catch (e: unknown) {
-      set({ loading: false, error: getErrorMessage(e, "Google Login failed") });
-      throw e;
-    }
-  },
-
-  appleLogin: async (identityToken, fullName) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await apiRequest<AuthResponse>("/auth/apple", { identityToken, fullName });
-      const { sessionId, profile, accountType } = response;
-
-      await setSessionId(sessionId);
-      await SecureStore.setItemAsync("account_type", accountType || "resident");
-      await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
-      await SecureStore.deleteItemAsync("logged_out");
-
-      set({
-        sessionId,
-        accountType: accountType || "resident",
-        profile,
-        loading: false,
-        error: null,
-      });
-    } catch (e: unknown) {
-      set({ loading: false, error: getErrorMessage(e, "Apple Login failed") });
-      throw e;
-    }
-  },
-
   logout: async () => {
     set({ loading: true });
     try {
@@ -258,9 +208,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await apiRequest("/me/delete", {});
-    } catch (e: unknown) {
-      console.warn("Delete account request failed on backend, clearing local session anyway.", e);
-    } finally {
       await setSessionId(null);
       await SecureStore.deleteItemAsync("account_type");
       await SecureStore.deleteItemAsync("profile_data");
@@ -272,6 +219,9 @@ export const useUserStore = create<UserState>((set, get) => ({
         loading: false,
         error: null,
       });
+    } catch (e: unknown) {
+      set({ loading: false, error: getErrorMessage(e, "Account deletion failed") });
+      throw e;
     }
   },
 }));

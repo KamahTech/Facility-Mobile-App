@@ -18,7 +18,6 @@ import { AppIcon } from "@/components/app-icon";
 import { AppChevron } from "@/components/app-chevron";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
-import { useTheme } from "@/hooks/use-theme";
 import type { AppIconName } from "@/constants/icons";
 
 const backgroundImage = require("../../assets/images/choose-account-illustration.jpg");
@@ -90,7 +89,6 @@ export default function ChooseLoginMethodScreen() {
   const { t } = useI18n();
   const insets = useAppInsets();
   const primaryColor = useThemeToken("--primary") as string;
-  const { resolvedTheme } = useTheme();
 
   // Simple entrance animation
   const contentOpacity = useSharedValue(0);
@@ -271,5 +269,4 @@ export default function ChooseLoginMethodScreen() {
     </View>
   );
 }
-
 

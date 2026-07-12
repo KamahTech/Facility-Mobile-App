@@ -36,7 +36,6 @@ export function LogoutBottomSheet({
   const { t } = useI18n();
   const insets = useAppInsets();
   useBottomSheetLayer(isPresented);
-  const destructiveColor = useThemeToken("--destructive");
   const backgroundColor = useThemeToken("--card");
   const borderColor = useThemeToken("--border");
 

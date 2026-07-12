@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, View, Alert } from "react-native";
+import { router, type Href } from "expo-router";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
@@ -30,7 +31,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
         {
           text: t("actions.cancel") === "Cancel" ? "Disconnect" : "إلغاء الربط",
           style: "destructive",
-          onPress: () => onDisconnect(unit.id),
+          onPress: () => onDisconnect(unit.mobileUnitLinkId || unit.id),
         },
       ]
     );
@@ -55,7 +56,8 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
   const config = getUnitTypeConfig();
 
   return (
-    <AppRow className="w-full bg-card rounded-[24px] p-4 items-center justify-between mb-4 shadow-2xs">
+    <View className="w-full bg-card rounded-[24px] p-4 mb-4 shadow-2xs">
+      <AppRow className="items-center justify-between">
       <AppRow className="items-center gap-3.5 flex-1 min-w-0">
         <View 
           style={{ backgroundColor: primaryBgTranslucent }}
@@ -90,14 +92,14 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
                     : "text-blue-600 dark:text-blue-400"
                 }`}
               >
-                {t(isOwner ? "connectUnit.owner" : "connectUnit.tenant")}
+                {t(`connectUnit.${unit.ownershipType}` as any)}
               </AppText>
             </View>
           </AppRow>
         </View>
       </AppRow>
 
-      {unit.source !== "odoo_unit" && (
+      {!!unit.mobileUnitLinkId && (
         <Pressable
           onPress={handleDeletePress}
           className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 items-center justify-center active:bg-rose-500/20 active:opacity-90"
@@ -105,6 +107,25 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
           <AppIcon name="trash" size={18} color={destructiveColor} />
         </Pressable>
       )}
-    </AppRow>
+      </AppRow>
+
+      {unit.ownershipType === "tenant" ? (
+        <Pressable
+          onPress={() =>
+            router.push({
+              pathname: "/home/unit-family",
+              params: { unitId: unit.id },
+            } as Href)
+          }
+          accessibilityRole="button"
+          accessibilityLabel={t("familyTenant.familyMembers")}
+          className="mt-3 rounded-xl bg-secondary px-4 py-2.5 active:opacity-70"
+        >
+          <AppText className="text-center text-sm font-semibold text-foreground">
+            {t("familyTenant.familyMembers")}
+          </AppText>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }

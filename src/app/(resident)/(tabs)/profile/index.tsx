@@ -107,8 +107,15 @@ export default function ResidentProfileScreen() {
           text: t("profile.deleteAccount"), 
           style: "destructive", 
           onPress: async () => {
-            await deleteAccount();
-            router.replace("/choose-login-method" as Href);
+            try {
+              await deleteAccount();
+              router.replace("/choose-login-method" as Href);
+            } catch (error) {
+              Alert.alert(
+                t("common.error"),
+                error instanceof Error ? error.message : t("errors.generic"),
+              );
+            }
           } 
         }
       ]

@@ -5,7 +5,6 @@ import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
-import { useUnitStore } from "@/stores/unit-store";
 import type {
   MaintenanceRequest,
   RequestStatus,
@@ -17,10 +16,7 @@ type WorkerTaskCardProps = {
 
 export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
   const { t } = useI18n();
-  const { units } = useUnitStore();
-
-  const unit = units.find((u) => u.id === task.unitId);
-  const unitLabel = unit ? `${unit.buildingNumber} - ${unit.unitNumber}` : "";
+  const unitLabel = [task.buildingNumber, task.unitNumber].filter(Boolean).join(" - ");
 
   const getCategoryConfig = () => {
     switch (task.category) {

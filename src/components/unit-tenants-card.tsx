@@ -47,7 +47,7 @@ export function UnitTenantsCard({ unitId }: UnitTenantsCardProps) {
     );
   }
 
-  const tenants = data?.data?.items || [];
+  const tenants = data?.items || [];
 
   return (
     <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm border border-border/20">

@@ -73,8 +73,8 @@ export function UnitFamilyMembersCard({ unitId }: UnitFamilyMembersCardProps) {
     return null;
   }
 
-  const familyMembers = data?.data?.items || [];
-  const managerRole = data?.data?.managerRole || "owner";
+  const familyMembers = data?.items || [];
+  const managerRole = data?.managerRole || "owner";
 
   const getStatusStyle = (status: string) => {
     switch (status.toLowerCase()) {

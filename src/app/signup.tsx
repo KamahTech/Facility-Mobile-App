@@ -35,7 +35,7 @@ export default function SignupScreen() {
       z.object({
         name: z.string().min(1, t("auth.validation.nameMin")),
         email: z.string().min(1, t("validation.required")).email(t("auth.validation.email")),
-        password: z.string().min(6, t("auth.validation.passwordMin")),
+        password: z.string().min(10, t("auth.validation.passwordMin")),
         phone: z.string().optional(),
       }),
     [t],

@@ -20,7 +20,6 @@ import { useThemeToken } from "@/hooks/use-theme-token";
 import { useAppImagePicker } from "@/hooks/use-image-picker";
 import { encodeImageUri } from "@/lib/media";
 import { useRequestsStore, type RequestStatus } from "@/stores/requests-store";
-import { useUnitStore } from "@/stores/unit-store";
 import { useUserStore } from "@/stores/user-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { useToastStore } from "@/stores/toast-store";
@@ -50,12 +49,12 @@ export default function WorkerDetailsScreen() {
     addRequestComment,
     loading,
   } = useRequestsStore({ enableWorkerTasks: true });
-  const { units } = useUnitStore();
   const { profile } = useUserStore();
 
   const task = requests.find((r) => r.id === taskId);
-  const unit = task ? units.find((u) => u.id === task.unitId) : undefined;
-  const unitLabel = unit ? `${unit.buildingNumber} - ${unit.unitNumber}` : "";
+  const unitLabel = task
+    ? [task.buildingNumber, task.unitNumber].filter(Boolean).join(" - ")
+    : "";
 
   const mutedToken = useThemeToken("--muted-foreground");
   const workerName = profile?.name || "Worker";

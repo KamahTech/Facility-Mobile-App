@@ -14,7 +14,8 @@ export type ConnectedUnit = {
   buildingNumber: string;
   unitNumber: string;
   unitType: string;
-  ownershipType: "owner" | "tenant";
+  ownershipType: "owner" | "tenant" | "family_member";
+  mobileUnitLinkId?: string;
   contactNumber?: string;
   facilityOwnerIds?: string[];
   facilityOwnerLineIds?: string[];
@@ -43,12 +44,9 @@ export type ConnectUnitParams = {
 };
 
 export type FamilyMembersResponse = {
-  ok: boolean;
-  data: {
-    unitId: string;
-    managerRole: "tenant" | "owner";
-    items: MobileUnitLinkItem[];
-  };
+  unitId: string;
+  managerRole: "tenant" | "owner";
+  items: MobileUnitLinkItem[];
 };
 
 export function useFamilyMembersQuery(unitId?: string) {
