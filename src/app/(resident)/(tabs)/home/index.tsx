@@ -3,7 +3,8 @@ import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useAppInsets } from "@/hooks/use-app-insets";
-import { router, type Href, useNavigation } from "expo-router";
+import { type Href, useNavigation } from "expo-router";
+import { router } from "@/lib/navigation";
 
 import { HomeHeader } from "@/components/home-header";
 import { AppText } from "@/components/app-text";

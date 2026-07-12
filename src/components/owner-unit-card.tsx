@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router } from "@/lib/navigation";
 
 import { AppText } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";

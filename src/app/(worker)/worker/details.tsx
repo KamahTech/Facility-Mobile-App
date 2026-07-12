@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Alert, Pressable } from "react-native";
-import { useLocalSearchParams, Stack, router, type Href } from "expo-router";
+import { useLocalSearchParams, Stack, type Href } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { Image } from "expo-image";
 import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";

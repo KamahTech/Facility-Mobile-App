@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { Pressable, View } from "react-native";
-import { router } from "expo-router";
+import { router } from "@/lib/navigation";
 
 import { AppButton } from "@/components/app-button";
 import { AppChevron } from "@/components/app-chevron";

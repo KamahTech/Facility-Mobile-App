@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Pressable, Alert } from "react-native";
 import Animated from "react-native-reanimated";
-import { router, type Href, useNavigation } from "expo-router";
+import { type Href, useNavigation } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppIcon } from "@/components/app-icon";

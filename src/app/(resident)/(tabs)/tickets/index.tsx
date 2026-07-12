@@ -2,7 +2,8 @@ import React from "react";
 import { View, ScrollView, Pressable, RefreshControl } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
-import { router, type Href, useNavigation } from "expo-router";
+import { type Href, useNavigation } from "expo-router";
+import { router } from "@/lib/navigation";
 import { AnimatedLegendList } from "@legendapp/list/reanimated";
 import { StatusBar } from "expo-status-bar";
 

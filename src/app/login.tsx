@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
-import { Stack, useLocalSearchParams, router, type Href } from "expo-router";
+import { Stack, useLocalSearchParams, type Href } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";

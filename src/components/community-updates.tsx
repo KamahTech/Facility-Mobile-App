@@ -1,6 +1,7 @@
 import React from "react";
 import { View } from "react-native";
-import { router, type Href } from "expo-router";
+import { type Href } from "expo-router";
+import { router } from "@/lib/navigation";
 
 import { SectionHeader } from "@/components/section-header";
 import { useI18n } from "@/hooks/use-i18n";

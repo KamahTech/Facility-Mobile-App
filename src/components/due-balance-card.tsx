@@ -1,7 +1,8 @@
 import React from "react";
 import { Pressable, View, StyleSheet } from "react-native";
 import { Image } from "expo-image";
-import { router, type Href } from "expo-router";
+import { type Href } from "expo-router";
+import { router } from "@/lib/navigation";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { AppIcon } from "@/components/app-icon";

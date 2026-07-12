@@ -1,6 +1,7 @@
 import React from "react";
 import { View } from "react-native";
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 

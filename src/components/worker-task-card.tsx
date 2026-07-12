@@ -1,5 +1,6 @@
 import { View, Pressable } from "react-native";
-import { router, type Href } from "expo-router";
+import { type Href } from "expo-router";
+import { router } from "@/lib/navigation";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";

@@ -1,7 +1,8 @@
 import React from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
-import { Stack, router, type Href } from "expo-router";
+import { Stack, type Href } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import Animated, {
   useSharedValue,

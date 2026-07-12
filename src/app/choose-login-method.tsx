@@ -1,7 +1,8 @@
 import React from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Image } from "expo-image";
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
+import { router } from "@/lib/navigation";
 import { StatusBar } from "expo-status-bar";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import Animated, {
