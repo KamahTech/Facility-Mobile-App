@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Pressable, TextInput, Alert, ActivityIndicator } from "react-native";
+import { View, Pressable, TextInput, Alert } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { Image } from "expo-image";
 import { LegendList } from "@legendapp/list/react-native";
@@ -18,6 +19,7 @@ import { useThemeToken } from "@/hooks/use-theme-token";
 import { useAppImagePicker } from "@/hooks/use-image-picker";
 import { encodeImageUriAsDataUrl } from "@/lib/media";
 import { type RequestComment } from "@/stores/requests-store";
+import { getBackendImageSource } from "@/lib/image-source";
 import { getDirectionalTextStyle } from "@/lib/i18n-layout";
 import { useTicketRealtime } from "@/hooks/use-ticket-realtime";
 
@@ -187,7 +189,7 @@ export function ChatView({
                 accessibilityRole="imagebutton"
                 className="mb-2 w-52 h-36 rounded-xl overflow-hidden active:opacity-90"
               >
-                <Image source={item.image} style={{ width: "100%", height: "100%" }} contentFit="cover" />
+                <Image source={getBackendImageSource(item.image)} style={{ width: "100%", height: "100%" }} contentFit="cover" />
               </Pressable>
             )}
             {item.content ? (
@@ -238,7 +240,7 @@ export function ChatView({
                 accessibilityRole="imagebutton"
                 className="mb-2 w-52 h-36 rounded-xl overflow-hidden active:opacity-90"
               >
-                <Image source={item.image} style={{ width: "100%", height: "100%" }} contentFit="cover" />
+                <Image source={getBackendImageSource(item.image)} style={{ width: "100%", height: "100%" }} contentFit="cover" />
               </Pressable>
             )}
             {item.content ? (
@@ -372,7 +374,7 @@ export function ChatView({
             className="w-11 h-11 rounded-full bg-primary items-center justify-center active:opacity-70 shadow-sm disabled:opacity-40"
           >
             {sendLoading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <AppActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <AppIcon name="send" size={16} colorToken="--primary-foreground" />
             )}

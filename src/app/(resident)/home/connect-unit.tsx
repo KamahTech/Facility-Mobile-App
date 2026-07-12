@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, View, Alert, ActivityIndicator, RefreshControl, StyleSheet } from "react-native";
+import { Pressable, View, Alert, RefreshControl, StyleSheet } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, router, type Href } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
@@ -121,7 +122,7 @@ export default function ConnectUnitScreen() {
           <View className="flex-1">
             {loading && units.length === 0 ? (
               <View className="flex-1 items-center justify-center py-12">
-                {showInitialUnitsLoader && <ActivityIndicator size="large" color="#4F46E5" />}
+                {showInitialUnitsLoader && <AppActivityIndicator size="large"  />}
               </View>
             ) : units.length === 0 ? (
               <View className="flex-1 items-center justify-center py-12 px-6">

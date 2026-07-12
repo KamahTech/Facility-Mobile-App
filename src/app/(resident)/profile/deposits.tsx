@@ -1,5 +1,6 @@
 import React from "react";
-import { View, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
+import { View, ScrollView, RefreshControl } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
@@ -169,7 +170,7 @@ export default function DepositsScreen() {
       <View className="flex-1 w-full max-w-xl self-center px-5">
         {loading && deposits.length === 0 ? (
           <View className="flex-1 items-center justify-center py-12">
-            {isTransitionFinished && <ActivityIndicator size="large" color="#4F46E5" />}
+            {isTransitionFinished && <AppActivityIndicator size="large"  />}
           </View>
         ) : (
           <ScrollView

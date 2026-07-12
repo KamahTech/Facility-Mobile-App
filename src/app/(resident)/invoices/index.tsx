@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, View, ActivityIndicator, RefreshControl, Alert } from "react-native";
+import { Pressable, View, RefreshControl, Alert } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
@@ -165,7 +166,7 @@ export default function ResidentInvoicesScreen() {
 
         {loading && invoices.length === 0 ? (
           <View className="flex-1 items-center justify-center py-12">
-            {isTransitionFinished && <ActivityIndicator size="large" color="#4F46E5" />}
+            {isTransitionFinished && <AppActivityIndicator size="large"  />}
           </View>
         ) : (
           <View className="flex-1">

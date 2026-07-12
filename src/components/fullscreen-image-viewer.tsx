@@ -2,6 +2,7 @@ import React from "react";
 import { Modal, StyleSheet, View, Pressable, ScrollView, Alert, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 import { useAppInsets } from "@/hooks/use-app-insets";
+import { getBackendImageSource } from "@/lib/image-source";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppChevron } from "@/components/app-chevron";
@@ -57,7 +58,7 @@ export function FullscreenImageViewer({
           className="flex-1 w-full"
         >
           <Image 
-            source={imageUri} 
+            source={getBackendImageSource(imageUri)} 
             style={{ width, height: height * 0.8 }} 
             contentFit="contain" 
           />

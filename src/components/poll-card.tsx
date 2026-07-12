@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, View, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { Pressable, View, StyleSheet, Alert } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 
 import { useI18n } from "@/hooks/use-i18n";
 import { type TranslationKey } from "@/constants/translations";
@@ -140,7 +141,7 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
                       return translated === key ? option.text : translated;
                     })()}
                   </AppText>
-                  {isVotingForThis && <ActivityIndicator size="small" color="#4F46E5" />}
+                  {isVotingForThis && <AppActivityIndicator size="small"  />}
                 </AppRow>
 
                 {/* Show percentage if voted or closed */}

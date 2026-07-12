@@ -1,5 +1,6 @@
 import React from "react";
-import { View, RefreshControl, ActivityIndicator } from "react-native";
+import { View, RefreshControl } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, router, useNavigation } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
@@ -110,7 +111,7 @@ export default function OwnerUnitsScreen() {
 
       {loading && ownerUnits.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          {isTransitionFinished && <ActivityIndicator size="large" color="#4F46E5" />}
+          {isTransitionFinished && <AppActivityIndicator size="large"  />}
         </View>
       ) : (
         <View className="flex-1">

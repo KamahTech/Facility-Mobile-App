@@ -31,6 +31,14 @@ export function getBackendImageSource(imageUrl: BackendImageValue, fallback?: nu
     return { uri: imageUrl };
   }
 
+  if (
+    !imageUrl.startsWith("/") &&
+    !imageUrl.startsWith("http:") &&
+    !imageUrl.startsWith("https:")
+  ) {
+    return { uri: `data:image/jpeg;base64,${imageUrl}` };
+  }
+
   const apiOrigin = getApiOrigin();
 
   if (imageUrl.startsWith("/")) {

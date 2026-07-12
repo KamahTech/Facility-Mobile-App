@@ -1,5 +1,6 @@
 import React from "react";
-import { View, ActivityIndicator, Pressable, Alert } from "react-native";
+import { View, Pressable, Alert } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, router, type Href } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
@@ -238,7 +239,7 @@ export default function SignupScreen() {
               <View className="mt-4">
                 {loading ? (
                   <View className="min-h-14 items-center justify-center bg-primary/80 rounded-lg">
-                    <ActivityIndicator color="white" />
+                    <AppActivityIndicator color="white" />
                   </View>
                 ) : (
                   <AppButton
@@ -305,7 +306,7 @@ export default function SignupScreen() {
               <View className="mt-4">
                 {loading ? (
                   <View className="min-h-14 items-center justify-center bg-primary/80 rounded-lg">
-                    <ActivityIndicator color="white" />
+                    <AppActivityIndicator color="white" />
                   </View>
                 ) : (
                   <AppButton

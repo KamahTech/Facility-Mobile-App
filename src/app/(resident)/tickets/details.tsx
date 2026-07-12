@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, View, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { Pressable, View, ScrollView, Alert } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useLocalSearchParams, Stack, router, type Href } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
@@ -261,7 +262,7 @@ export default function ResidentTicketDetailsScreen() {
             className="w-full bg-rose-50 dark:bg-rose-950/20 py-4 rounded-2xl justify-center items-center mt-6 active:opacity-90"
           >
             {actionLoading ? (
-              <ActivityIndicator color="#EF4444" />
+              <AppActivityIndicator color="#EF4444" />
             ) : (
               <AppText className="text-rose-600 dark:text-rose-400 font-bold text-base">
                 {t("tickets.cancelBtn")}

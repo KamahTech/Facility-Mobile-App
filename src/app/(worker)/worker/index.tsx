@@ -1,6 +1,7 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, View, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
+import { Pressable, View, ScrollView, RefreshControl } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { router, type Href } from "expo-router";
 import { LegendList } from "@legendapp/list/react-native";
@@ -193,7 +194,7 @@ export default function WorkerHomeScreen() {
       <View className="flex-1 w-full max-w-xl self-center px-5">
         {loading && requests.length === 0 ? (
           <View className="flex-1 items-center justify-center py-12">
-            {isTransitionFinished && <ActivityIndicator size="large" color="#4F46E5" />}
+            {isTransitionFinished && <AppActivityIndicator size="large"  />}
           </View>
         ) : filteredTasks.length === 0 ? (
           renderEmptyState()

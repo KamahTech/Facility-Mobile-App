@@ -1,5 +1,6 @@
 import React from "react";
-import { View, ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, useLocalSearchParams, router, type Href } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { StatusBar } from "expo-status-bar";
@@ -195,7 +196,7 @@ export default function LoginScreen() {
           <View>
             {loading ? (
               <View className="min-h-14 items-center justify-center bg-primary/80 rounded-lg">
-                <ActivityIndicator color="white" />
+                <AppActivityIndicator color="white" />
               </View>
             ) : (
               <AppButton

@@ -1,5 +1,6 @@
 import React from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 
 type FullScreenLoaderProps = {
   visible?: boolean;
@@ -12,7 +13,7 @@ export function FullScreenLoader({ visible = true }: FullScreenLoaderProps) {
 
   return (
     <View className="absolute top-0 inset-x-0 bottom-0 bg-background/50 z-50 items-center justify-center">
-      <ActivityIndicator size="large" color="#4F46E5" />
+      <AppActivityIndicator size="large"  />
     </View>
   );
 }

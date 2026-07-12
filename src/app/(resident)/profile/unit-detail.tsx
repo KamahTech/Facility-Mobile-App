@@ -1,5 +1,6 @@
 import React from "react";
-import { View, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
+import { View, ScrollView, RefreshControl } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, useLocalSearchParams, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
@@ -63,7 +64,7 @@ export default function UnitDetailScreen() {
           onBack={() => router.back()}
         />
         <View className="flex-1 items-center justify-center">
-          {isTransitionFinished && <ActivityIndicator size="large" color="#4F46E5" />}
+          {isTransitionFinished && <AppActivityIndicator size="large"  />}
         </View>
       </View>
     );

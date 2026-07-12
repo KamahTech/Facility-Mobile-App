@@ -1,5 +1,6 @@
 import React from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Redirect, type Href } from "expo-router";
 
 import { useUserStore } from "@/stores/user-store";
@@ -31,7 +32,7 @@ export function ProtectedLayout({ accountType, children }: ProtectedLayoutProps)
   if (!initialized) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <AppActivityIndicator size="large"  />
       </View>
     );
   }

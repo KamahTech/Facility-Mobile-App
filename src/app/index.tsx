@@ -1,7 +1,8 @@
 import React from "react";
 import { Redirect } from "expo-router";
 import { useUserStore } from "@/stores/user-store";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 
 export default function Index() {
   const { initialize, initialized, sessionId, accountType } = useUserStore();
@@ -13,7 +14,7 @@ export default function Index() {
   if (!initialized) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }} className="bg-background">
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <AppActivityIndicator size="large"  />
       </View>
     );
   }

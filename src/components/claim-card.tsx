@@ -1,5 +1,6 @@
 import React from "react";
-import { View, ActivityIndicator, Pressable, TextInput, Alert } from "react-native";
+import { View, Pressable, TextInput, Alert } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -100,7 +101,7 @@ function ClaimExpandedDetails({ claim, currentClaimDetails, submitInquiry }: Cla
           ))}
         </View>
       ) : (
-        <ActivityIndicator color="#4F46E5" />
+        <AppActivityIndicator  />
       )}
 
       <View className="flex-col gap-2.5 bg-secondary/30 p-4 rounded-2xl">
@@ -185,7 +186,7 @@ function ClaimExpandedDetails({ claim, currentClaimDetails, submitInquiry }: Cla
               variant="card"
             />
             {submittingInquiry ? (
-              <ActivityIndicator color="#4F46E5" />
+              <AppActivityIndicator  />
             ) : (
               <AppButton
                 label={t("claims.submitBtn")}

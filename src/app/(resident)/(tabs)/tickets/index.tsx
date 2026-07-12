@@ -1,5 +1,6 @@
 import React from "react";
-import { View, ScrollView, Pressable, ActivityIndicator, RefreshControl } from "react-native";
+import { View, ScrollView, Pressable, RefreshControl } from "react-native";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { router, type Href, useNavigation } from "expo-router";
 import { AnimatedLegendList } from "@legendapp/list/reanimated";
@@ -195,7 +196,7 @@ export default function ResidentTicketsScreen() {
       <View className="flex-1 w-full max-w-xl self-center px-5">
         {loading && requests.length === 0 ? (
           <View className="flex-1 items-center justify-center py-12">
-            {isTransitionFinished && <ActivityIndicator size="large" color="#4F46E5" />}
+            {isTransitionFinished && <AppActivityIndicator size="large"  />}
           </View>
         ) : filteredRequests.length === 0 ? (
           renderEmptyState()
