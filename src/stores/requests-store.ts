@@ -15,6 +15,25 @@ export type RequestComment = {
   image?: string | boolean; // raw base64, data URL or false
 };
 
+export type PaginatedComments = {
+  items: RequestComment[];
+  nextCursor: string | false;
+  hasMore: boolean;
+};
+
+export function useTicketCommentsQuery(ticketId: string) {
+  return useInfiniteQuery<PaginatedComments>({
+    queryKey: ["ticket-comments", ticketId],
+    queryFn: ({ pageParam }) =>
+      apiRequest<PaginatedComments>(`/tickets/${ticketId}/comments/page`, {
+        limit: 50,
+        cursor: pageParam || false,
+      }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
+  });
+}
+
 export type MaintenanceRequest = {
   id: string;
   category: "plumbing" | "electrical" | "hvac" | "cleaning" | "security" | "carpentry" | "other";
@@ -80,20 +99,14 @@ export function useRequestsStore(options?: {
 
   // Mutations
   const createRequestMutation = useMutation({
-    mutationFn: (params: { category: string; description: string; unitId: string; source?: string }) => {
+    mutationFn: (params: { category: string; description: string; unitId: string }) => {
       const unitIdNum = parseInt(params.unitId, 10);
-      const isMobile = params.source === "mobile_unit_link";
       
       const payload: Record<string, unknown> = {
         category: params.category,
         description: params.description,
+        unitId: unitIdNum,
       };
-      
-      if (isMobile) {
-        payload.mobileUnitLinkId = unitIdNum;
-      } else {
-        payload.unitId = unitIdNum;
-      }
       
       return apiRequest("/resident/tickets/create", payload);
     },
@@ -121,9 +134,26 @@ export function useRequestsStore(options?: {
         imageName: params.imageName,
       });
     },
-    onSuccess: () => {
+    onSuccess: (newComment: any, params) => {
       queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
       queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+
+      const commentsQueryKey = ["ticket-comments", params.requestId];
+      queryClient.setQueryData<any>(commentsQueryKey, (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any, idx: number) => {
+            if (idx !== 0) return page;
+            const exists = page.items.some((c: any) => String(c.id) === String(newComment.id));
+            if (exists) return page;
+            return {
+              ...page,
+              items: [...page.items, newComment],
+            };
+          }),
+        };
+      });
     }
   });
 
@@ -256,8 +286,8 @@ export function useRequestsStore(options?: {
 
   const createRequest = React.useCallback(async (category: string, description: string, unitId: string) => {
     const unit = units.find((u) => u.id === unitId);
-    const source = unit?.source;
-    return await createRequestMutateAsync({ category, description, unitId, source });
+    const realUnitId = unit?.source === "mobile_unit_link" ? unit.unitId : unit?.id;
+    return await createRequestMutateAsync({ category, description, unitId: realUnitId || unitId });
   }, [createRequestMutateAsync, units]);
 
   const cancelRequest = React.useCallback(async (id: string) => {

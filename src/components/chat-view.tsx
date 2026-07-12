@@ -1,10 +1,8 @@
 import React from "react";
-import { View, Pressable, TextInput, Alert } from "react-native";
+import { View, Pressable, TextInput, Alert, FlatList } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { Image } from "expo-image";
-import { LegendList } from "@legendapp/list/react-native";
-import type { LegendListRef } from "@legendapp/list/react-native";
 import { useGenericKeyboardHandler } from "react-native-keyboard-controller";
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 
@@ -29,6 +27,9 @@ type ChatViewProps = {
   accountType: "resident" | "worker";
   onSendComment: (content: string, imageBase64: string | false, imageName: string | false) => Promise<void>;
   onBack: () => void;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
+  hasNextPage?: boolean;
 };
 
 export function ChatView({
@@ -37,6 +38,9 @@ export function ChatView({
   accountType,
   onSendComment,
   onBack,
+  isLoadingMore = false,
+  onLoadMore,
+  hasNextPage = false,
 }: ChatViewProps) {
   const { t, direction } = useI18n();
   const insets = useAppInsets();
@@ -55,14 +59,14 @@ export function ChatView({
   const [isViewerVisible, setIsViewerVisible] = React.useState(false);
   const [sendLoading, setSendLoading] = React.useState(false);
   
-  const listRef = React.useRef<LegendListRef>(null);
+  const listRef = React.useRef<FlatList>(null);
   const keyboardTranslateY = useSharedValue(0);
 
   // Re-scroll when comments length changes (realtime new messages)
   React.useEffect(() => {
     if (comments.length > 0) {
       requestAnimationFrame(() => {
-        listRef.current?.scrollToEnd({ animated: true });
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
       });
     }
   }, [comments.length]);
@@ -119,7 +123,7 @@ export function ChatView({
       setNewComment("");
       setSelectedPhoto(null);
       requestAnimationFrame(() => {
-        listRef.current?.scrollToEnd({ animated: true });
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
       });
     } catch (e: unknown) {
       Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.commentSubmitFailed"));
@@ -273,23 +277,22 @@ export function ChatView({
 
       <View className="flex-1 w-full overflow-hidden">
         <Animated.View className="flex-1 w-full max-w-xl self-center px-5" style={listKeyboardStyle}>
-          <LegendList
+          <FlatList
             ref={listRef}
             data={comments}
             keyExtractor={(item) => item.id}
-            estimatedItemSize={120}
-            recycleItems={true}
-            alignItemsAtEnd={true}
-            initialScrollAtEnd={true}
-            maintainScrollAtEnd={{ animated: true }}
+            inverted={true}
+            onEndReached={onLoadMore}
+            onEndReachedThreshold={0.2}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              paddingTop: 24,
-              paddingBottom: 16,
+              paddingTop: 16,
+              paddingBottom: 24,
             }}
             ListEmptyComponent={
               <View
                 className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 border border-border/30 shadow-3xs"
+                style={{ transform: [{ scaleY: -1 }] }}
               >
                 <View className="w-12 h-12 rounded-full bg-secondary/50 items-center justify-center mb-3">
                   <AppIcon name="tickets" size={22} colorToken="--muted-foreground" />
@@ -298,6 +301,13 @@ export function ChatView({
                   {t("tickets.noComments")}
                 </AppText>
               </View>
+            }
+            ListFooterComponent={
+              isLoadingMore ? (
+                <View className="py-4 items-center justify-center" style={{ transform: [{ scaleY: -1 }] }}>
+                  <AppActivityIndicator size="small" />
+                </View>
+              ) : null
             }
             renderItem={renderCommentItem}
             className="flex-1 w-full"

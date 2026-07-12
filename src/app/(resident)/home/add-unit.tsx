@@ -32,7 +32,7 @@ type ConnectUnitFormValues = {
   buildingId: string;
   floorId?: string;
   unitId: string;
-  ownershipType: "owner" | "tenant";
+  ownershipType: "owner" | "tenant" | "family_member";
   contactNumber?: string;
 };
 
@@ -49,8 +49,16 @@ export default function AddUnitScreen() {
         buildingId: z.string().min(1, t("validation.required")),
         floorId: z.string().optional(),
         unitId: z.string().min(1, t("validation.required")),
-        ownershipType: z.enum(["owner", "tenant"]),
+        ownershipType: z.enum(["owner", "tenant", "family_member"]),
         contactNumber: z.string().optional(),
+      }).refine((data) => {
+        if (data.ownershipType !== "family_member" && (!data.contactNumber || data.contactNumber.trim() === "")) {
+          return false;
+        }
+        return true;
+      }, {
+        message: t("validation.required"),
+        path: ["contactNumber"],
       }),
     [t],
   );
@@ -148,6 +156,7 @@ export default function AddUnitScreen() {
   const ownershipOptions = [
     { label: t("connectUnit.owner"), value: "owner" },
     { label: t("connectUnit.tenant"), value: "tenant" },
+    { label: t("connectUnit.familyMember"), value: "family_member" },
   ];
 
   return (

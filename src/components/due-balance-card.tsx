@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 
@@ -15,9 +16,10 @@ const houseIcon = require("@/assets/icons/house.png");
 type DueBalanceCardProps = {
   /** The number of connected units to show. */
   unitsCount: number;
+  isLoading?: boolean;
 };
 
-export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
+export function DueBalanceCard({ unitsCount, isLoading = false }: DueBalanceCardProps) {
   const { isRTL, language, t } = useI18n();
   const primaryColor = useThemeToken("--primary") as string;
   const primaryForeground = useThemeToken("--primary-foreground") as string;
@@ -86,14 +88,17 @@ export function DueBalanceCard({ unitsCount }: DueBalanceCardProps) {
         </AppRow>
 
         {/* Connected Units Count Number */}
-        <AppText 
-          className="text-4xl font-extrabold text-primary-foreground tracking-tight"
-          style={{
-            alignSelf: "flex-start",
-          }}
-        >
-          {formattedCount}
-        </AppText>
+        <View className="h-10 justify-center" style={{ alignSelf: "flex-start" }}>
+          {isLoading ? (
+            <AppActivityIndicator size="small" color="#000000" className="py-1" />
+          ) : (
+            <AppText 
+              className="text-4xl font-extrabold text-primary-foreground tracking-tight"
+            >
+              {formattedCount}
+            </AppText>
+          )}
+        </View>
       </View>
 
       {/* 3D House icon (Positioned absolutely in bottom-end corner and clipped) */}

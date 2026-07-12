@@ -86,6 +86,8 @@ export type SubmitFeedbackParams = {
   subject: string;
   category: "complaint" | "suggestion";
   details: string;
+  unitId?: number | string;
+  mobileUnitLinkId?: number | string;
 };
 
 export type PaginatedUpdates = {

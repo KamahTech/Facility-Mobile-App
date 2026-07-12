@@ -32,7 +32,7 @@ export default function ResidentHomeScreen() {
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   
   const { profile, logout } = useUserStore();
-  const { unitsCount } = useUnitStore({ enableUnits: false, enableSummary: true });
+  const { unitsCount, isSummaryLoading } = useUnitStore({ enableUnits: false, enableSummary: true });
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
   const avatarSource = React.useMemo(
     () => getProfileImageSource(profile?.profileImageUrl, johnDoeAvatar),
@@ -127,7 +127,7 @@ export default function ResidentHomeScreen() {
 
         {/* Connected Units Card Component */}
         <View className="px-5 sm:px-8">
-          <DueBalanceCard unitsCount={unitsCount} />
+          <DueBalanceCard unitsCount={unitsCount} isLoading={isSummaryLoading} />
         </View>
 
         {/* Quick Actions List */}

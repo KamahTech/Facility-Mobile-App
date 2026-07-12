@@ -22,13 +22,42 @@ export type ConnectedUnit = {
   facilityOwnerLineId?: string;
 };
 
+export type MobileUnitLinkItem = {
+  id: string;
+  source: string;
+  unitId: string;
+  ownershipType: "tenant" | "family_member";
+  approvalStatus: "pending" | "approved" | "refused";
+  residentPartnerId: string;
+  residentName: string;
+  residentEmail: string;
+  contactNumber: string;
+};
+
 export type ConnectUnitParams = {
   unitId?: number | string;
   buildingNumber?: string;
   unitNumber?: string;
-  ownershipType: "owner" | "tenant";
+  ownershipType: "owner" | "tenant" | "family_member";
   contactNumber?: string;
 };
+
+export type FamilyMembersResponse = {
+  ok: boolean;
+  data: {
+    unitId: string;
+    managerRole: "tenant" | "owner";
+    items: MobileUnitLinkItem[];
+  };
+};
+
+export function useFamilyMembersQuery(unitId?: string) {
+  return useQuery<FamilyMembersResponse>({
+    queryKey: ["family-members", unitId],
+    queryFn: () => apiRequest<FamilyMembersResponse>(`/resident/units/${unitId}/family-members`, {}),
+    enabled: !!unitId,
+  });
+}
 
 export type ConnectedUnitsSummary = {
   connectedUnitCount: number;
@@ -149,20 +178,49 @@ export function useUnitStore(options?: { enableUnits?: boolean; enableSummary?: 
     }
   });
 
+  const approveFamilyMutation = useMutation({
+    mutationFn: (unitLinkId: string) =>
+      apiRequest(`/resident/mobile-unit-links/${unitLinkId}/approve`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["family-members"] });
+    }
+  });
+
+  const rejectFamilyMutation = useMutation({
+    mutationFn: (params: { unitLinkId: string; reason: string }) =>
+      apiRequest(`/resident/mobile-unit-links/${params.unitLinkId}/reject`, { reason: params.reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["family-members"] });
+    }
+  });
+
   const unitsCount = summaryQuery.data?.connectedUnitCount ?? 0;
   const unitsSummary = summaryQuery.data ?? null;
   const units = query.data || [];
-  const loading = summaryQuery.isLoading || query.isLoading || connectMutation.isPending || disconnectMutation.isPending;
+  const isSummaryLoading = summaryQuery.isLoading;
+  const loading =
+    summaryQuery.isLoading ||
+    query.isLoading ||
+    connectMutation.isPending ||
+    disconnectMutation.isPending ||
+    approveFamilyMutation.isPending ||
+    rejectFamilyMutation.isPending;
+
   const error =
     summaryQuery.error?.message ||
     query.error?.message ||
     connectMutation.error?.message ||
     disconnectMutation.error?.message ||
+    approveFamilyMutation.error?.message ||
+    rejectFamilyMutation.error?.message ||
     null;
+
   const { refetch: refetchSummary } = summaryQuery;
   const { refetch } = query;
   const { mutateAsync: connectMutateAsync, reset: resetConnectMutation } = connectMutation;
   const { mutateAsync: disconnectMutateAsync, reset: resetDisconnectMutation } = disconnectMutation;
+  const { mutateAsync: approveFamilyMutateAsync, reset: resetApproveFamilyMutation } = approveFamilyMutation;
+  const { mutateAsync: rejectFamilyMutateAsync, reset: resetRejectFamilyMutation } = rejectFamilyMutation;
 
   const fetchUnits = React.useCallback(async () => {
     await refetch();
@@ -180,21 +238,34 @@ export function useUnitStore(options?: { enableUnits?: boolean; enableSummary?: 
     await disconnectMutateAsync(id);
   }, [disconnectMutateAsync]);
 
+  const approveFamilyMember = React.useCallback(async (unitLinkId: string) => {
+    return await approveFamilyMutateAsync(unitLinkId);
+  }, [approveFamilyMutateAsync]);
+
+  const rejectFamilyMember = React.useCallback(async (unitLinkId: string, reason: string) => {
+    return await rejectFamilyMutateAsync({ unitLinkId, reason });
+  }, [rejectFamilyMutateAsync]);
+
   const clearError = React.useCallback(() => {
     resetConnectMutation();
     resetDisconnectMutation();
-  }, [resetConnectMutation, resetDisconnectMutation]);
+    resetApproveFamilyMutation();
+    resetRejectFamilyMutation();
+  }, [resetConnectMutation, resetDisconnectMutation, resetApproveFamilyMutation, resetRejectFamilyMutation]);
 
   return {
     unitsCount,
     unitsSummary,
     units,
     loading,
+    isSummaryLoading,
     error,
     fetchUnitsSummary,
     fetchUnits,
     connectUnit,
     disconnectUnit,
+    approveFamilyMember,
+    rejectFamilyMember,
     clearError,
   };
 }

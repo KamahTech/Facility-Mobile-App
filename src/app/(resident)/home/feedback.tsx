@@ -2,7 +2,7 @@ import React from "react";
 import { View, Alert } from "react-native";
 import { Stack, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -15,17 +15,24 @@ import { AppButton } from "@/components/app-button";
 import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { useI18n } from "@/hooks/use-i18n";
 import { useCommunityStore } from "@/stores/community-store";
+import { AppSelectField } from "@/components/app-select-field";
+import { UnitSelectBottomSheet } from "@/components/unit-select-bottom-sheet";
+import { useUnitStore } from "@/stores/unit-store";
+import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentation";
 
 type FeedbackFormValues = {
   subject: string;
   category: "complaint" | "suggestion";
   details: string;
+  unitId?: string;
 };
 
 export default function FeedbackScreen() {
   const { t } = useI18n();
   const insets = useAppInsets();
   const { submitFeedback, loading, error, clearError } = useCommunityStore();
+  const { units } = useUnitStore();
+  const unitSheet = useBottomSheetPresentation();
   const [localLoading, setLocalLoading] = React.useState(false);
   const feedbackSchema = React.useMemo(
     () =>
@@ -33,18 +40,23 @@ export default function FeedbackScreen() {
         subject: z.string().min(1, t("validation.required")),
         category: z.enum(["complaint", "suggestion"]),
         details: z.string().min(1, t("validation.required")),
+        unitId: z.string().optional(),
       }),
     [t],
   );
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FeedbackFormValues>({
+  const { control, handleSubmit, setValue, formState: { errors } } = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
       subject: "",
       category: "complaint",
       details: "",
+      unitId: "",
     },
   });
+
+  const selectedUnitId = useWatch({ control, name: "unitId" });
+  const selectedUnit = units.find(u => u.id === selectedUnitId) || null;
 
   React.useEffect(() => {
     clearError();
@@ -54,11 +66,22 @@ export default function FeedbackScreen() {
     clearError();
     setLocalLoading(true);
     try {
-      await submitFeedback({
+      const payload: any = {
         subject: data.subject.trim(),
         category: data.category,
         details: data.details.trim(),
-      });
+      };
+
+      if (selectedUnit) {
+        const idNum = parseInt(selectedUnit.id, 10);
+        if (selectedUnit.source === "mobile_unit_link") {
+          payload.mobileUnitLinkId = idNum;
+        } else {
+          payload.unitId = idNum;
+        }
+      }
+
+      await submitFeedback(payload);
 
       Alert.alert(
         t("feedback.successTitle"),
@@ -131,6 +154,18 @@ export default function FeedbackScreen() {
             )}
           />
 
+          <AppSelectField
+            label={t("tickets.selectUnit")}
+            placeholder={t("tickets.selectUnit")}
+            value={
+              selectedUnit
+                ? `${selectedUnit.buildingNumber} - ${selectedUnit.unitNumber}`
+                : undefined
+            }
+            onPress={unitSheet.present}
+            error={errors.unitId?.message}
+          />
+
           <Controller
             control={control}
             name="details"
@@ -165,6 +200,15 @@ export default function FeedbackScreen() {
         </View>
       </KeyboardAwareScrollContent>
 
+      <UnitSelectBottomSheet
+        isPresented={unitSheet.isPresented}
+        units={units}
+        selectedUnitId={selectedUnit?.id}
+        onDismiss={unitSheet.dismiss}
+        onSelect={(unit) => {
+          setValue("unitId", unit?.id || "", { shouldValidate: true });
+        }}
+      />
       <FullScreenLoader visible={localLoading || loading} />
     </View>
   );

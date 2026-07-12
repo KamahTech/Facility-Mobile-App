@@ -1,11 +1,12 @@
 import React from "react";
-import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 import {
   normalizeOwnerDetails,
   normalizeOwnerStatementResponse,
   normalizeTotalInvoiced,
 } from "@/lib/owner-normalization";
+import { type MobileUnitLinkItem } from "@/stores/unit-store";
 
 export type OwnerUnit = {
   id: string;
@@ -111,12 +112,29 @@ export type PaginatedServices = {
   hasMore: boolean;
 };
 
+export type TenantsResponse = {
+  ok: boolean;
+  data: {
+    unitId: string;
+    items: MobileUnitLinkItem[];
+  };
+};
+
+export function useTenantsQuery(unitId?: string) {
+  return useQuery<TenantsResponse>({
+    queryKey: ["unit-tenants", unitId],
+    queryFn: () => apiRequest<TenantsResponse>(`/resident/owner-units/${unitId}/tenants`, {}),
+    enabled: !!unitId,
+  });
+}
+
 export function useOwnerStore(options?: {
   enableOwnerUnits?: boolean;
   enableStatement?: boolean;
   enableClaims?: boolean;
   enableServices?: boolean;
 }) {
+  const queryClient = useQueryClient();
   const [currentClaim, setCurrentClaim] = React.useState<OwnerClaim | null>(null);
 
   const enableOwnerUnits = options?.enableOwnerUnits ?? false;
@@ -164,6 +182,14 @@ export function useOwnerStore(options?: {
     mutationFn: (params: OwnerInquiryParams) => apiRequest("/resident/owner-inquiries/submit", params),
   });
 
+  const removeTenantMutation = useMutation({
+    mutationFn: (params: { unitId: string; unitLinkId: string }) =>
+      apiRequest(`/resident/owner-units/${params.unitId}/tenants/${params.unitLinkId}/remove`, {}),
+    onSuccess: (_, params) => {
+      queryClient.invalidateQueries({ queryKey: ["unit-tenants", params.unitId] });
+    }
+  });
+
   // Mapped States
   const ownerUnits = ownerUnitsQuery.data || [];
   const statement = statementQuery.data || null;
@@ -185,7 +211,8 @@ export function useOwnerStore(options?: {
     claimsQuery.isFetchingNextPage ||
     servicesQuery.isLoading ||
     servicesQuery.isFetchingNextPage ||
-    submitInquiryMutation.isPending;
+    submitInquiryMutation.isPending ||
+    removeTenantMutation.isPending;
 
   const error =
     ownerUnitsQuery.error?.message ||
@@ -193,6 +220,7 @@ export function useOwnerStore(options?: {
     claimsQuery.error?.message ||
     servicesQuery.error?.message ||
     submitInquiryMutation.error?.message ||
+    removeTenantMutation.error?.message ||
     null;
 
   const ownerUnitsError = ownerUnitsQuery.error?.message || null;
@@ -275,9 +303,14 @@ export function useOwnerStore(options?: {
     return await submitInquiryMutateAsync(params);
   }, [submitInquiryMutateAsync]);
 
+  const removeTenant = React.useCallback(async (unitId: string, unitLinkId: string) => {
+    return await removeTenantMutation.mutateAsync({ unitId, unitLinkId });
+  }, [removeTenantMutation]);
+
   const clearError = React.useCallback(() => {
     resetSubmitInquiryMutation();
-  }, [resetSubmitInquiryMutation]);
+    removeTenantMutation.reset();
+  }, [resetSubmitInquiryMutation, removeTenantMutation]);
 
   return {
     ownerUnits,
@@ -301,6 +334,7 @@ export function useOwnerStore(options?: {
     fetchNextServices,
     hasNextServices: servicesQuery.hasNextPage,
     submitInquiry,
+    removeTenant,
     clearError,
   };
 }

@@ -100,6 +100,24 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
             if (payload && String(payload.ticketId) === String(ticketId)) {
               console.log(`[WS] Parsed comment payload for ticket ${ticketId}:`, payload.comment);
               
+              // Update comments query cache
+              const commentsQueryKey = ["ticket-comments", String(ticketId)];
+              queryClient.setQueryData<any>(commentsQueryKey, (oldData: any) => {
+                if (!oldData) return oldData;
+                return {
+                  ...oldData,
+                  pages: oldData.pages.map((page: any, idx: number) => {
+                    if (idx !== 0) return page;
+                    const exists = page.items.some((c: any) => String(c.id) === String(payload.comment.id));
+                    if (exists) return page;
+                    return {
+                      ...page,
+                      items: [...page.items, payload.comment],
+                    };
+                  }),
+                };
+              });
+
               // Update React Query infinite query cache dynamically
               const queryKey = [accountType === "resident" ? "resident-requests" : "worker-tasks"];
               queryClient.setQueryData<InfiniteData<PaginatedRequests>>(

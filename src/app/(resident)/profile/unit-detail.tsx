@@ -11,6 +11,8 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
 import { useOwnerStore, type OwnerUnit, type OwnerFinancialSummary } from "@/stores/owner-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
+import { UnitTenantsCard } from "@/components/unit-tenants-card";
+import { UnitFamilyMembersCard } from "@/components/unit-family-members-card";
 
 export default function UnitDetailScreen() {
   const { t } = useI18n();
@@ -207,6 +209,14 @@ export default function UnitDetailScreen() {
               </AppRow>
             </View>
           </View>
+        )}
+
+        {unitId && (
+          <UnitTenantsCard unitId={unitId} />
+        )}
+
+        {unitId && (
+          <UnitFamilyMembersCard unitId={unitId} />
         )}
       </ScrollView>
     </View>

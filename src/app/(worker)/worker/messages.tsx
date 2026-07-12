@@ -7,7 +7,7 @@ import { useAppInsets } from "@/hooks/use-app-insets";
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
-import { useRequestsStore } from "@/stores/requests-store";
+import { useRequestsStore, useTicketCommentsQuery } from "@/stores/requests-store";
 import { ChatView } from "@/components/chat-view";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 
@@ -18,11 +18,16 @@ export default function WorkerTicketMessagesScreen() {
   const taskId = params.id as string;
 
   const isTransitionFinished = useScreenTransition();
-  const { requests, addRequestComment, loading } = useRequestsStore({ enableWorkerTasks: true });
+  const { requests, addRequestComment } = useRequestsStore({ enableWorkerTasks: true });
+  const commentsQuery = useTicketCommentsQuery(taskId);
 
   const task = requests.find((r) => r.id === taskId);
 
-  const showLoading = !isTransitionFinished || (loading && requests.length === 0);
+  const comments = React.useMemo(() => {
+    return commentsQuery.data?.pages.flatMap((page) => [...page.items].reverse()) || [];
+  }, [commentsQuery.data?.pages]);
+
+  const showLoading = !isTransitionFinished || commentsQuery.isLoading;
 
   if (showLoading) {
     return (
@@ -77,10 +82,17 @@ export default function WorkerTicketMessagesScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ChatView
         ticketId={task.id}
-        comments={task.comments}
+        comments={comments}
         accountType="worker"
         onSendComment={handleSendComment}
         onBack={() => router.back()}
+        isLoadingMore={commentsQuery.isFetchingNextPage}
+        onLoadMore={() => {
+          if (commentsQuery.hasNextPage && !commentsQuery.isFetchingNextPage) {
+            commentsQuery.fetchNextPage();
+          }
+        }}
+        hasNextPage={commentsQuery.hasNextPage}
       />
     </>
   );
