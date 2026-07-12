@@ -281,7 +281,7 @@ export default function ResidentTicketDetailsScreen() {
           <Pressable
             onPress={() => {
               router.push({
-                pathname: "/(resident)/tickets/messages",
+                pathname: "/tickets/messages",
                 params: { id: request.id },
               } as Href);
             }}

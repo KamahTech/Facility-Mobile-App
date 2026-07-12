@@ -93,6 +93,8 @@ export default function ResidentTicketMessagesScreen() {
           }
         }}
         hasNextPage={commentsQuery.hasNextPage}
+        composerDisabled={!request.workerName}
+        composerDisabledPlaceholder={t("tickets.waitingForWorker")}
       />
     </>
   );

@@ -99,7 +99,7 @@ export function RequestCard({ request }: RequestCardProps) {
 
   const handlePress = () => {
     router.push({
-      pathname: "/(resident)/tickets/details",
+      pathname: "/tickets/details",
       params: { id: request.id },
     } as Href);
   };

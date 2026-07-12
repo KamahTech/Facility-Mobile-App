@@ -99,7 +99,7 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
 
   const handlePress = () => {
     router.push({
-      pathname: "/(worker)/worker/details",
+      pathname: "/worker/details",
       params: { id: task.id },
     } as Href);
   };

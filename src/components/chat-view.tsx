@@ -30,6 +30,8 @@ type ChatViewProps = {
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
   hasNextPage?: boolean;
+  composerDisabled?: boolean;
+  composerDisabledPlaceholder?: string;
 };
 
 export function ChatView({
@@ -41,6 +43,8 @@ export function ChatView({
   isLoadingMore = false,
   onLoadMore,
   hasNextPage = false,
+  composerDisabled = false,
+  composerDisabledPlaceholder,
 }: ChatViewProps) {
   const { t, direction } = useI18n();
   const insets = useAppInsets();
@@ -355,9 +359,10 @@ export function ChatView({
         <AppRow className="w-full max-w-xl self-center px-4 py-3 items-center gap-3">
           <Pressable
             onPress={handlePickImage}
+            disabled={composerDisabled}
             accessibilityLabel={t("worker.mediaSourceCamera")}
             accessibilityRole="button"
-            className="w-11 h-11 rounded-full bg-secondary items-center justify-center active:opacity-75 border border-border/20 shadow-3xs"
+            className="w-11 h-11 rounded-full bg-secondary items-center justify-center active:opacity-75 border border-border/20 shadow-3xs disabled:opacity-40"
           >
             <AppIcon name="camera" size={20} colorToken="--foreground" />
           </Pressable>
@@ -365,20 +370,21 @@ export function ChatView({
           <TextInput
             value={newComment}
             onChangeText={setNewComment}
-            placeholder={t("tickets.addComment")}
+            placeholder={composerDisabled ? (composerDisabledPlaceholder || t("tickets.waitingForWorker")) : t("tickets.addComment")}
             placeholderTextColor="#A1A1AA"
+            editable={!composerDisabled}
             style={[
               directionStyle,
               {
                 textAlignVertical: "top",
               },
             ]}
-            className="flex-1 min-h-[44px] max-h-[100px] bg-background border border-border/40 rounded-2xl px-4 py-2.5 text-base text-foreground shadow-3xs"
+            className="flex-1 min-h-[44px] max-h-[100px] bg-background border border-border/40 rounded-2xl px-4 py-2.5 text-base text-foreground shadow-3xs disabled:opacity-40"
             multiline
           />
           <Pressable
             onPress={handleSubmitComment}
-            disabled={sendLoading || (!newComment.trim() && !selectedPhoto)}
+            disabled={composerDisabled || sendLoading || (!newComment.trim() && !selectedPhoto)}
             accessibilityLabel={t("tickets.send")}
             accessibilityRole="button"
             className="w-11 h-11 rounded-full bg-primary items-center justify-center active:opacity-70 shadow-sm disabled:opacity-40"

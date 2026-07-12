@@ -20,8 +20,6 @@ import { useUnitStore } from "@/stores/unit-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { getProfileImageSource } from "@/lib/image-source";
 
-const johnDoeAvatar = require("@/assets/temp/john-doe-avatar.png");
-
 export default function ResidentHomeScreen() {
   const { t } = useI18n();
   const { resolvedTheme } = useTheme();
@@ -35,7 +33,7 @@ export default function ResidentHomeScreen() {
   const { unitsCount, isSummaryLoading } = useUnitStore({ enableUnits: false, enableSummary: true });
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
   const avatarSource = React.useMemo(
-    () => getProfileImageSource(profile?.profileImageUrl, johnDoeAvatar),
+    () => getProfileImageSource(profile?.profileImageUrl, undefined),
     [profile?.profileImageUrl],
   );
 

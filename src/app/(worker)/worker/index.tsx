@@ -3,13 +3,12 @@ import { StatusBar } from "expo-status-bar";
 import { Pressable, View, ScrollView, RefreshControl } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
-import { router, type Href } from "expo-router";
+import { router, type Href, useNavigation } from "expo-router";
 import { LegendList } from "@legendapp/list/react-native";
-
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { AppIcon } from "@/components/app-icon";
-import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
-import { Avatar } from "@/components/avatar";
 import { WorkerTaskCard } from "@/components/worker-task-card";
 import { LogoutBottomSheet } from "@/components/logout-bottom-sheet";
 import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentation";
@@ -20,6 +19,10 @@ import { useRequestsStore } from "@/stores/requests-store";
 import { useUserStore } from "@/stores/user-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { getDirectionalRowStyle } from "@/lib/i18n-layout";
+import { HomeHeader } from "@/components/home-header";
+import { getProfileImageSource } from "@/lib/image-source";
+
+const AnimatedLegendList = Animated.createAnimatedComponent(LegendList);
 
 export default function WorkerHomeScreen() {
   const { t, direction } = useI18n();
@@ -31,6 +34,41 @@ export default function WorkerHomeScreen() {
   const { requests, fetchWorkerTasks, fetchNextWorkerTasks, hasNextWorkerTasks, loading, error, clearError } = useRequestsStore({ enableWorkerTasks: true });
   const { profile, logout } = useUserStore();
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
+  const avatarSource = React.useMemo(
+    () => getProfileImageSource(profile?.profileImageUrl, undefined),
+    [profile?.profileImageUrl],
+  );
+  const background = useThemeToken("--background");
+  const { headerTranslateY, scrollHandler, resetScrollAnimation } = useScrollAnimation();
+  const navigation = useNavigation();
+  const listRef = React.useRef<any>(null);
+
+  const scrollToTop = React.useCallback(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    resetScrollAnimation();
+  }, [resetScrollAnimation]);
+
+  React.useEffect(() => {
+    const unsubscribeTabPress = (navigation as any).addListener("tabPress", () => {
+      if (navigation.isFocused()) {
+        scrollToTop();
+      }
+    });
+    return unsubscribeTabPress;
+  }, [navigation, scrollToTop]);
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      resetScrollAnimation();
+    });
+    return unsubscribe;
+  }, [navigation, resetScrollAnimation]);
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: headerTranslateY.value }],
+    };
+  });
 
   const [activeTab, setActiveTab] = React.useState<"my_tasks" | "available" | "completed">("my_tasks");
   const [refreshing, setRefreshing] = React.useState(false);
@@ -60,11 +98,11 @@ export default function WorkerHomeScreen() {
         );
       case "available":
         return requests.filter(
-          (req) => req.status === "pending" && !req.workerName
+          (req) => !req.workerName && req.status !== "completed" && req.status !== "cancelled"
         );
       case "completed":
         return requests.filter(
-          (req) => req.workerName === workerName && req.status === "completed"
+          (req) => req.workerName === workerName && (req.status === "completed" || req.workerPhase === "completed")
         );
       default:
         return [];
@@ -115,14 +153,15 @@ export default function WorkerHomeScreen() {
     );
   };
 
-  const renderEmptyState = () => (
-    <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#4F46E5" />
-      }
-      contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-      className="flex-1 w-full"
-    >
+  const renderEmptyOrLoading = () => {
+    if (loading && requests.length === 0) {
+      return (
+        <View className="items-center justify-center py-16">
+          {isTransitionFinished && <AppActivityIndicator size="large" />}
+        </View>
+      );
+    }
+    return (
       <View className="items-center justify-center py-16 px-6">
         <View className="w-16 h-16 rounded-full bg-secondary/50 items-center justify-center mb-4">
           <AppIcon name="worker" size={28} color={mutedColor} />
@@ -131,41 +170,13 @@ export default function WorkerHomeScreen() {
           {t("worker.noTasks")}
         </AppText>
       </View>
-    </ScrollView>
-  );
+    );
+  };
 
-  return (
-    <View
-      className="flex-1 bg-background"
-      style={{
-        paddingTop: insets.top,
-        paddingStart: insets.left,
-        paddingEnd: insets.right,
-      }}
-    >
-      <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
-
-      {/* Top Header Row */}
-      <AppRow className="items-center justify-between px-5 sm:px-8 py-4">
-        <Pressable onPress={logoutSheet.present}>
-          <Avatar size={40} />
-        </Pressable>
-
-        <AppText className="text-lg font-bold text-foreground">
-          {t("worker.title")}
-        </AppText>
-
-        <Pressable
-          onPress={() => router.push("/worker/notifications" as Href)}
-          className="w-10 h-10 rounded-full bg-secondary items-center justify-center active:opacity-75"
-          accessibilityLabel={t("notifications.title")}
-        >
-          <AppIcon name="notification" size={20} color={mutedColor} />
-        </Pressable>
-      </AppRow>
-
+  const renderListHeader = () => (
+    <View className="w-full flex-col">
       {/* Welcome Block */}
-      <View className="px-5 sm:px-8 pt-5 pb-3 w-full max-w-xl self-center text-start flex-col gap-1.5">
+      <View className="pt-5 pb-3 w-full text-start flex-col gap-1.5">
         <AppText className="text-start text-2xl font-bold text-foreground">
           {t("worker.welcome").replace("Michael!", workerName)}
         </AppText>
@@ -180,61 +191,105 @@ export default function WorkerHomeScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
-            paddingHorizontal: 20,
             paddingVertical: 12,
             ...getDirectionalRowStyle(direction),
           }}
-          className="w-full max-w-xl self-center"
+          className="w-full"
         >
           {tabs.map(renderTabItem)}
         </ScrollView>
       </View>
+    </View>
+  );
 
-      {/* Tasks List */}
+  return (
+    <View
+      className="flex-1 bg-background"
+      style={{
+        paddingStart: insets.left,
+        paddingEnd: insets.right,
+      }}
+    >
+      <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
+
+      {/* Status Bar Cover view */}
+      <View
+        style={{
+          height: insets.top,
+          backgroundColor: background,
+          position: "absolute",
+          top: 0,
+          start: 0,
+          end: 0,
+          zIndex: 100,
+        }}
+      />
+
       <View className="flex-1 w-full max-w-xl self-center px-5">
-        {loading && requests.length === 0 ? (
-          <View className="flex-1 items-center justify-center py-12">
-            {isTransitionFinished && <AppActivityIndicator size="large"  />}
-          </View>
-        ) : filteredTasks.length === 0 ? (
-          renderEmptyState()
-        ) : (
-          <View className="flex-1">
-            {error && (
-              <View className="bg-destructive/10 p-3 rounded-xl mb-4">
-                <AppText className="text-sm font-semibold text-destructive text-start">
-                  {error}
-                </AppText>
-              </View>
-            )}
-            <LegendList
-              data={filteredTasks}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => <WorkerTaskCard task={item} />}
-              estimatedItemSize={140}
-              recycleItems={true}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                  tintColor="#4F46E5"
-                />
-              }
-              onEndReached={() => {
-                if (hasNextWorkerTasks) {
-                  fetchNextWorkerTasks();
-                }
-              }}
-              onEndReachedThreshold={0.5}
-              contentContainerStyle={{
-                paddingBottom: insets.bottom + 40,
-              }}
-              className="flex-1 w-full"
-            />
+        {error && (
+          <View className="bg-destructive/10 p-3 rounded-xl mb-4 mt-4">
+            <AppText className="text-sm font-semibold text-destructive text-start">
+              {error}
+            </AppText>
           </View>
         )}
+        <AnimatedLegendList
+          ref={listRef}
+          data={filteredTasks}
+          keyExtractor={(item: any) => item.id}
+          ListHeaderComponent={renderListHeader}
+          ListEmptyComponent={renderEmptyOrLoading}
+          renderItem={({ item }: { item: any }) => <WorkerTaskCard task={item} />}
+          estimatedItemSize={140}
+          recycleItems={true}
+          showsVerticalScrollIndicator={false}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor="#4F46E5"
+            />
+          }
+          onEndReached={() => {
+            if (hasNextWorkerTasks) {
+              fetchNextWorkerTasks();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          contentContainerStyle={{
+            paddingTop: insets.top + 76,
+            paddingBottom: insets.bottom + 40,
+          }}
+          className="flex-1 w-full"
+        />
       </View>
+
+      {/* Absolute Collapsible Header Container */}
+      <Animated.View
+        style={[
+          headerAnimatedStyle,
+          {
+            position: "absolute",
+            top: 0,
+            start: 0,
+            end: 0,
+            paddingTop: insets.top + 12,
+            paddingBottom: 12,
+            backgroundColor: background,
+            zIndex: 10,
+          }
+        ]}
+        className="px-5 sm:px-8"
+      >
+        <HomeHeader
+          avatarSource={avatarSource}
+          onNotificationPress={() => router.push("/worker/notifications" as Href)}
+          onAvatarPress={logoutSheet.present}
+          onLogoPress={scrollToTop}
+        />
+      </Animated.View>
 
       {/* Logout bottom sheet */}
       <LogoutBottomSheet
@@ -243,6 +298,7 @@ export default function WorkerHomeScreen() {
         onConfirm={handleLogout}
         userName={workerName}
         userRole={t("auth.workerTitle")}
+        hostName="worker-root"
       />
     </View>
   );

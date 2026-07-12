@@ -18,13 +18,11 @@ import { getProfileImageSource } from "@/lib/image-source";
 import { useUserStore } from "@/stores/user-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 
-const johnDoeAvatar = require("@/assets/temp/john-doe-avatar.png");
-
 export default function ResidentProfileScreen() {
   const { t } = useI18n();
   const insets = useAppInsets();
   const foregroundColor = useThemeToken("--foreground");
-  const { profile, logout, loading, updateProfileImage } = useUserStore();
+  const { profile, logout, loading, updateProfileImage, deleteAccount } = useUserStore();
   const { pickImage } = useAppImagePicker();
   const navigation = useNavigation();
   const { scrollHandler, resetScrollAnimation } = useScrollAnimation();
@@ -32,7 +30,7 @@ export default function ResidentProfileScreen() {
   const [isMediaSheetVisible, setIsMediaSheetVisible] = React.useState(false);
 
   const avatarSource = React.useMemo(
-    () => getProfileImageSource(profile?.profileImageUrl, johnDoeAvatar),
+    () => getProfileImageSource(profile?.profileImageUrl, undefined),
     [profile?.profileImageUrl],
   );
 
@@ -109,7 +107,7 @@ export default function ResidentProfileScreen() {
           text: t("profile.deleteAccount"), 
           style: "destructive", 
           onPress: async () => {
-            await logout();
+            await deleteAccount();
             router.replace("/choose-login-method" as Href);
           } 
         }

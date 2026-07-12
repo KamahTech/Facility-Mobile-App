@@ -23,6 +23,7 @@ import { useRequestsStore, type RequestStatus } from "@/stores/requests-store";
 import { useUnitStore } from "@/stores/unit-store";
 import { useUserStore } from "@/stores/user-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
+import { useToastStore } from "@/stores/toast-store";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -201,7 +202,9 @@ export default function WorkerDetailsScreen() {
         [{ text: t("common.ok") }]
       );
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.acceptTaskFailed"));
+      const errMsg = e instanceof Error ? e.message : t("errors.acceptTaskFailed");
+      useToastStore.getState().showToast(errMsg, "error");
+      Alert.alert(t("common.error"), errMsg);
     } finally {
       setActionLoading(false);
     }
@@ -387,37 +390,39 @@ export default function WorkerDetailsScreen() {
         </View>
 
         {/* Comments Section Button */}
-        <Pressable
-          onPress={() => {
-            router.push({
-              pathname: "/(worker)/worker/messages",
-              params: { id: task.id },
-            } as Href);
-          }}
-          className="w-full bg-card rounded-2xl p-4 shadow-sm mb-6 active:opacity-80 border border-border/10"
-        >
-          <AppRow className="items-center justify-between">
-            <AppRow className="items-center gap-3">
-              <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
-                <AppIcon name="tickets" size={16} colorToken="--primary" />
-              </View>
-              <AppText className="text-base font-bold text-foreground text-start">
-                {t("tickets.comments")}
-              </AppText>
-            </AppRow>
-
-            <AppRow className="items-center gap-2">
-              {task.comments && task.comments.length > 0 && (
-                <View className="bg-primary px-2.5 py-0.5 rounded-full">
-                  <AppText className="text-xs font-bold text-primary-foreground">
-                    {task.comments.length}
-                  </AppText>
+        {isAssignedToMe && (
+          <Pressable
+            onPress={() => {
+              router.push({
+                pathname: "/worker/messages",
+                params: { id: task.id },
+              } as Href);
+            }}
+            className="w-full bg-card rounded-2xl p-4 shadow-sm mb-6 active:opacity-80 border border-border/10"
+          >
+            <AppRow className="items-center justify-between">
+              <AppRow className="items-center gap-3">
+                <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
+                  <AppIcon name="tickets" size={16} colorToken="--primary" />
                 </View>
-              )}
-              <AppChevron size={14} color={mutedToken} />
+                <AppText className="text-base font-bold text-foreground text-start">
+                  {t("tickets.comments")}
+                </AppText>
+              </AppRow>
+
+              <AppRow className="items-center gap-2">
+                {task.comments && task.comments.length > 0 && (
+                  <View className="bg-primary px-2.5 py-0.5 rounded-full">
+                    <AppText className="text-xs font-bold text-primary-foreground">
+                      {task.comments.length}
+                    </AppText>
+                  </View>
+                )}
+                <AppChevron size={14} color={mutedToken} />
+              </AppRow>
             </AppRow>
-          </AppRow>
-        </Pressable>
+          </Pressable>
+        )}
 
         {/* WORKFLOW VIEW CHANGER */}
 

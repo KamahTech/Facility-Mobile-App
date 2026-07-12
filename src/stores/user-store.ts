@@ -29,6 +29,7 @@ type UserState = {
   updateProfileImage: (image: string | false) => Promise<void>;
   fetchProfile: () => Promise<void>;
   clearError: () => void;
+  deleteAccount: () => Promise<void>;
 };
 
 type AuthResponse = {
@@ -252,6 +253,27 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  deleteAccount: async () => {
+    set({ loading: true, error: null });
+    try {
+      await apiRequest("/me/delete", {});
+    } catch (e: unknown) {
+      console.warn("Delete account request failed on backend, clearing local session anyway.", e);
+    } finally {
+      await setSessionId(null);
+      await SecureStore.deleteItemAsync("account_type");
+      await SecureStore.deleteItemAsync("profile_data");
+      await SecureStore.setItemAsync("logged_out", "true");
+      set({
+        sessionId: null,
+        accountType: null,
+        profile: null,
+        loading: false,
+        error: null,
+      });
+    }
+  },
 }));
 
 // Handle session expiration: clear local data, update store, and redirect to login screen
