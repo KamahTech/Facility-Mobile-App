@@ -1,9 +1,9 @@
-import { Pressable, View, type ColorValue, type PressableProps } from "react-native";
+import { Pressable, View, Text, type ColorValue, type PressableProps } from "react-native";
 
 import { AppChevron } from "@/components/app-chevron";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
+import { useI18n } from "@/hooks/use-i18n";
 import type { AppIconName } from "@/constants/icons";
 
 type SettingsRowProps = PressableProps & {
@@ -24,6 +24,8 @@ export function SettingsRow({
   titleClassName = "text-foreground",
   ...props
 }: SettingsRowProps) {
+  const { isRTL } = useI18n();
+
   return (
     <Pressable
       className="mx-5 sm:mx-8 p-4 rounded-2xl bg-card mb-3 active:opacity-75"
@@ -34,9 +36,12 @@ export function SettingsRow({
           <View className={`size-9 rounded-xl items-center justify-center ${iconClassName}`}>
             <AppIcon name={icon} size={20} color={accentColor} />
           </View>
-          <AppText className={`text-base font-semibold ${titleClassName}`}>
+          <Text
+            className={`text-base font-semibold ${titleClassName}`}
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {title}
-          </AppText>
+          </Text>
         </AppRow>
         <AppChevron color={chevronColor ?? accentColor} />
       </AppRow>

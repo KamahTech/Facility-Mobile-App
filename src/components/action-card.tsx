@@ -1,8 +1,9 @@
-import { Pressable, View, type PressableProps } from "react-native";
+import { Pressable, View, Text, type PressableProps } from "react-native";
 
+import { AppChevron } from "@/components/app-chevron";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
+import { useI18n } from "@/hooks/use-i18n";
 import type { AppIconName } from "@/constants/icons";
 
 type ActionCardProps = PressableProps & {
@@ -21,6 +22,7 @@ export function ActionCard({
   selected = false,
   ...props
 }: ActionCardProps) {
+  const { isRTL } = useI18n();
   const isTranslucent = variant === "translucent";
 
   return (
@@ -54,25 +56,27 @@ export function ActionCard({
             />
           </View>
           <View className="min-w-0 flex-1 flex-col gap-1">
-            <AppText
-              className={`text-start text-lg font-bold leading-tight ${
+            <Text
+              className={`text-lg font-bold leading-tight ${
                 selected
                   ? "text-foreground font-extrabold"
                   : isTranslucent
                   ? "text-white"
                   : "text-card-foreground"
               }`}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
             >
               {title}
-            </AppText>
-            <AppText
-              className={`text-start text-sm leading-normal ${
+            </Text>
+            <Text
+              className={`text-sm leading-normal ${
                 selected ? "text-foreground/80" : isTranslucent ? "text-zinc-400" : "text-muted-foreground"
               }`}
               numberOfLines={2}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
             >
               {description}
-            </AppText>
+            </Text>
           </View>
         </AppRow>
 
@@ -82,7 +86,7 @@ export function ActionCard({
           </View>
         ) : isTranslucent ? (
           <View className="w-8 h-8 items-center justify-center rounded-full bg-white/5 border border-white/10 shrink-0">
-            <AppIcon name="chevronRight" size={14} color="#FFFFFF" />
+            <AppChevron size={14} color="#FFFFFF" />
           </View>
         ) : null}
       </AppRow>

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Alert } from "react-native";
+import { View, Alert, Text } from "react-native";
 import { Stack, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { useForm, Controller, useWatch } from "react-hook-form";
@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
 import { AppSelectField } from "@/components/app-select-field";
@@ -27,7 +26,7 @@ type InviteVisitorFormValues = {
 };
 
 export default function InviteVisitorScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { createVisitor, loading, error, clearError } = useCommunityStore();
   const [localLoading, setLocalLoading] = React.useState(false);
@@ -104,9 +103,12 @@ export default function InviteVisitorScreen() {
         }}
         className="flex-1 w-full max-w-xl self-center"
       >
-        <AppText className="text-start text-base leading-6 text-muted-foreground mb-8">
+        <Text
+          className="text-base leading-6 text-muted-foreground mb-8"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("quickActions.inviteVisitorDescription")}
-        </AppText>
+        </Text>
 
         <View className="flex-col gap-6">
           <Controller
@@ -164,9 +166,12 @@ export default function InviteVisitorScreen() {
 
           {error && (
             <View className="bg-destructive/10 p-4 rounded-xl mt-2">
-              <AppText className="text-sm font-semibold text-destructive text-start">
+              <Text
+                className="text-sm font-semibold text-destructive"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {error}
-              </AppText>
+              </Text>
             </View>
           )}
 

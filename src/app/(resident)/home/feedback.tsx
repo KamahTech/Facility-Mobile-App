@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Alert } from "react-native";
+import { View, Alert, Text } from "react-native";
 import { Stack, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { useForm, Controller, useWatch } from "react-hook-form";
@@ -8,7 +8,6 @@ import * as z from "zod";
 
 import { FullScreenLoader } from "@/components/full-screen-loader";
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { AppInput } from "@/components/app-input";
 import { AppSegmentSelector } from "@/components/app-segment-selector";
 import { AppButton } from "@/components/app-button";
@@ -28,7 +27,7 @@ type FeedbackFormValues = {
 };
 
 export default function FeedbackScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { submitFeedback, loading, error, clearError } = useCommunityStore();
   const { units } = useUnitStore();
@@ -121,9 +120,12 @@ export default function FeedbackScreen() {
         }}
         className="flex-1 w-full max-w-xl self-center"
       >
-        <AppText className="text-start text-base leading-6 text-muted-foreground mb-8">
+        <Text
+          className="text-base leading-6 text-muted-foreground mb-8"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("quickActions.feedbackDescription")}
-        </AppText>
+        </Text>
 
         <View className="flex-col gap-6">
           <Controller
@@ -185,9 +187,12 @@ export default function FeedbackScreen() {
 
           {error && (
             <View className="bg-destructive/10 p-4 rounded-xl mt-2">
-              <AppText className="text-sm font-semibold text-destructive text-start">
+              <Text
+                className="text-sm font-semibold text-destructive"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {error}
-              </AppText>
+              </Text>
             </View>
           )}
 

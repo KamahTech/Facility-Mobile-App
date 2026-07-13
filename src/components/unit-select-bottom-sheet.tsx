@@ -1,11 +1,10 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Text } from "react-native";
 
 import { AppBottomSheetBackdrop } from "@/components/app-bottom-sheet-backdrop";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
 import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
@@ -27,7 +26,7 @@ export function UnitSelectBottomSheet({
   onDismiss,
   onSelect,
 }: UnitSelectBottomSheetProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   useBottomSheetLayer(isPresented);
   const backgroundColor = useThemeToken("--card");
   const borderColor = useThemeToken("--border");
@@ -61,9 +60,12 @@ export function UnitSelectBottomSheet({
       onClose={onDismiss}
     >
       <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24 }}>
-        <AppText className="mb-4 text-xl font-semibold text-foreground text-start">
+        <Text
+          className="mb-4 text-xl font-semibold text-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("tickets.selectUnit")}
-        </AppText>
+        </Text>
 
         <View className="w-full overflow-hidden rounded-xl bg-secondary">
           {units.map((unit, index) => {
@@ -83,12 +85,18 @@ export function UnitSelectBottomSheet({
               >
                 <AppRow className="w-full items-center justify-between gap-3">
                   <View className="flex-1 flex-col gap-0.5 text-start">
-                    <AppText className="text-base font-medium text-secondary-foreground text-start">
+                    <Text
+                      className="text-base font-medium text-secondary-foreground"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
                       {unitLabel}
-                    </AppText>
-                    <AppText className="text-xs text-muted-foreground text-start">
+                    </Text>
+                    <Text
+                      className="text-xs text-muted-foreground"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
                       {t(`connectUnit.${unit.unitType}` as any)} • {t(unit.ownershipType === "owner" ? "connectUnit.owner" : "connectUnit.tenant")}
-                    </AppText>
+                    </Text>
                   </View>
                   {isSelected && (
                     <AppIcon

@@ -1,8 +1,8 @@
-import { Pressable, View, type PressableProps } from "react-native";
+import { Pressable, View, Text, type PressableProps } from "react-native";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
+import { useI18n } from "@/hooks/use-i18n";
 import type { AppIconName } from "@/constants/icons";
 
 type SettingOptionCardProps = PressableProps & {
@@ -21,6 +21,8 @@ export function SettingOptionCard({
   title,
   ...props
 }: SettingOptionCardProps) {
+  const { isRTL } = useI18n();
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -40,12 +42,18 @@ export function SettingOptionCard({
           ) : null}
         </View>
         <View className="min-w-0 flex-1">
-          <AppText className="text-start text-lg font-semibold text-card-foreground">
+          <Text
+            className="text-lg font-semibold text-card-foreground"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {title}
-          </AppText>
-          <AppText className="mt-1 text-start text-sm leading-5 text-muted-foreground">
+          </Text>
+          <Text
+            className="mt-1 text-sm leading-5 text-muted-foreground"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {description}
-          </AppText>
+          </Text>
         </View>
         {selected ? (
           <View className="mt-1 size-8 items-center justify-center rounded-lg bg-primary">

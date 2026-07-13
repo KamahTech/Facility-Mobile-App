@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Stack, type Href } from "expo-router";
 import { router } from "@/lib/navigation";
@@ -7,7 +7,6 @@ import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { ActionCard } from "@/components/action-card";
 import { AppButton } from "@/components/app-button";
 import { serviceItems } from "@/constants/services";
@@ -17,7 +16,7 @@ import { useThemeToken } from "@/hooks/use-theme-token";
 import { useUnitStore } from "@/stores/unit-store";
 
 export default function RequestServiceScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const { resolvedTheme } = useTheme();
   const background = useThemeToken("--background");
   const insets = useAppInsets();
@@ -37,9 +36,12 @@ export default function RequestServiceScreen() {
   };
 
   const renderHeader = () => (
-    <AppText className="text-start text-base leading-6 text-muted-foreground mb-6">
+    <Text
+      className="text-base leading-6 text-muted-foreground mb-6"
+      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+    >
       {t("services.description")}
-    </AppText>
+    </Text>
   );
 
   const renderItem = ({
@@ -87,9 +89,12 @@ export default function RequestServiceScreen() {
 
       {units.length === 0 ? (
         <View className="flex-1 w-full max-w-xl self-center px-5 justify-center items-center py-12">
-          <AppText className="text-base text-muted-foreground text-center mb-6 leading-6">
+          <Text
+            className="text-base text-muted-foreground text-center mb-6 leading-6"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {t("connectUnit.noUnits")}
-          </AppText>
+          </Text>
           <AppButton
             label={t("connectUnit.addBtn")}
             onPress={() => router.push("/home/connect-unit")}

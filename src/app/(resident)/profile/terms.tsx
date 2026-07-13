@@ -1,14 +1,13 @@
 import React from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, Text } from "react-native";
 import { Stack, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 
 export default function TermsAndConditionsScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
 
   const sections = [
@@ -44,9 +43,12 @@ export default function TermsAndConditionsScreen() {
         }}
         className="flex-1 w-full max-w-xl self-center"
       >
-        <AppText className="text-base text-muted-foreground text-start leading-6 mb-8">
+        <Text
+          className="text-base text-muted-foreground leading-6 mb-8"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("terms.intro")}
-        </AppText>
+        </Text>
 
         <View className="flex-col gap-6">
           {sections.map((section) => (
@@ -54,12 +56,18 @@ export default function TermsAndConditionsScreen() {
               key={section.title}
               className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-2"
             >
-              <AppText className="text-lg font-bold text-foreground text-start">
+              <Text
+                className="text-lg font-bold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t(section.title)}
-              </AppText>
-              <AppText className="text-sm text-muted-foreground text-start leading-5 mt-1">
+              </Text>
+              <Text
+                className="text-sm text-muted-foreground leading-5 mt-1"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t(section.desc)}
-              </AppText>
+              </Text>
             </View>
           ))}
         </View>

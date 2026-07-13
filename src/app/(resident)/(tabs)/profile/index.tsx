@@ -1,12 +1,11 @@
 import React from "react";
-import { View, Pressable, Alert } from "react-native";
+import { View, Pressable, Alert, Text } from "react-native";
 import Animated from "react-native-reanimated";
 import { type Href, useNavigation } from "expo-router";
 import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppIcon } from "@/components/app-icon";
-import { AppText } from "@/components/app-text";
 import { Avatar } from "@/components/avatar";
 import { FullScreenLoader } from "@/components/full-screen-loader";
 import { MediaSourceSheet } from "@/components/media-source-sheet";
@@ -20,7 +19,7 @@ import { useUserStore } from "@/stores/user-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 
 export default function ResidentProfileScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const foregroundColor = useThemeToken("--foreground");
   const { profile, logout, loading, updateProfileImage, deleteAccount } = useUserStore();
@@ -182,16 +181,22 @@ export default function ResidentProfileScreen() {
           </View>
 
           {/* User Name */}
-          <AppText align="center" className="text-xl font-bold text-foreground mt-4">
+          <Text
+            className="text-xl font-bold text-foreground mt-4 text-center"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {profile?.name || ""}
-          </AppText>
+          </Text>
           
         </View>
 
         {/* Section: Account Settings */}
-        <AppText className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-5 sm:px-8 mt-4 mb-2">
+        <Text
+          className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-5 sm:px-8 mt-4 mb-2"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("profile.sectionAccount")}
-        </AppText>
+        </Text>
 
         {/* Edit Information */}
         <SettingsRow
@@ -236,9 +241,12 @@ export default function ResidentProfileScreen() {
         />
 
         {/* Section: General */}
-        <AppText className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-5 sm:px-8 mt-4 mb-2">
+        <Text
+          className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-5 sm:px-8 mt-4 mb-2"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("profile.sectionGeneral")}
-        </AppText>
+        </Text>
 
         {/* Terms & Conditions */}
         <SettingsRow

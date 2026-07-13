@@ -1,7 +1,6 @@
 import React from "react";
-import { Pressable, View, useWindowDimensions } from "react-native";
+import { Pressable, View, useWindowDimensions, Text } from "react-native";
 
-import { AppText } from "@/components/app-text";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -28,7 +27,7 @@ export function AppSegmentSelector({
   responsiveLayout = false,
 }: AppSegmentSelectorProps) {
   const { width } = useWindowDimensions();
-  const { direction } = useI18n();
+  const { isRTL, direction } = useI18n();
   const isVertical = responsiveLayout && width < 640;
   const optionsContent = options.map((option) => {
     const isSelected = option.value === selectedValue;
@@ -40,13 +39,14 @@ export function AppSegmentSelector({
           isSelected ? "bg-card shadow-sm" : ""
         }`}
       >
-        <AppText
+        <Text
           className={`text-sm font-semibold ${
             isSelected ? "text-foreground font-bold" : "text-muted-foreground"
           }`}
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         >
           {option.label}
-        </AppText>
+        </Text>
       </Pressable>
     );
   });
@@ -54,9 +54,12 @@ export function AppSegmentSelector({
   return (
     <View className={`w-full flex-col gap-1.5 ${containerClassName}`}>
       {label && (
-        <AppText className="text-sm font-semibold text-muted-foreground">
+        <Text
+          className="text-sm font-semibold text-muted-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {label}
-        </AppText>
+        </Text>
       )}
       {responsiveLayout ? (
         <View

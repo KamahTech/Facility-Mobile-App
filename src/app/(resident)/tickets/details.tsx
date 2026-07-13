@@ -7,7 +7,6 @@ import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { AppChevron } from "@/components/app-chevron";
-import { AppText } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
@@ -214,53 +213,80 @@ export default function ResidentTicketDetailsScreen() {
           <View className="pt-4 flex-col gap-3">
             {/* Unit Info */}
             <AppRow className="justify-between items-center">
-              <AppText className="text-sm font-semibold text-muted-foreground text-start">
+              <Text
+                className="text-sm font-semibold text-muted-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("tickets.selectUnit")}
-              </AppText>
-              <AppText className="text-sm font-bold text-foreground text-end">
+              </Text>
+              <Text
+                className="text-sm font-bold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {unitLabel}
-              </AppText>
+              </Text>
             </AppRow>
 
             {/* Date Requested */}
             <AppRow className="justify-between items-center">
-              <AppText className="text-sm font-semibold text-muted-foreground text-start">
+              <Text
+                className="text-sm font-semibold text-muted-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("tickets.date")}
-              </AppText>
-              <AppText className="text-sm text-foreground text-end">
+              </Text>
+              <Text
+                className="text-sm text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {request.createdAt}
-              </AppText>
+              </Text>
             </AppRow>
           </View>
         </View>
 
         {/* Issue Details Section */}
         <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-3">
-          <AppText className="text-sm font-bold text-muted-foreground uppercase tracking-wider text-start">
+          <Text
+            className="text-sm font-bold text-muted-foreground uppercase tracking-wider"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {t("tickets.enterDetails")}
-          </AppText>
-          <AppText className="text-base text-foreground leading-6 text-start">
+          </Text>
+          <Text
+            className="text-base text-foreground leading-6"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {request.description}
-          </AppText>
+          </Text>
         </View>
 
         {/* Worker Section */}
         {request.workerName && (
           <View className="w-full bg-card rounded-2xl p-4 shadow-sm mb-6 flex-col gap-3">
-            <AppText className="text-sm font-bold text-muted-foreground uppercase tracking-wider text-start">
+            <Text
+              className="text-sm font-bold text-muted-foreground uppercase tracking-wider"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t("tickets.assignedWorker")}
-            </AppText>
+            </Text>
             <AppRow className="items-center gap-3">
               <View className="w-10 h-10 rounded-full bg-secondary items-center justify-center">
                 <AppIcon name="profile" size={20} color={mutedToken} />
               </View>
               <View className="flex-1 text-start">
-                <AppText className="text-base font-semibold text-foreground text-start">
+                <Text
+                  className="text-base font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {request.workerName}
-                </AppText>
-                <AppText className="text-xs text-muted-foreground text-start">
+                </Text>
+                <Text
+                  className="text-xs text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t("auth.workerTitle")}
-                </AppText>
+                </Text>
               </View>
             </AppRow>
           </View>
@@ -276,9 +302,12 @@ export default function ResidentTicketDetailsScreen() {
             {actionLoading ? (
               <AppActivityIndicator color="#EF4444" />
             ) : (
-              <AppText className="text-rose-600 dark:text-rose-400 font-bold text-base">
+              <Text
+                className="text-rose-600 dark:text-rose-400 font-bold text-base"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("tickets.cancelBtn")}
-              </AppText>
+              </Text>
             )}
           </Pressable>
         )}
@@ -304,17 +333,23 @@ export default function ResidentTicketDetailsScreen() {
                 <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
                   <AppIcon name="tickets" size={16} color={primaryColor} />
                 </View>
-                <AppText className="text-base font-bold text-foreground">
+                <Text
+                  className="text-base font-bold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t("tickets.comments")}
-                </AppText>
+                </Text>
               </AppRow>
 
               <AppRow className="items-center gap-2">
                 {request.comments.length > 0 && (
                   <View className="bg-primary px-2.5 py-0.5 rounded-full">
-                    <AppText className="text-xs font-bold text-primary-foreground">
+                    <Text
+                      className="text-xs font-bold text-primary-foreground"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
                       {request.comments.length}
-                    </AppText>
+                    </Text>
                   </View>
                 )}
                 <AppChevron size={14} color={mutedToken} />

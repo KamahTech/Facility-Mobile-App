@@ -1,11 +1,10 @@
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Text } from "react-native";
 
 import { AppBottomSheetBackdrop } from "@/components/app-bottom-sheet-backdrop";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
 import { visitorPurposeOptions, type VisitorPurposeId } from "@/constants/visitor-purposes";
 import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
@@ -25,7 +24,7 @@ export function VisitorPurposeBottomSheet({
   onDismiss,
   onSelect,
 }: VisitorPurposeBottomSheetProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   useBottomSheetLayer(isPresented);
   const backgroundColor = useThemeToken("--card");
   const borderColor = useThemeToken("--border");
@@ -59,9 +58,12 @@ export function VisitorPurposeBottomSheet({
       onClose={onDismiss}
     >
       <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24 }}>
-        <AppText className="mb-4 text-xl font-semibold text-foreground text-start">
+        <Text
+          className="mb-4 text-xl font-semibold text-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("inviteVisitor.purpose")}
-        </AppText>
+        </Text>
 
         <View className="w-full overflow-hidden rounded-xl bg-secondary">
           {visitorPurposeOptions.map((option, index) => {
@@ -79,9 +81,12 @@ export function VisitorPurposeBottomSheet({
                 onPress={() => handleSelect(option.id)}
               >
                 <AppRow className="w-full items-center justify-between gap-3">
-                  <AppText className="flex-1 text-base font-medium text-secondary-foreground text-start">
+                  <Text
+                    className="flex-1 text-base font-medium text-secondary-foreground"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
                     {t(option.labelKey)}
-                  </AppText>
+                  </Text>
                   {isSelected && (
                     <AppIcon
                       name="check"

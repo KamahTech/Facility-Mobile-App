@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Alert } from "react-native";
+import { View, Alert, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { AppInput } from "@/components/app-input";
 import { AppSelectField } from "@/components/app-select-field";
 import { AppButton } from "@/components/app-button";
@@ -30,7 +29,7 @@ type RequestServiceFormValues = {
 };
 
 export default function CreateRequestScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const { resolvedTheme } = useTheme();
   const background = useThemeToken("--background");
   const insets = useAppInsets();
@@ -154,12 +153,18 @@ export default function CreateRequestScreen() {
           {/* Category summary */}
           {selectedCategoryItem && (
             <View className="flex-col gap-1.5">
-              <AppText className="text-sm font-semibold text-muted-foreground text-start">
+              <Text
+                className="text-sm font-semibold text-muted-foreground px-0.5"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("tickets.categoryLabel")}
-              </AppText>
-              <AppText className="text-base font-semibold text-foreground text-start px-0.5">
+              </Text>
+              <Text
+                className="text-base font-semibold text-foreground px-0.5"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t(selectedCategoryItem.titleKey)}
-              </AppText>
+              </Text>
             </View>
           )}
 
