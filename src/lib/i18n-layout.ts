@@ -1,10 +1,13 @@
-import { I18nManager, type TextStyle, type ViewStyle } from "react-native";
+import { I18nManager, Platform, type TextStyle, type ViewStyle } from "react-native";
 
 import type { LanguageDirection } from "@/constants/languages";
 
 type LogicalEdgeStyle = Pick<ViewStyle, "end" | "paddingEnd" | "paddingStart" | "start">;
 
 export function getDirectionalRowStyle(direction: LanguageDirection): Pick<ViewStyle, "flexDirection"> {
+  if (Platform.OS === "web") {
+    return { flexDirection: "row" };
+  }
   const wantsRTL = direction === "rtl";
 
   return {
@@ -16,6 +19,11 @@ export function getDirectionalSelfStyle(
   direction: LanguageDirection,
   edge: "start" | "end",
 ): Pick<ViewStyle, "alignSelf"> {
+  if (Platform.OS === "web") {
+    return {
+      alignSelf: edge === "start" ? "flex-start" : "flex-end",
+    };
+  }
   const isStart = edge === "start";
   const isRTL = direction === "rtl";
 
@@ -28,6 +36,11 @@ export function getDirectionalItemsStyle(
   direction: LanguageDirection,
   edge: "start" | "end",
 ): Pick<ViewStyle, "alignItems"> {
+  if (Platform.OS === "web") {
+    return {
+      alignItems: edge === "start" ? "flex-start" : "flex-end",
+    };
+  }
   const isStart = edge === "start";
   const isRTL = direction === "rtl";
 

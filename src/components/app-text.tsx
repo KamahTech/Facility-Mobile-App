@@ -21,7 +21,7 @@ export function AppText({
   return (
     <Text
       {...props}
-      style={[directionStyle, style]}
+      style={[style, directionStyle]}
     />
   );
 }

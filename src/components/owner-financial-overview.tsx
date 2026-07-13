@@ -1,8 +1,7 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import type { AppIconName } from "@/constants/icons";
 import { useFormatters } from "@/hooks/use-formatters";
 import { useI18n } from "@/hooks/use-i18n";
@@ -46,6 +45,7 @@ const rowToneStyles = {
 } as const;
 
 function FinancialStatusRow({ icon, label, value, tone }: FinancialStatusRowProps) {
+  const { isRTL } = useI18n();
   const style = rowToneStyles[tone];
 
   return (
@@ -57,18 +57,29 @@ function FinancialStatusRow({ icon, label, value, tone }: FinancialStatusRowProp
         <View className={`w-8 h-8 rounded-lg items-center justify-center ${style.iconWrap}`}>
           <AppIcon name={icon} size={16} color={style.iconColor} />
         </View>
-        <AppText className="text-sm font-semibold text-foreground flex-1 text-start" numberOfLines={2}>
+        <Text
+          className="text-sm font-semibold text-foreground flex-1"
+          numberOfLines={2}
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {label}
-        </AppText>
+        </Text>
       </AppRow>
-      <AppText className={`text-sm font-extrabold ${style.value}`} numberOfLines={1} adjustsFontSizeToFit>
+      <Text
+        className={`text-sm font-extrabold ${style.value}`}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+      >
         {value}
-      </AppText>
+      </Text>
     </AppRow>
   );
 }
 
 function TotalInvoicedSummary({ label, value }: TotalInvoicedSummaryProps) {
+  const { isRTL } = useI18n();
+
   return (
     <View
       className="overflow-hidden rounded-[22px] bg-secondary"
@@ -80,17 +91,22 @@ function TotalInvoicedSummary({ label, value }: TotalInvoicedSummaryProps) {
         </View>
 
         <View className="flex-1 min-w-0 flex-col" style={{ rowGap: 4 }}>
-          <AppText className="text-xs font-bold text-muted-foreground text-start" numberOfLines={2}>
+          <Text
+            className="text-xs font-bold text-muted-foreground"
+            numberOfLines={2}
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {label}
-          </AppText>
-          <AppText
-            className="text-[32px] leading-10 font-extrabold text-foreground text-start"
+          </Text>
+          <Text
+            className="text-[32px] leading-10 font-extrabold text-foreground"
             adjustsFontSizeToFit
             minimumFontScale={0.72}
             numberOfLines={1}
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
             {value}
-          </AppText>
+          </Text>
         </View>
       </AppRow>
     </View>
@@ -98,7 +114,7 @@ function TotalInvoicedSummary({ label, value }: TotalInvoicedSummaryProps) {
 }
 
 export function OwnerFinancialOverview({ statement }: OwnerFinancialOverviewProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const { formatCurrency } = useFormatters();
   const { totalSummary } = statement;
 
@@ -108,12 +124,18 @@ export function OwnerFinancialOverview({ statement }: OwnerFinancialOverviewProp
       style={{ padding: 16, rowGap: 16 }}
     >
       <View className="flex-col" style={{ rowGap: 4 }}>
-        <AppText className="text-start text-base font-bold text-foreground">
+        <Text
+          className="text-base font-bold text-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("ownerFinancials.title")}
-        </AppText>
-        <AppText className="text-start text-xs text-muted-foreground leading-5">
+        </Text>
+        <Text
+          className="text-xs text-muted-foreground leading-5"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("ownerFinancials.summaryDescription")}
-        </AppText>
+        </Text>
       </View>
 
       <TotalInvoicedSummary

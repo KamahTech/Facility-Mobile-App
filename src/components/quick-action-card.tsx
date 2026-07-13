@@ -1,9 +1,7 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Text } from "react-native";
 
 import { AppIcon } from "@/components/app-icon";
-import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 import type { QuickActionIconName } from "@/constants/quick-actions";
 
@@ -31,8 +29,8 @@ export function QuickActionCard({
       onPress={onPress}
       className="w-full py-5 px-4 rounded-2xl bg-card active:opacity-85 shadow-xs"
     >
-      <AppRow className="items-center gap-3">
-        <View 
+      <View className="flex-row items-center gap-3">
+        <View
           style={{ backgroundColor: themeColor + "15" }}
           className="w-10 h-10 rounded-xl items-center justify-center shrink-0"
         >
@@ -44,13 +42,17 @@ export function QuickActionCard({
           />
         </View>
 
-        <AppText
-          align="start"
-          numberOfLines={2}
-          className="text-foreground text-xs font-bold leading-tight flex-1 text-start"
-        >
-          {title}
-        </AppText>
+        <View className="flex-row flex-1">
+          <Text
+            numberOfLines={2}
+            className="w-full  text-foreground text-xs font-bold leading-tight flex-1"
+            style={{
+              writingDirection: isRTL ? "rtl" : "ltr",
+            }}
+          >
+            {title}
+          </Text>
+        </View>
 
         {showArrow && (
           <AppIcon
@@ -59,8 +61,7 @@ export function QuickActionCard({
             colorToken="--muted-foreground"
           />
         )}
-      </AppRow>
+      </View>
     </Pressable>
   );
 }
-

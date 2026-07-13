@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View, StyleSheet, Alert } from "react-native";
+import { Pressable, View, StyleSheet, Alert, Text } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -15,7 +15,7 @@ type PollCardProps = {
 };
 
 export function PollCard({ item, onPressHeader }: PollCardProps) {
-  const { direction, t } = useI18n();
+  const { direction, isRTL, t } = useI18n();
   const { votePoll } = useCommunityStore();
   const [votingOptionId, setVotingOptionId] = React.useState<string | number | null>(null);
 
@@ -84,11 +84,14 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
         </AppRow>
 
         {/* Survey Question */}
-        <AppText
-          className="text-start text-base font-bold text-foreground leading-5 w-full"
+        <Text
+          className="text-base font-bold text-foreground leading-5 w-full"
+          style={{
+            writingDirection: isRTL ? "rtl" : "ltr",
+          }}
         >
           {localizedQuestion}
-        </AppText>
+        </Text>
       </Pressable>
 
       {/* Options List */}
@@ -127,20 +130,23 @@ export function PollCard({ item, onPressHeader }: PollCardProps) {
               {/* Option Text and Percentage Row */}
               <AppRow className="justify-between items-center z-10 w-full">
                 <AppRow className="items-center gap-2 flex-1 min-w-0">
-                  <AppText
-                    className={`text-sm flex-1 text-start ${
+                  <Text
+                    className={`text-sm flex-1 ${
                       isVotedOption
                         ? "font-bold text-emerald-800 dark:text-emerald-300"
                         : "text-foreground"
                     }`}
                     numberOfLines={1}
+                    style={{
+                      writingDirection: isRTL ? "rtl" : "ltr",
+                    }}
                   >
                     {(() => {
                       const key = `communityUpdates.${item.id}.${option.id}` as TranslationKey;
                       const translated = t(key);
                       return translated === key ? option.text : translated;
                     })()}
-                  </AppText>
+                  </Text>
                   {isVotingForThis && <AppActivityIndicator size="small"  />}
                 </AppRow>
 

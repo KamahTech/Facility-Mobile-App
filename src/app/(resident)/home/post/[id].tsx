@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, View, StyleSheet } from "react-native";
+import { ScrollView, View, StyleSheet, Text } from "react-native";
 import { Stack, useLocalSearchParams, router } from "expo-router";
 import { Image } from "expo-image";
 import { useAppInsets } from "@/hooks/use-app-insets";
@@ -17,7 +17,7 @@ import { useCommunityStore, type CommunityPoll } from "@/stores/community-store"
 
 export default function PostDetailsScreen() {
   const { id } = useLocalSearchParams();
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { updates, fetchUpdateDetails, loading } = useCommunityStore({ enableUpdates: true });
   const updateId = Array.isArray(id) ? id[0] : id;
@@ -149,44 +149,59 @@ export default function PostDetailsScreen() {
               </AppRow>
 
               {/* Title */}
-              <AppText
-                className="text-start text-2xl font-extrabold text-foreground leading-8 mt-2"
+              <Text
+                className="text-2xl font-extrabold text-foreground leading-8 mt-2"
+                style={{
+                  writingDirection: isRTL ? "rtl" : "ltr",
+                }}
               >
                 {localizedTitle}
-              </AppText>
+              </Text>
 
               {/* Detailed Body Paragraphs */}
-              <AppText
-                className="text-start text-base leading-6 text-muted-foreground"
+              <Text
+                className="text-base leading-6 text-muted-foreground"
+                style={{
+                  writingDirection: isRTL ? "rtl" : "ltr",
+                }}
               >
                 {localizedDescription}
-              </AppText>
+              </Text>
               
               {/* Added rich placeholder text to make it feel premium */}
-              <AppText
-                className="text-start text-base leading-6 text-muted-foreground mt-4"
+              <Text
+                className="text-base leading-6 text-muted-foreground mt-4"
+                style={{
+                  writingDirection: isRTL ? "rtl" : "ltr",
+                }}
               >
                 {t("communityUpdates.postPlaceholder")}
-              </AppText>
+              </Text>
             </View>
           ) : (
             <View className="flex-col gap-4">
               {/* Poll survey view */}
-              <AppText
-                className="text-start text-2xl font-extrabold text-foreground leading-8 mt-2"
+              <Text
+                className="text-2xl font-extrabold text-foreground leading-8 mt-2"
+                style={{
+                  writingDirection: isRTL ? "rtl" : "ltr",
+                }}
               >
                 {t("communityUpdates.surveyBadge")}
-              </AppText>
+              </Text>
               
               {/* Embed the interactive Poll Card */}
               <PollCard item={item as CommunityPoll} />
 
               {/* Description / Subtext */}
-              <AppText
-                className="text-start text-sm leading-5 text-muted-foreground mt-2"
+              <Text
+                className="text-sm leading-5 text-muted-foreground mt-2"
+                style={{
+                  writingDirection: isRTL ? "rtl" : "ltr",
+                }}
               >
                 {t("communityUpdates.pollSubtext")}
-              </AppText>
+              </Text>
             </View>
           )}
         </View>

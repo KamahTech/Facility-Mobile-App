@@ -78,9 +78,8 @@ export default function ResidentHomeScreen() {
 
   // Compute greeting text dynamically (e.g., "Hello, John Doe")
   const greetingText = React.useMemo(() => {
-    const baseGreeting = t("residentHome.hello");
     const name = profile?.name || t("residentHome.userName");
-    return `${baseGreeting}, ${name}`;
+    return t("residentHome.welcomeUser").replace("{{name}}", name);
   }, [t, profile]);
 
   return (
@@ -119,7 +118,7 @@ export default function ResidentHomeScreen() {
         
         {/* Plain Greeting Text */}
         <AppText
-          className="text-start text-2xl text-foreground px-5 sm:px-8 font-bold"
+          className="self-start text-start text-2xl text-foreground px-5 sm:px-8 font-bold"
         >
           {greetingText}
         </AppText>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View, StyleSheet } from "react-native";
+import { Pressable, View, StyleSheet, Text } from "react-native";
 import { Image } from "expo-image";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -15,7 +15,7 @@ type NewsCardProps = {
 };
 
 export function NewsCard({ item, onPress }: NewsCardProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const localizedTitle = (() => {
     const key = `communityUpdates.${item.id}.title` as TranslationKey;
     const translated = t(key);
@@ -54,18 +54,24 @@ export function NewsCard({ item, onPress }: NewsCardProps) {
             </AppText>
           </AppRow>
 
-          <AppText
+          <Text
             numberOfLines={1}
-            className="text-start text-base font-bold text-foreground leading-5 w-full"
+            className="text-base font-bold text-foreground leading-5 w-full"
+            style={{
+              writingDirection: isRTL ? "rtl" : "ltr",
+            }}
           >
             {localizedTitle}
-          </AppText>
-          <AppText
+          </Text>
+          <Text
             numberOfLines={2}
-            className="text-start text-xs text-muted-foreground leading-4 w-full"
+            className="text-xs text-muted-foreground leading-4 w-full"
+            style={{
+              writingDirection: isRTL ? "rtl" : "ltr",
+            }}
           >
             {localizedDescription}
-          </AppText>
+          </Text>
         </View>
 
         {/* Image Area */}

@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Pressable } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "@/lib/navigation";
 
-import { AppText } from "@/components/app-text";
+import { AppChevron } from "@/components/app-chevron";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
@@ -16,7 +16,7 @@ type OwnerUnitCardProps = {
 };
 
 export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
-  const { direction, t } = useI18n();
+  const { direction, isRTL, t } = useI18n();
   const { formatCurrency } = useFormatters();
 
   const handlePress = () => {
@@ -71,43 +71,50 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
               <AppIcon name="facility" size={20} colorToken="--primary" />
             </View>
             <View className="flex-col flex-1 min-w-0 text-start">
-              <AppText className="text-base font-bold text-white text-start leading-5">
+              <Text
+                className="text-base font-bold text-white leading-5"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {unit.name}
-              </AppText>
-              <AppText
-                className="text-xs text-zinc-400 text-start mt-0.5"
+              </Text>
+              <Text
+                className="text-xs text-zinc-400 mt-0.5"
                 numberOfLines={1}
                 ellipsizeMode="tail"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
                 {unit.projectName} • {unit.phaseName}
-              </AppText>
+              </Text>
             </View>
           </AppRow>
 
           <View className={`px-2.5 py-0.5 rounded-full ${status.bg}`}>
-            <AppText className={`text-[10px] font-bold uppercase ${status.text}`}>
+            <Text
+              className={`text-[10px] font-bold uppercase ${status.text}`}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t(`connectUnit.${unit.state.toLowerCase()}` as any) === `connectUnit.${unit.state.toLowerCase()}` 
                 ? unit.state.toUpperCase() 
                 : t(`connectUnit.${unit.state.toLowerCase()}` as any)}
-            </AppText>
+            </Text>
           </View>
         </AppRow>
 
         {/* Details Grid-like Row */}
         <View className="flex-col" style={{ rowGap: 12 }}>
           <AppRow className="justify-between items-center">
-            <AppText className="text-xs text-zinc-400 text-start">{t("ownerUnits.area")}</AppText>
-            <AppText className="text-xs font-semibold text-white">{unit.totalArea} m²</AppText>
+            <Text className="text-xs text-zinc-400" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.area")}</Text>
+            <Text className="text-xs font-semibold text-white" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{unit.totalArea} m²</Text>
           </AppRow>
 
           <AppRow className="justify-between items-center">
-            <AppText className="text-xs text-zinc-400 text-start">{t("ownerUnits.operationalArea")}</AppText>
-            <AppText className="text-xs font-semibold text-white">{unit.operationalArea} m²</AppText>
+            <Text className="text-xs text-zinc-400" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.operationalArea")}</Text>
+            <Text className="text-xs font-semibold text-white" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{unit.operationalArea} m²</Text>
           </AppRow>
 
           <AppRow className="justify-between items-center">
-            <AppText className="text-xs text-zinc-400 text-start">{t("ownerUnits.annualDeposit")}</AppText>
-            <AppText className="text-xs font-bold text-white">{formatCurrency(unit.annualMaintenanceDeposit)}</AppText>
+            <Text className="text-xs text-zinc-400" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.annualDeposit")}</Text>
+            <Text className="text-xs font-bold text-white" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{formatCurrency(unit.annualMaintenanceDeposit)}</Text>
           </AppRow>
         </View>
 
@@ -116,8 +123,8 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
           className="justify-end items-center"
           style={{ columnGap: 4, paddingTop: 12 }}
         >
-          <AppText className="text-xs font-bold text-white">{t("ownerFinancials.title")}</AppText>
-          <AppIcon name="chevronRight" size={14} color="#FFFFFF" />
+          <Text className="text-xs font-bold text-white" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerFinancials.title")}</Text>
+          <AppChevron size={14} color="#FFFFFF" />
         </AppRow>
       </View>
     </Pressable>
