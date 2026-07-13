@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View, ScrollView, Alert } from "react-native";
+import { Pressable, View, ScrollView, Alert, Text } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useLocalSearchParams, Stack, type Href } from "expo-router";
 import { router } from "@/lib/navigation";
@@ -16,7 +16,7 @@ import { useRequestsStore, type RequestStatus } from "@/stores/requests-store";
 import { useUnitStore } from "@/stores/unit-store";
 
 export default function ResidentTicketDetailsScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const params = useLocalSearchParams();
   const requestId = params.id as string;
@@ -143,9 +143,9 @@ export default function ResidentTicketDetailsScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <ScreenHeader title={t("tickets.detailsTitle")} onBack={() => router.back()} />
         <View className="flex-1 items-center justify-center p-6">
-          <AppText className="text-base text-muted-foreground">
+          <Text className="text-base text-muted-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
             {t("tickets.notFound")}
-          </AppText>
+          </Text>
         </View>
       </View>
     );
@@ -182,21 +182,32 @@ export default function ResidentTicketDetailsScreen() {
               <View className={`w-12 h-12 rounded-xl items-center justify-center ${categoryConfig.bgClass}`}>
                 <AppIcon name={categoryConfig.icon} size={24} color={categoryConfig.iconColor} />
               </View>
-              <View className="flex-1 min-w-0 text-start">
-                <AppText className="text-lg font-bold text-foreground text-start" numberOfLines={1}>
+              <View className="flex-1 min-w-0">
+                <Text
+                  className="text-lg font-bold text-foreground text-start"
+                  numberOfLines={1}
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t(`services.${request.category}` as any)}
-                </AppText>
-                <AppText className="text-xs text-muted-foreground mt-0.5 text-start">
+                </Text>
+                <Text
+                  className="text-xs text-muted-foreground mt-0.5 text-start"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   #{request.id.toUpperCase()}
-                </AppText>
+                </Text>
               </View>
             </AppRow>
 
             {/* Status Badge */}
-            <View className={`px-3 py-1 rounded-full ${statusConfig.bgClass}`}>
-              <AppText className={`text-xs font-bold uppercase tracking-wider ${statusConfig.textClass}`}>
+            <View className={`px-3 py-1 rounded-full shrink-0 ${statusConfig.bgClass}`}>
+              <Text
+                className={`text-xs font-bold uppercase tracking-wider ${statusConfig.textClass}`}
+                numberOfLines={1}
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t(`tickets.status.${request.status}` as any)}
-              </AppText>
+              </Text>
             </View>
           </AppRow>
 

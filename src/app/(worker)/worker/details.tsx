@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Alert, Pressable } from "react-native";
+import { View, Alert, Pressable, Text } from "react-native";
 import { useLocalSearchParams, Stack, type Href } from "expo-router";
 import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
@@ -49,7 +49,7 @@ function formatDateFormat(text: string, prevValue: string) {
 }
 
 export default function WorkerDetailsScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const params = useLocalSearchParams();
   const taskId = params.id as string;
@@ -363,10 +363,14 @@ export default function WorkerDetailsScreen() {
             </AppRow>
 
             {/* Status Badge */}
-            <View className={`px-3 py-1 rounded-full ${statusConfig.bgClass}`}>
-              <AppText className={`text-xs font-bold uppercase tracking-wider ${statusConfig.textClass}`}>
+            <View className={`px-3 py-1 rounded-full shrink-0 ${statusConfig.bgClass}`}>
+              <Text
+                className={`text-xs font-bold uppercase tracking-wider ${statusConfig.textClass}`}
+                numberOfLines={1}
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t(`tickets.status.${task.status}` as any)}
-              </AppText>
+              </Text>
             </View>
           </AppRow>
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, ScrollView, View, Alert } from "react-native";
+import { Pressable, ScrollView, View, Alert, Text } from "react-native";
 import { Stack, useLocalSearchParams, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
@@ -14,7 +14,7 @@ import { useInvoicesStore } from "@/stores/invoices-store";
 
 export default function InvoiceDetailsScreen() {
   const { id } = useLocalSearchParams();
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const { formatDate, formatCurrency } = useFormatters();
   const insets = useAppInsets();
   const { invoices, payInvoice } = useInvoicesStore();
@@ -159,10 +159,14 @@ export default function InvoiceDetailsScreen() {
                 {invoice.invoiceNumber}
               </AppText>
             </View>
-            <View className={`px-3 py-1 rounded-full ${statusTheme.badgeBg}`}>
-              <AppText className={`text-xs font-bold uppercase tracking-wider ${statusTheme.badgeText}`}>
+            <View className={`px-3 py-1 rounded-full shrink-0 ${statusTheme.badgeBg}`}>
+              <Text
+                className={`text-xs font-bold uppercase tracking-wider ${statusTheme.badgeText}`}
+                numberOfLines={1}
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t(statusTheme.statusTextKey as any)}
-              </AppText>
+              </Text>
             </View>
           </View>
 

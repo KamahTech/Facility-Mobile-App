@@ -1,10 +1,9 @@
-import { View, Pressable } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import { type Href } from "expo-router";
 import { router } from "@/lib/navigation";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 import type {
   MaintenanceRequest,
@@ -16,7 +15,7 @@ type WorkerTaskCardProps = {
 };
 
 export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const unitLabel = [task.buildingNumber, task.unitNumber].filter(Boolean).join(" - ");
 
   const getCategoryConfig = () => {
@@ -118,49 +117,60 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
             />
           </View>
           <View className="flex-1 min-w-0 text-start">
-            <AppText
-              className="text-base font-bold text-foreground text-start"
+            <Text
+              className="text-base font-bold text-foreground"
               numberOfLines={1}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
             >
               {t(`services.${task.category}` as any)}
-            </AppText>
+            </Text>
             {unitLabel ? (
-              <AppText
-                className="text-xs text-muted-foreground mt-0.5 text-start"
+              <Text
+                className="text-xs text-muted-foreground mt-0.5"
                 numberOfLines={1}
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
                 {unitLabel}
-              </AppText>
+              </Text>
             ) : null}
           </View>
         </AppRow>
 
         {/* Status Badge */}
-        <View className={`px-2.5 py-1 rounded-full ${statusConfig.bgClass}`}>
-          <AppText
+        <View className={`px-2.5 py-1 rounded-full shrink-0 ${statusConfig.bgClass}`}>
+          <Text
             className={`text-xs font-semibold uppercase tracking-wider ${statusConfig.textClass}`}
+            numberOfLines={1}
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
             {t(`tickets.status.${task.status}` as any)}
-          </AppText>
+          </Text>
         </View>
       </AppRow>
 
       {/* Preview details */}
-      <AppText
-        className="text-sm text-card-foreground leading-5 text-start"
+      <Text
+        className="text-sm text-card-foreground leading-5"
         numberOfLines={2}
+        style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
       >
         {task.description}
-      </AppText>
+      </Text>
 
       {/* Bottom info: ID and Date */}
       <AppRow className="items-center justify-between pt-3">
-        <AppText className="text-xs text-muted-foreground">
+        <Text
+          className="text-xs text-muted-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           #{task.id.toUpperCase()}
-        </AppText>
-        <AppText className="text-xs text-muted-foreground">
+        </Text>
+        <Text
+          className="text-xs text-muted-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {task.createdAt}
-        </AppText>
+        </Text>
       </AppRow>
     </Pressable>
   );

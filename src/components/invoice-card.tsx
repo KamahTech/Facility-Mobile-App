@@ -1,11 +1,10 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Text } from "react-native";
 import { type Href } from "expo-router";
 import { router } from "@/lib/navigation";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
 import type { Invoice } from "@/stores/invoices-store";
@@ -16,7 +15,7 @@ type InvoiceCardProps = {
 };
 
 export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const { formatCurrency, formatDate } = useFormatters();
   const { id, invoiceNumber, titleKey, descriptionKey, amount, status, issueDate, dueDate, paidDate } = invoice;
 
@@ -70,53 +69,81 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
             <AppIcon name="invoices" size={16} color={theme.iconColor} />
           </View>
           <View className="flex-col">
-            <AppText className="text-xs font-bold text-foreground opacity-50">
+            <Text
+              className="text-xs font-bold text-foreground opacity-50"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {invoiceNumber}
-            </AppText>
+            </Text>
           </View>
         </AppRow>
-        <View className={`px-2.5 py-1 rounded-full ${theme.badgeBg}`}>
-          <AppText className={`text-[10px] font-bold uppercase tracking-wider ${theme.badgeText}`}>
+        <View className={`px-2.5 py-1 rounded-full shrink-0 ${theme.badgeBg}`}>
+          <Text
+            className={`text-[10px] font-bold uppercase tracking-wider ${theme.badgeText}`}
+            numberOfLines={1}
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {t(theme.statusTextKey as any)}
-          </AppText>
+          </Text>
         </View>
       </AppRow>
 
       {/* Invoice Title and Description */}
       <View className="flex-col gap-1">
-        <AppText className="text-start text-base font-bold text-foreground">
+        <Text
+          className="text-base font-bold text-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t(titleKey)}
-        </AppText>
-        <AppText className="text-start text-xs text-muted-foreground leading-4">
+        </Text>
+        <Text
+          className="text-xs text-muted-foreground leading-4"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t(descriptionKey)}
-        </AppText>
+        </Text>
       </View>
 
       {/* Footer Row: Dates, Amount, and Optional Payment Button */}
       <AppRow className="w-full items-end justify-between">
         <View className="flex-col gap-1">
           <AppRow className="items-center gap-1.5">
-            <AppText className="text-[10px] text-muted-foreground">
+            <Text
+              className="text-[10px] text-muted-foreground"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t("invoices.issueDate")}:
-            </AppText>
-            <AppText className="text-[11px] font-medium text-foreground opacity-80">
+            </Text>
+            <Text
+              className="text-[11px] font-medium text-foreground opacity-80"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {formatDate(issueDate)}
-            </AppText>
+            </Text>
           </AppRow>
           <AppRow className="items-center gap-1.5">
-            <AppText className="text-[10px] text-muted-foreground">
+            <Text
+              className="text-[10px] text-muted-foreground"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {status === "paid" ? t("invoices.paidDate") : t("invoices.dueDate")}:
-            </AppText>
-            <AppText className="text-[11px] font-medium text-foreground opacity-80">
+            </Text>
+            <Text
+              className="text-[11px] font-medium text-foreground opacity-80"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {formatDate(status === "paid" && typeof paidDate === "string" ? paidDate : dueDate)}
-            </AppText>
+            </Text>
           </AppRow>
         </View>
 
         <View className="items-end gap-1.5">
-          <AppText className="text-lg font-bold text-foreground">
+          <Text
+            className="text-lg font-bold text-foreground"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {formattedAmount}
-          </AppText>
+          </Text>
         </View>
       </AppRow>
     </Pressable>
