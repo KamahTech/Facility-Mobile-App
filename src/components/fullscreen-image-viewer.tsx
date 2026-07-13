@@ -1,6 +1,8 @@
 import React from "react";
-import { Modal, StyleSheet, View, Pressable, ScrollView, Alert, useWindowDimensions } from "react-native";
+import { Modal, StyleSheet, View, Pressable, ScrollView, Alert, useWindowDimensions, Platform } from "react-native";
 import { Image } from "expo-image";
+import { documentDirectory, downloadAsync } from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { getBackendImageSource } from "@/lib/image-source";
 
@@ -27,12 +29,58 @@ export function FullscreenImageViewer({
 
   if (!visible || !imageUri) return null;
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    try {
+      if (Platform.OS === "web") {
+        const resolved = getBackendImageSource(imageUri);
+        const url = resolved && typeof resolved === "object" && resolved.uri ? resolved.uri : imageUri;
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `image_${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          t("permissions.requiredTitle") || "Permission Required",
+          t("permissions.photoLibraryRequired")
+        );
+        return;
+      }
+
+      const resolved = getBackendImageSource(imageUri);
+      if (!resolved || typeof resolved !== "object" || !resolved.uri) {
+        throw new Error("Invalid image URI");
+      }
+
+      const extension = resolved.uri.split(".").pop()?.split("?")[0] || "png";
+      const filename = `download_${Date.now()}.${extension}`;
+      const fileUri = `${documentDirectory}${filename}`;
+
+      const downloadOptions = resolved.headers ? { headers: resolved.headers } : {};
+      const downloadResult = await downloadAsync(resolved.uri, fileUri, downloadOptions);
+
+      if (downloadResult.status !== 200) {
+        throw new Error(`Failed to download image. Status: ${downloadResult.status}`);
+      }
+
+      await MediaLibrary.saveToLibraryAsync(downloadResult.uri);
+
       Alert.alert(
         t("tickets.imageSaved"),
         t("tickets.imageSavedDesc"),
-      [{ text: t("common.ok") }]
-    );
+        [{ text: t("common.ok") }]
+      );
+    } catch (e: unknown) {
+      Alert.alert(
+        t("common.error"),
+        e instanceof Error ? e.message : String(e)
+      );
+    }
   };
 
   return (
@@ -93,7 +141,7 @@ export function FullscreenImageViewer({
             onPress={handleDownload}
             accessibilityLabel={t("actions.download")}
             accessibilityRole="button"
-            className="w-10 h-10 rounded-full items-center justify-center bg-white/10 active:opacity-60"
+            className="w-10 h-10 rounded-full items-center justify-center bg-primary active:opacity-80"
           >
             <AppIcon name="download" size={20} colorToken="--primary-foreground" />
           </Pressable>
