@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Alert, StyleSheet } from "react-native";
+import { View, Alert, StyleSheet, Text } from "react-native";
 import { Stack, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
 import { FullScreenLoader } from "@/components/full-screen-loader";
@@ -37,7 +36,7 @@ type ConnectUnitFormValues = {
 };
 
 export default function AddUnitScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
   const { connectUnit, clearError } = useUnitStore();
@@ -220,12 +219,18 @@ export default function AddUnitScreen() {
             {/* Form Card wrapper matching the Login Redesign */}
             <View className="w-full bg-card rounded-3xl p-6 shadow-2xs flex-col gap-6">
               <View className="flex-col gap-1.5">
-                <AppText className="text-start text-xl font-black text-foreground">
+                <Text
+                  className="text-xl font-black text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t("quickActions.connectUnit")}
-                </AppText>
-                <AppText className="text-start text-xs text-muted-foreground leading-normal">
+                </Text>
+                <Text
+                  className="text-xs text-muted-foreground leading-normal"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t("quickActions.connectUnitDescription")}
-                </AppText>
+                </Text>
               </View>
 
               <View className="flex-col gap-5">

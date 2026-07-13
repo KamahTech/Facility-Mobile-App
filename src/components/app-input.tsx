@@ -1,7 +1,6 @@
 import React from "react";
-import { TextInput, View, type TextInputProps } from "react-native";
+import { TextInput, View, Text, type TextInputProps } from "react-native";
 
-import { AppText } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
 import { useI18n } from "@/hooks/use-i18n";
 import { getDirectionalTextStyle } from "@/lib/i18n-layout";
@@ -25,7 +24,7 @@ export function AppInput({
   icon,
   ...props
 }: AppInputProps) {
-  const { direction } = useI18n();
+  const { direction, isRTL } = useI18n();
   const directionStyle = getDirectionalTextStyle(direction);
   const [isFocused, setIsFocused] = React.useState(false);
 
@@ -42,9 +41,12 @@ export function AppInput({
   return (
     <View className={`w-full flex-col gap-1.5 ${containerClassName}`}>
       {label && (
-        <AppText className={`text-sm font-semibold transition-colors ${isFocused ? "text-primary font-bold" : "text-muted-foreground"}`}>
+        <Text
+          className={`text-sm font-semibold transition-colors ${isFocused ? "text-primary font-bold" : "text-muted-foreground"}`}
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {label}
-        </AppText>
+        </Text>
       )}
       <View
         className={`w-full rounded-2xl flex-row items-center px-4 border transition-all ${
@@ -85,9 +87,12 @@ export function AppInput({
         />
       </View>
       {error && (
-        <AppText className="text-xs font-medium text-destructive mt-0.5">
+        <Text
+          className="text-xs font-medium text-destructive mt-0.5"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {error}
-        </AppText>
+        </Text>
       )}
     </View>
   );

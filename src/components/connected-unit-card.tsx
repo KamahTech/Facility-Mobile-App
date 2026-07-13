@@ -1,11 +1,11 @@
 import React from "react";
-import { Pressable, View, Alert } from "react-native";
+import { Pressable, View, Alert, Text } from "react-native";
 import { type Href } from "expo-router";
 import { router } from "@/lib/navigation";
 
+import { AppChevron } from "@/components/app-chevron";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { allowsFamilyMembers } from "@/lib/family-member-eligibility";
@@ -18,7 +18,7 @@ type ConnectedUnitCardProps = {
 };
 
 export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const destructiveColor = useThemeToken("--destructive");
   const primaryColor = useThemeToken("--primary");
   const primaryBgTranslucent = typeof primaryColor === "string" ? `${primaryColor}25` : "rgba(219, 238, 105, 0.15)";
@@ -79,15 +79,21 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
         </View>
 
         <View className="flex-1 flex-col gap-1 text-start">
-          <AppText className="text-base font-bold text-foreground text-start">
+          <Text
+            className="text-base font-bold text-foreground"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {unit.buildingNumber} - {unit.unitNumber}
-          </AppText>
+          </Text>
           <AppRow className="items-center gap-1.5 flex-wrap">
             {/* Unit Type Badge */}
             <View className="px-2 py-0.5 rounded-lg bg-secondary">
-              <AppText className="text-[11px] font-bold text-muted-foreground">
+              <Text
+                className="text-[11px] font-bold text-muted-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t(`connectUnit.${unit.unitType}` as any) === `connectUnit.${unit.unitType}` ? unit.unitType : t(`connectUnit.${unit.unitType}` as any)}
-              </AppText>
+              </Text>
             </View>
 
             {/* Ownership Type Badge */}
@@ -97,15 +103,16 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
                 backgroundColor: isOwner ? "rgba(16, 185, 129, 0.1)" : "rgba(59, 130, 246, 0.1)",
               }}
             >
-              <AppText
+              <Text
                 className={`text-[11px] font-bold ${
                   isOwner
                     ? "text-emerald-600 dark:text-emerald-400"
                     : "text-blue-600 dark:text-blue-400"
                 }`}
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
                 {t(`connectUnit.${unit.ownershipType}` as any)}
-              </AppText>
+              </Text>
             </View>
           </AppRow>
         </View>
@@ -131,11 +138,20 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
           }
           accessibilityRole="button"
           accessibilityLabel={t("familyTenant.familyMembers")}
-          className="mt-3 rounded-xl bg-secondary px-4 py-2.5 active:opacity-70"
+          className="mt-3 rounded-xl bg-secondary px-4 py-3 active:opacity-70"
         >
-          <AppText className="text-center text-sm font-semibold text-foreground">
-            {t("familyTenant.familyMembers")}
-          </AppText>
+          <AppRow className="justify-between items-center w-full">
+            <AppRow className="items-center gap-2">
+              <AppIcon name="profile" size={16} colorToken="--muted-foreground" />
+              <Text
+                className="text-sm font-semibold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("familyTenant.familyMembers")}
+              </Text>
+            </AppRow>
+            <AppChevron size={14} colorToken="--muted-foreground" />
+          </AppRow>
         </Pressable>
       ) : null}
     </View>

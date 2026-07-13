@@ -1,11 +1,10 @@
 import BottomSheet, { BottomSheetScrollView, BottomSheetView } from "@gorhom/bottom-sheet";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Text } from "react-native";
 
 import { AppBottomSheetBackdrop } from "@/components/app-bottom-sheet-backdrop";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
 import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
@@ -40,7 +39,7 @@ export function GenericSelectBottomSheet<T>({
   onClear,
   clearLabel,
 }: GenericSelectBottomSheetProps<T>) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   useBottomSheetLayer(isPresented);
   const backgroundColor = useThemeToken("--card");
   const borderColor = useThemeToken("--border");
@@ -81,9 +80,12 @@ export function GenericSelectBottomSheet<T>({
       onClose={onDismiss}
     >
       <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24, flex: 1 }}>
-        <AppText className="mb-4 text-xl font-semibold text-foreground text-start">
+        <Text
+          className="mb-4 text-xl font-semibold text-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {title}
-        </AppText>
+        </Text>
 
         <BottomSheetScrollView className="flex-1 w-full" showsVerticalScrollIndicator={false}>
           <View className="w-full overflow-hidden rounded-xl bg-secondary mb-6">
@@ -95,9 +97,12 @@ export function GenericSelectBottomSheet<T>({
               >
                 <AppRow className="w-full items-center gap-3">
                   <AppIcon name="close" size={20} colorToken="--destructive" />
-                  <AppText className="flex-1 text-base font-medium text-destructive text-start">
+                  <Text
+                    className="flex-1 text-base font-medium text-destructive"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
                     {clearLabel || t("common.clear") || "Clear Selection"}
-                  </AppText>
+                  </Text>
                 </AppRow>
               </Pressable>
             )}
@@ -121,13 +126,19 @@ export function GenericSelectBottomSheet<T>({
                 >
                   <AppRow className="w-full items-center justify-between gap-3">
                     <View className="flex-1 flex-col gap-0.5 text-start">
-                      <AppText className="text-base font-medium text-secondary-foreground text-start">
+                      <Text
+                        className="text-base font-medium text-secondary-foreground"
+                        style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                      >
                         {label}
-                      </AppText>
+                      </Text>
                       {subLabel && (
-                        <AppText className="text-xs text-muted-foreground text-start">
+                        <Text
+                          className="text-xs text-muted-foreground"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
                           {subLabel}
-                        </AppText>
+                        </Text>
                       )}
                     </View>
                     {isSelected && (
@@ -145,9 +156,12 @@ export function GenericSelectBottomSheet<T>({
 
             {items.length === 0 && (
               <View className="py-8 px-4 items-center justify-center">
-                <AppText className="text-muted-foreground text-sm text-center">
+                <Text
+                  className="text-muted-foreground text-sm text-center"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t("common.noData") || "No items available"}
-                </AppText>
+                </Text>
               </View>
             )}
           </View>

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, Pressable, RefreshControl } from "react-native";
+import { View, ScrollView, Pressable, RefreshControl, Text } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { type Href, useNavigation } from "expo-router";
@@ -9,7 +9,6 @@ import { StatusBar } from "expo-status-bar";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { RequestCard } from "@/components/request-card";
 import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "@/hooks/use-theme";
@@ -20,7 +19,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 
 export default function ResidentTicketsScreen() {
-  const { t, direction } = useI18n();
+  const { isRTL, t, direction } = useI18n();
   const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
   const mutedColor = useThemeToken("--muted-foreground");
@@ -93,17 +92,19 @@ export default function ResidentTicketsScreen() {
       <Pressable
         key={option.value}
         onPress={() => setActiveFilter(option.value)}
-        className={`px-4 py-2 rounded-full me-2 items-center justify-center active:opacity-90 ${
+        className={`px-4 py-2 rounded-full me-2 items-center justify-center shrink-0 active:opacity-90 ${
           isSelected ? "bg-primary" : "bg-card"
         }`}
       >
-        <AppText
+        <Text
           className={`text-sm font-semibold ${
             isSelected ? "text-primary-foreground font-bold" : "text-muted-foreground"
           }`}
+          numberOfLines={1}
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         >
           {t(option.labelKey as any)}
-        </AppText>
+        </Text>
       </Pressable>
     );
   };
@@ -124,16 +125,22 @@ export default function ResidentTicketsScreen() {
         <View className="w-16 h-16 rounded-full bg-secondary/50 items-center justify-center mb-4">
           <AppIcon name="tickets" size={28} color={mutedColor} />
         </View>
-        <AppText align="center" className="text-base text-muted-foreground mb-8 leading-6 text-start">
+        <Text
+          className="text-base text-muted-foreground mb-8 leading-6 text-center"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("tickets.empty")}
-        </AppText>
+        </Text>
         <Pressable
           onPress={handleCreatePress}
           className="px-6 py-3 bg-primary rounded-xl active:opacity-90 shadow-sm"
         >
-          <AppText className="text-sm font-bold text-primary-foreground">
+          <Text
+            className="text-sm font-bold text-primary-foreground"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {t("tickets.createTitle")}
-          </AppText>
+          </Text>
         </Pressable>
       </View>
     </ScrollView>
@@ -160,12 +167,18 @@ export default function ResidentTicketsScreen() {
         {/* Tab Screen Header */}
         <AppRow className="items-center justify-between px-5 sm:px-8 py-4">
           <View className="flex-col text-start">
-            <AppText className="text-2xl font-bold text-foreground text-start">
+            <Text
+              className="text-2xl font-bold text-foreground"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t("tickets.title")}
-            </AppText>
-            <AppText className="text-xs text-muted-foreground mt-0.5 text-start">
+            </Text>
+            <Text
+              className="text-xs text-muted-foreground mt-0.5"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t("tickets.description")}
-            </AppText>
+            </Text>
           </View>
 
           <Pressable
@@ -205,9 +218,12 @@ export default function ResidentTicketsScreen() {
           <View className="flex-1">
             {error && (
               <View className="bg-destructive/10 p-3 rounded-xl mb-2 mx-1 mt-2">
-                <AppText className="text-sm font-semibold text-destructive text-start">
+                <Text
+                  className="text-sm font-semibold text-destructive"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {error}
-                </AppText>
+                </Text>
               </View>
             )}
             <AnimatedLegendList

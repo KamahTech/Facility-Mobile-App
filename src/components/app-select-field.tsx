@@ -1,8 +1,8 @@
-import { Pressable, View, type PressableProps } from "react-native";
+import { Pressable, View, Text, type PressableProps } from "react-native";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
+import { useI18n } from "@/hooks/use-i18n";
 
 type AppSelectFieldProps = Omit<PressableProps, "children"> & {
   label: string;
@@ -21,12 +21,17 @@ export function AppSelectField({
   showArrow = true,
   ...props
 }: AppSelectFieldProps) {
+  const { isRTL } = useI18n();
+
   return (
     <View className="w-full flex-col gap-1.5">
       {label && (
-        <AppText className="text-sm font-semibold text-muted-foreground">
+        <Text
+          className="text-sm font-semibold text-muted-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {label}
-        </AppText>
+        </Text>
       )}
       <Pressable
         accessibilityRole="button"
@@ -39,14 +44,15 @@ export function AppSelectField({
         {...props}
       >
         <AppRow className="items-center justify-between gap-3">
-          <AppText
+          <Text
             className={`flex-1 text-base ${
               value ? "text-foreground" : "text-muted-foreground"
             }`}
             numberOfLines={1}
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
             {value || placeholder}
-          </AppText>
+          </Text>
           {showArrow && (
             <AppIcon
               name="chevronDown"
@@ -58,9 +64,12 @@ export function AppSelectField({
         </AppRow>
       </Pressable>
       {error && (
-        <AppText className="text-xs font-medium text-destructive mt-0.5">
+        <Text
+          className="text-xs font-medium text-destructive mt-0.5"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {error}
-        </AppText>
+        </Text>
       )}
     </View>
   );
