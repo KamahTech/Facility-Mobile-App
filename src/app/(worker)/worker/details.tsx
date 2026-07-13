@@ -34,6 +34,20 @@ type InspectFormValues = {
   deadline?: string;
 };
 
+function formatDateFormat(text: string, prevValue: string) {
+  if (text.length < prevValue.length) {
+    return text;
+  }
+  const digits = text.replace(/\D/g, "");
+  if (digits.length <= 4) {
+    return digits;
+  }
+  if (digits.length <= 6) {
+    return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  }
+  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+}
+
 export default function WorkerDetailsScreen() {
   const { t } = useI18n();
   const insets = useAppInsets();
@@ -360,7 +374,7 @@ export default function WorkerDetailsScreen() {
             {/* Unit Info */}
             <AppRow className="justify-between items-center">
               <AppText className="text-sm font-semibold text-muted-foreground text-start">
-                {t("tickets.selectUnit")}
+                {t("connectUnit.unit" as any)}
               </AppText>
               <AppText className="text-sm font-bold text-foreground text-end">
                 {unitLabel}
@@ -490,7 +504,9 @@ export default function WorkerDetailsScreen() {
                     placeholder={t("worker.deadlinePlaceholder")}
                     value={value}
                     onBlur={onBlur}
-                    onChangeText={onChange}
+                    onChangeText={(text) => {
+                      onChange(formatDateFormat(text, value || ""));
+                    }}
                     error={errors.deadline?.message}
                   />
                 )}
@@ -567,7 +583,7 @@ export default function WorkerDetailsScreen() {
             {/* Inspection details card */}
             <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-4">
               <AppText className="text-base font-bold text-foreground text-start pb-3">
-                {t("worker.inspectBtn")}
+                {t("worker.notesLabel")}
               </AppText>
               <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl">
                 {typeof task.notes === "string" ? task.notes : ""}
@@ -590,7 +606,7 @@ export default function WorkerDetailsScreen() {
             <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-4">
               <AppRow className="items-center justify-between pb-3">
                 <AppText className="text-base font-bold text-foreground text-start">
-                  {t("worker.inspectBtn")}
+                  {t("worker.notesLabel")}
                 </AppText>
                 <View className="px-2.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/30">
                   <AppText className="text-xs font-bold text-blue-600 dark:text-blue-400">
@@ -616,7 +632,7 @@ export default function WorkerDetailsScreen() {
         {isCompleted && task.notes && (
           <View className="w-full bg-card rounded-2xl p-5 shadow-sm mt-2 flex-col gap-4">
             <AppText className="text-base font-bold text-foreground text-start pb-3">
-              {t("worker.inspectBtn")}
+              {t("worker.notesLabel")}
             </AppText>
             <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl">
               {typeof task.notes === "string" ? task.notes : ""}

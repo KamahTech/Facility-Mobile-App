@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Pressable, TextInput, Alert, FlatList } from "react-native";
+import { View, Pressable, TextInput, Alert, FlatList, Platform } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { Image } from "expo-image";
@@ -296,7 +296,7 @@ export function ChatView({
             ListEmptyComponent={
               <View
                 className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 border border-border/30 shadow-3xs"
-                style={{ transform: [{ scaleY: -1 }] }}
+                style={Platform.OS === "web" ? undefined : { transform: [{ scaleY: -1 }] }}
               >
                 <View className="w-12 h-12 rounded-full bg-secondary/50 items-center justify-center mb-3">
                   <AppIcon name="tickets" size={22} colorToken="--muted-foreground" />
@@ -308,7 +308,10 @@ export function ChatView({
             }
             ListFooterComponent={
               isLoadingMore ? (
-                <View className="py-4 items-center justify-center" style={{ transform: [{ scaleY: -1 }] }}>
+                <View
+                  className="py-4 items-center justify-center"
+                  style={Platform.OS === "web" ? undefined : { transform: [{ scaleY: -1 }] }}
+                >
                   <AppActivityIndicator size="small" />
                 </View>
               ) : null

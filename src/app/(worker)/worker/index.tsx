@@ -179,7 +179,7 @@ export default function WorkerHomeScreen() {
       {/* Welcome Block */}
       <View className="pt-5 pb-3 w-full text-start flex-col gap-1.5">
         <AppText className="text-start text-2xl font-bold text-foreground">
-          {t("worker.welcome").replace("Michael!", workerName)}
+          {t("worker.welcome").replace("{{name}}", workerName)}
         </AppText>
         <AppText className="text-start text-sm text-muted-foreground">
           {t("worker.assignedTasks").replace("{{count}}", String(activeTasksCount))}
