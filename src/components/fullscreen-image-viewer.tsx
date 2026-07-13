@@ -1,8 +1,8 @@
 import React from "react";
 import { Modal, StyleSheet, View, Pressable, ScrollView, Alert, useWindowDimensions, Platform } from "react-native";
 import { Image } from "expo-image";
-import { documentDirectory, downloadAsync } from "expo-file-system";
-import * as MediaLibrary from "expo-media-library";
+import { File as ExpoFile, Directory, Paths } from "expo-file-system";
+import { requestPermissionsAsync, Asset } from "expo-media-library";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { getBackendImageSource } from "@/lib/image-source";
 
@@ -43,7 +43,7 @@ export function FullscreenImageViewer({
         return;
       }
 
-      const { status } = await MediaLibrary.requestPermissionsAsync();
+      const { status } = await requestPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
           t("permissions.requiredTitle") || "Permission Required",
@@ -57,18 +57,15 @@ export function FullscreenImageViewer({
         throw new Error("Invalid image URI");
       }
 
-      const extension = resolved.uri.split(".").pop()?.split("?")[0] || "png";
-      const filename = `download_${Date.now()}.${extension}`;
-      const fileUri = `${documentDirectory}${filename}`;
+      const destination = new Directory(Paths.document);
+      const downloadOptions = {
+        headers: resolved.headers || undefined,
+        idempotent: true,
+      };
 
-      const downloadOptions = resolved.headers ? { headers: resolved.headers } : {};
-      const downloadResult = await downloadAsync(resolved.uri, fileUri, downloadOptions);
+      const file = await ExpoFile.downloadFileAsync(resolved.uri, destination, downloadOptions);
 
-      if (downloadResult.status !== 200) {
-        throw new Error(`Failed to download image. Status: ${downloadResult.status}`);
-      }
-
-      await MediaLibrary.saveToLibraryAsync(downloadResult.uri);
+      await Asset.create(file.uri);
 
       Alert.alert(
         t("tickets.imageSaved"),
