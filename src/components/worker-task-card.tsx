@@ -147,7 +147,7 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
 
       {/* Preview details */}
       <AppText
-        className="text-sm text-card-foreground/80 leading-5 text-start"
+        className="text-sm text-card-foreground leading-5 text-start"
         numberOfLines={2}
       >
         {task.description}

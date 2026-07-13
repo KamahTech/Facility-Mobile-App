@@ -104,12 +104,16 @@ export default function LoginScreen() {
           className="absolute top-0 start-0 end-0 px-6 flex-row items-center justify-between z-10"
         >
           {/* Back Button */}
-          <Pressable
-            onPress={() => router.back()}
-            className="w-10 h-10 rounded-xl bg-black/35 items-center justify-center active:bg-black/50"
-          >
-            <AppChevron type="back" size={16} color="#FFFFFF" />
-          </Pressable>
+          {router.canGoBack() ? (
+            <Pressable
+              onPress={() => router.back()}
+              className="w-10 h-10 rounded-xl bg-black/35 items-center justify-center active:bg-black/50"
+            >
+              <AppChevron type="back" size={16} color="#FFFFFF" />
+            </Pressable>
+          ) : (
+            <View className="w-10 h-10" />
+          )}
 
           {/* Brand Logo Group */}
           <View className="flex-row items-center gap-3">
