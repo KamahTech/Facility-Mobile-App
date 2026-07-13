@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet, Text, BackHandler } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, useLocalSearchParams, type Href } from "expo-router";
 import { router } from "@/lib/navigation";
@@ -8,7 +8,6 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 
-import { AppText } from "@/components/app-text";
 import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
 import { AppChevron } from "@/components/app-chevron";
@@ -29,7 +28,7 @@ type LoginFormValues = {
 };
 
 export default function LoginScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { type } = useLocalSearchParams<{ type: "resident" | "worker" }>();
   const accountType = type || "resident";
@@ -56,6 +55,24 @@ export default function LoginScreen() {
   React.useEffect(() => {
     clearError();
   }, [clearError]);
+
+  React.useEffect(() => {
+    const handleBackPress = () => {
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/choose-login-method" as Href);
+      }
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleBackPress
+    );
+
+    return () => subscription.remove();
+  }, []);
 
   const handlePasswordLogin = async (data: LoginFormValues) => {
     clearError();
@@ -104,16 +121,18 @@ export default function LoginScreen() {
           className="absolute top-0 start-0 end-0 px-6 flex-row items-center justify-between z-10"
         >
           {/* Back Button */}
-          {router.canGoBack() ? (
-            <Pressable
-              onPress={() => router.back()}
-              className="w-10 h-10 rounded-xl bg-black/35 items-center justify-center active:bg-black/50"
-            >
-              <AppChevron type="back" size={16} color="#FFFFFF" />
-            </Pressable>
-          ) : (
-            <View className="w-10 h-10" />
-          )}
+          <Pressable
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/choose-login-method" as Href);
+              }
+            }}
+            className="w-10 h-10 rounded-xl bg-black/35 items-center justify-center active:bg-black/50"
+          >
+            <AppChevron type="back" size={16} color="#FFFFFF" />
+          </Pressable>
 
           {/* Brand Logo Group */}
           <View className="flex-row items-center gap-3">
@@ -124,12 +143,18 @@ export default function LoginScreen() {
               tintColor={primaryColor}
             />
             <View className="flex-col">
-              <AppText className="text-white text-base font-black tracking-widest leading-none">
+              <Text
+                className="text-white text-base font-black tracking-widest leading-none"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 KAMAH
-              </AppText>
-              <AppText className="text-primary text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none">
+              </Text>
+              <Text
+                className="text-primary text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 PROPERTIES
-              </AppText>
+              </Text>
             </View>
           </View>
         </View>
@@ -141,14 +166,20 @@ export default function LoginScreen() {
         <View className="flex-col gap-6">
           {/* Title & Description Group */}
           <View className="flex-col gap-2">
-            <AppText
-              className="text-start text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-none"
+            <Text
+              className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-none"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
             >
-              {accountType === "resident" ? t("auth.residentTitle") : t("auth.workerTitle")} Login
-            </AppText>
-            <AppText className="text-start text-sm sm:text-base text-muted-foreground leading-normal font-medium mt-1">
+              {isRTL
+                ? `تسجيل الدخول كـ ${accountType === "resident" ? t("auth.residentTitle") : t("auth.workerTitle")}`
+                : `${accountType === "resident" ? t("auth.residentTitle") : t("auth.workerTitle")} Login`}
+            </Text>
+            <Text
+              className="text-sm sm:text-base text-muted-foreground leading-normal font-medium mt-1"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t("auth.loginSubtitle")}
-            </AppText>
+            </Text>
           </View>
 
           {/* Form Fields */}
@@ -218,9 +249,12 @@ export default function LoginScreen() {
               disabled={loading}
               className="w-full h-14 border border-border rounded-2xl items-center justify-center bg-card active:bg-muted/40"
             >
-              <AppText className="text-center text-base font-bold text-foreground leading-none">
+              <Text
+                className="text-center text-base font-bold text-foreground leading-none"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("auth.noAccount")}
-              </AppText>
+              </Text>
             </Pressable>
           )}
         </View>

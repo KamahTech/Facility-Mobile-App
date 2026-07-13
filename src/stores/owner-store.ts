@@ -125,6 +125,17 @@ export function useTenantsQuery(unitId?: string, enabled = true) {
   });
 }
 
+export function useOwnerClaimDetailsQuery(claimId?: string) {
+  return useQuery<OwnerClaim>({
+    queryKey: ["owner-claim", claimId],
+    queryFn: async () => {
+      const details = await apiRequest<Record<string, unknown>>(`/resident/claims/${claimId}`, {});
+      return normalizeOwnerDetails(details) as OwnerClaim;
+    },
+    enabled: !!claimId,
+  });
+}
+
 export function useOwnerStore(options?: {
   enableOwnerUnits?: boolean;
   enableStatement?: boolean;
@@ -132,7 +143,6 @@ export function useOwnerStore(options?: {
   enableServices?: boolean;
 }) {
   const queryClient = useQueryClient();
-  const [currentClaim, setCurrentClaim] = React.useState<OwnerClaim | null>(null);
 
   const enableOwnerUnits = options?.enableOwnerUnits ?? false;
   const enableStatement = options?.enableStatement ?? false;
@@ -226,6 +236,10 @@ export function useOwnerStore(options?: {
 
   const ownerUnitsError = ownerUnitsQuery.error?.message || null;
   const statementError = statementQuery.error?.message || null;
+  const claimsError = claimsQuery.error?.message || null;
+  const servicesError = servicesQuery.error?.message || null;
+  const claimsLoading = claimsQuery.isLoading || claimsQuery.isFetchingNextPage;
+  const servicesLoading = servicesQuery.isLoading || servicesQuery.isFetchingNextPage;
   const { refetch: refetchOwnerUnits } = ownerUnitsQuery;
   const { refetch: refetchStatement } = statementQuery;
   const {
@@ -279,17 +293,6 @@ export function useOwnerStore(options?: {
     }
   }, [fetchNextClaimsPage, hasNextClaimsPage, isFetchingNextClaimsPage]);
 
-  const fetchClaimDetails = React.useCallback(async (claimId: string) => {
-    const details = await apiRequest<Record<string, unknown>>(`/resident/claims/${claimId}`, {});
-    if (details) {
-      const normalizedDetails = normalizeOwnerDetails(details) as OwnerClaim;
-      setCurrentClaim(normalizedDetails);
-      return normalizedDetails;
-    }
-    setCurrentClaim(details);
-    return details;
-  }, []);
-
   const fetchServices = React.useCallback(async () => {
     await refetchServices();
   }, [refetchServices]);
@@ -322,7 +325,10 @@ export function useOwnerStore(options?: {
     error,
     ownerUnitsError,
     statementError,
-    currentClaim,
+    claimsError,
+    servicesError,
+    claimsLoading,
+    servicesLoading,
     fetchOwnerUnits,
     fetchOwnerUnitDetails,
     fetchFinancialSummary,
@@ -330,7 +336,6 @@ export function useOwnerStore(options?: {
     fetchClaims,
     fetchNextClaims,
     hasNextClaims: claimsQuery.hasNextPage,
-    fetchClaimDetails,
     fetchServices,
     fetchNextServices,
     hasNextServices: servicesQuery.hasNextPage,

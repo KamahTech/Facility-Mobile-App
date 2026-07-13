@@ -6,7 +6,7 @@ import { router } from "@/lib/navigation";
 import { AppRow } from "@/components/app-row";
 import { QuickActionCard } from "@/components/quick-action-card";
 import { SectionHeader } from "@/components/section-header";
-import { quickActions } from "@/constants/quick-actions";
+import { useAvailableQuickActions } from "@/hooks/use-available-quick-actions";
 import { useI18n } from "@/hooks/use-i18n";
 
 type QuickActionsProps = {
@@ -36,11 +36,12 @@ export function QuickActions({
   showSeeAll = true,
 }: QuickActionsProps) {
   const { t } = useI18n();
+  const availableActions = useAvailableQuickActions();
   
   // Display up to the limit of items, or all items if limit is null
   const visibleActions = React.useMemo(() => {
-    return limit === null ? quickActions : quickActions.slice(0, limit);
-  }, [limit]);
+    return limit === null ? availableActions : availableActions.slice(0, limit);
+  }, [availableActions, limit]);
 
   // Chunk actions into rows of 2 columns
   const rows = React.useMemo(() => {

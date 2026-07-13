@@ -10,7 +10,6 @@ import { ScreenHeader } from "@/components/screen-header";
 import { AppChevron } from "@/components/app-chevron";
 import { MediaSourceSheet } from "@/components/media-source-sheet";
 import { FullscreenImageViewer } from "@/components/fullscreen-image-viewer";
-import { AppText } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppInput } from "@/components/app-input";
@@ -191,9 +190,12 @@ export default function WorkerDetailsScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <ScreenHeader title={t("worker.detailsTitle")} onBack={() => router.back()} />
         <View className="flex-1 items-center justify-center p-6">
-          <AppText className="text-base text-muted-foreground">
+          <Text
+            className="text-base text-muted-foreground"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {t("worker.notFound")}
-          </AppText>
+          </Text>
         </View>
       </View>
     );
@@ -353,12 +355,19 @@ export default function WorkerDetailsScreen() {
                 <AppIcon name={categoryConfig.icon} size={24} color={categoryConfig.iconColor} />
               </View>
               <View className="flex-1 min-w-0 text-start">
-                <AppText className="text-lg font-bold text-foreground text-start" numberOfLines={1}>
+                <Text
+                  className="text-lg font-bold text-foreground text-start"
+                  numberOfLines={1}
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t(`services.${task.category}` as any)}
-                </AppText>
-                <AppText className="text-xs text-muted-foreground mt-0.5 text-start">
+                </Text>
+                <Text
+                  className="text-xs text-muted-foreground mt-0.5 text-start"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   #{task.id.toUpperCase()}
-                </AppText>
+                </Text>
               </View>
             </AppRow>
 
@@ -377,34 +386,52 @@ export default function WorkerDetailsScreen() {
           <View className="pt-4 flex-col gap-3">
             {/* Unit Info */}
             <AppRow className="justify-between items-center">
-              <AppText className="text-sm font-semibold text-muted-foreground text-start">
+              <Text
+                className="text-sm font-semibold text-muted-foreground text-start"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("connectUnit.unit" as any)}
-              </AppText>
-              <AppText className="text-sm font-bold text-foreground text-end">
+              </Text>
+              <Text
+                className="text-sm font-bold text-foreground text-end"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {unitLabel}
-              </AppText>
+              </Text>
             </AppRow>
 
             {/* Date Requested */}
             <AppRow className="justify-between items-center">
-              <AppText className="text-sm font-semibold text-muted-foreground text-start">
+              <Text
+                className="text-sm font-semibold text-muted-foreground text-start"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("tickets.date")}
-              </AppText>
-              <AppText className="text-sm text-foreground text-end">
+              </Text>
+              <Text
+                className="text-sm text-foreground text-end"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {task.createdAt}
-              </AppText>
+              </Text>
             </AppRow>
           </View>
         </View>
 
         {/* Issue Details Section */}
         <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-3">
-          <AppText className="text-sm font-bold text-muted-foreground uppercase tracking-wider text-start">
+          <Text
+            className="text-sm font-bold text-muted-foreground uppercase tracking-wider"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {t("tickets.enterDetails")}
-          </AppText>
-          <AppText className="text-base text-foreground leading-6 text-start">
+          </Text>
+          <Text
+            className="text-base text-foreground leading-6"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {task.description}
-          </AppText>
+          </Text>
         </View>
 
         {/* Comments Section Button */}
@@ -423,17 +450,23 @@ export default function WorkerDetailsScreen() {
                 <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
                   <AppIcon name="tickets" size={16} colorToken="--primary" />
                 </View>
-                <AppText className="text-base font-bold text-foreground text-start">
+                <Text
+                  className="text-base font-bold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t("tickets.comments")}
-                </AppText>
+                </Text>
               </AppRow>
 
               <AppRow className="items-center gap-2">
                 {task.comments && task.comments.length > 0 && (
                   <View className="bg-primary px-2.5 py-0.5 rounded-full">
-                    <AppText className="text-xs font-bold text-primary-foreground">
+                    <Text
+                      className="text-xs font-bold text-primary-foreground"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
                       {task.comments.length}
-                    </AppText>
+                    </Text>
                   </View>
                 )}
                 <AppChevron size={14} color={mutedToken} />
@@ -458,9 +491,12 @@ export default function WorkerDetailsScreen() {
         {needsInspection && (
           <View className="flex-col gap-6 w-full mt-2">
             <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-5">
-              <AppText className="text-base font-bold text-foreground text-start pb-3">
+              <Text
+                className="text-base font-bold text-foreground pb-3"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("worker.inspectBtn")}
-              </AppText>
+              </Text>
 
               {/* Inspection notes */}
               <Controller
@@ -518,9 +554,9 @@ export default function WorkerDetailsScreen() {
 
               {/* Photos upload block */}
               <View className="flex-col gap-2.5">
-                <AppText className="text-sm font-semibold text-muted-foreground text-start">
+                <Text className="text-sm font-semibold text-muted-foreground text-start">
                   {t("worker.uploadImages")}
-                </AppText>
+                </Text>
                 
                 <AppRow className="items-center gap-3">
 	                  <Pressable
@@ -532,9 +568,9 @@ export default function WorkerDetailsScreen() {
                     <AppIcon name="camera" size={20} color={mutedToken} />
                   </Pressable>
 
-                  <AppText className="text-sm text-muted-foreground">
+                  <Text className="text-sm text-muted-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
                     {t("worker.imagesCount").replace("{{count}}", String(selectedPhotos.length))}
-                  </AppText>
+                  </Text>
                 </AppRow>
 
                 {/* Real photo blocks */}
@@ -586,12 +622,12 @@ export default function WorkerDetailsScreen() {
           <View className="flex-col gap-6 w-full mt-2">
             {/* Inspection details card */}
             <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-4">
-              <AppText className="text-base font-bold text-foreground text-start pb-3">
+              <Text className="text-base font-bold text-foreground text-start pb-3" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
                 {t("worker.notesLabel")}
-              </AppText>
-              <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl">
+              </Text>
+              <Text className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
                 {typeof task.notes === "string" ? task.notes : ""}
-              </AppText>
+              </Text>
             </View>
 
             <View className="mt-2">
@@ -609,18 +645,18 @@ export default function WorkerDetailsScreen() {
             {/* Inspection details card */}
             <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-4">
               <AppRow className="items-center justify-between pb-3">
-                <AppText className="text-base font-bold text-foreground text-start">
+                <Text className="text-base font-bold text-foreground text-start" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
                   {t("worker.notesLabel")}
-                </AppText>
+                </Text>
                 <View className="px-2.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/30">
-                  <AppText className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                  <Text className="text-xs font-bold text-blue-600 dark:text-blue-400" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
                     {t("worker.status.working")}
-                  </AppText>
+                  </Text>
                 </View>
               </AppRow>
-              <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl">
+              <Text className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
                 {typeof task.notes === "string" ? task.notes : ""}
-              </AppText>
+              </Text>
             </View>
 
             <View className="mt-2">
@@ -635,12 +671,12 @@ export default function WorkerDetailsScreen() {
         {/* Case 5: Completed Tasks - Read Only Summary */}
         {isCompleted && task.notes && (
           <View className="w-full bg-card rounded-2xl p-5 shadow-sm mt-2 flex-col gap-4">
-            <AppText className="text-base font-bold text-foreground text-start pb-3">
+            <Text className="text-base font-bold text-foreground text-start pb-3" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
               {t("worker.notesLabel")}
-            </AppText>
-            <AppText className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl">
+            </Text>
+            <Text className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
               {typeof task.notes === "string" ? task.notes : ""}
-            </AppText>
+            </Text>
           </View>
         )}
       </KeyboardAwareScrollContent>

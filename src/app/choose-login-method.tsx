@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Text, BackHandler } from "react-native";
 import { Image } from "expo-image";
 import { Stack } from "expo-router";
 import { router } from "@/lib/navigation";
@@ -14,7 +14,6 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 
-import { AppText } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
 import { AppChevron } from "@/components/app-chevron";
 import { useI18n } from "@/hooks/use-i18n";
@@ -33,6 +32,7 @@ type RoleOptionProps = {
 };
 
 function RoleOption({ title, description, icon, selected, onPress }: RoleOptionProps) {
+  const { isRTL } = useI18n();
   return (
     <Pressable
       onPress={onPress}
@@ -55,21 +55,23 @@ function RoleOption({ title, description, icon, selected, onPress }: RoleOptionP
 
       {/* Middle Text Content */}
       <View className="flex-1 min-w-0 ms-4 me-4 flex-col justify-center">
-        <AppText
-          className={`text-start text-base font-bold leading-tight ${
+        <Text
+          className={`text-base font-bold leading-tight ${
             selected ? "text-primary-foreground" : "text-card-foreground"
           }`}
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         >
           {title}
-        </AppText>
-        <AppText
-          className={`text-start text-xs mt-1 leading-normal ${
+        </Text>
+        <Text
+          className={`text-xs mt-1 leading-normal ${
             selected ? "text-primary-foreground/80" : "text-muted-foreground"
           }`}
           numberOfLines={2}
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         >
           {description}
-        </AppText>
+        </Text>
       </View>
 
       {/* End Radio Indicator */}
@@ -87,7 +89,7 @@ function RoleOption({ title, description, icon, selected, onPress }: RoleOptionP
 }
 
 export default function ChooseLoginMethodScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const primaryColor = useThemeToken("--primary") as string;
 
@@ -111,6 +113,24 @@ export default function ChooseLoginMethodScreen() {
       easing: Easing.out(Easing.quad),
     });
   }, [contentOpacity, contentTranslateY]);
+
+  React.useEffect(() => {
+    const handleBackPress = () => {
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/on-boarding" as Href);
+      }
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleBackPress
+    );
+
+    return () => subscription.remove();
+  }, []);
 
   React.useEffect(() => {
     if (selectedType !== null) {
@@ -176,16 +196,18 @@ export default function ChooseLoginMethodScreen() {
           className="absolute top-0 start-0 end-0 px-6 flex-row items-center justify-between z-10"
         >
           {/* Back Button */}
-          {router.canGoBack() ? (
-            <Pressable
-              onPress={() => router.back()}
-              className="w-10 h-10 rounded-xl bg-black/35 items-center justify-center active:bg-black/50"
-            >
-              <AppChevron type="back" size={16} color="#FFFFFF" />
-            </Pressable>
-          ) : (
-            <View className="w-10 h-10" />
-          )}
+          <Pressable
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/on-boarding" as Href);
+              }
+            }}
+            className="w-10 h-10 rounded-xl bg-black/35 items-center justify-center active:bg-black/50"
+          >
+            <AppChevron type="back" size={16} color="#FFFFFF" />
+          </Pressable>
 
           {/* Brand Logo Group */}
           <View className="flex-row items-center gap-3">
@@ -196,12 +218,18 @@ export default function ChooseLoginMethodScreen() {
               tintColor={primaryColor}
             />
             <View className="flex-col">
-              <AppText className="text-white text-base font-black tracking-widest leading-none">
+              <Text
+                className="text-white text-base font-black tracking-widest leading-none"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 KAMAH
-              </AppText>
-              <AppText className="text-primary text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none">
+              </Text>
+              <Text
+                className="text-primary text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 PROPERTIES
-              </AppText>
+              </Text>
             </View>
           </View>
         </View>
@@ -222,14 +250,18 @@ export default function ChooseLoginMethodScreen() {
         <View className="flex-1 justify-start gap-6">
           {/* Title & Description Group */}
           <View className="flex-col gap-2">
-            <AppText
-              className="text-start text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-none"
+            <Text
+              className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-none"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
             >
               {t("auth.chooseAccountTitle")}
-            </AppText>
-            <AppText className="text-start text-sm sm:text-base text-muted-foreground leading-normal font-medium mt-1">
+            </Text>
+            <Text
+              className="text-sm sm:text-base text-muted-foreground leading-normal font-medium mt-1"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t("auth.chooseAccountDescription")}
-            </AppText>
+            </Text>
           </View>
 
           {/* Custom Designed Role Options */}
@@ -262,9 +294,12 @@ export default function ChooseLoginMethodScreen() {
             className="w-full h-14 bg-primary rounded-2xl flex-row items-center justify-between px-6 shadow-lg shadow-primary/20 active:opacity-90"
           >
             <View className="w-8" />
-            <AppText className="text-center text-base font-black text-primary-foreground leading-none">
+            <Text
+              className="text-center text-base font-black text-primary-foreground leading-none"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t("actions.continue")}
-            </AppText>
+            </Text>
             <View className="w-8 h-8 rounded-xl bg-primary-foreground/10 items-center justify-center">
               <AppChevron type="forward" size={16} colorToken="--primary-foreground" />
             </View>

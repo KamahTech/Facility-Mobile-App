@@ -1,12 +1,11 @@
 import React from "react";
-import { View, RefreshControl } from "react-native";
+import { View, RefreshControl, Text } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, router, useNavigation } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
 import { OwnerUnitCard } from "@/components/owner-unit-card";
 import { OwnerFinancialOverview } from "@/components/owner-financial-overview";
@@ -16,7 +15,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 const SECTION_GAP = 16;
 
 export default function OwnerUnitsScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const navigation = useNavigation();
   const {
@@ -59,9 +58,12 @@ export default function OwnerUnitsScreen() {
     return (
       <View className="flex-col pb-4" style={{ rowGap: SECTION_GAP }}>
         {/* Description */}
-        <AppText className="text-start text-sm text-muted-foreground px-1 pt-6 leading-5">
+        <Text
+          className="text-sm text-muted-foreground px-1 pt-6 leading-5"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("ownerUnits.description")}
-        </AppText>
+        </Text>
 
         {/* Financial Summary (Moved to Header) */}
         {statement ? (
@@ -70,9 +72,12 @@ export default function OwnerUnitsScreen() {
 
         {/* List Header Title */}
         {ownerUnits.length > 0 && (
-          <AppText className="text-start text-base font-bold text-foreground px-1 mt-4">
+          <Text
+            className="text-base font-bold text-foreground px-1 mt-4"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {t("ownerUnits.title")}
-          </AppText>
+          </Text>
         )}
       </View>
     );
@@ -84,9 +89,12 @@ export default function OwnerUnitsScreen() {
         <View className="w-14 h-14 rounded-2xl bg-secondary/85 items-center justify-center mb-4">
           <AppIcon name="facility" size={26} colorToken="--muted-foreground" />
         </View>
-        <AppText align="center" className="text-base text-muted-foreground font-bold">
+        <Text
+          className="text-base text-muted-foreground font-bold text-center"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("ownerUnits.noUnits")}
-        </AppText>
+        </Text>
       </View>
     );
   };

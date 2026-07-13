@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Text } from "react-native";
 import { Image } from "expo-image";
 import { Stack, type Href } from "expo-router";
 import { router } from "@/lib/navigation";
@@ -15,7 +15,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
-import { AppText } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
@@ -26,7 +25,7 @@ const appLogo = require("@/assets/app-brand/logo-light.svg");
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function OnBoardingScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const primaryColor = useThemeToken("--primary") as string;
 
@@ -236,12 +235,18 @@ export default function OnBoardingScreen() {
             tintColor={primaryColor}
           />
           <View className="flex-col">
-            <AppText className="text-white text-base font-black tracking-widest leading-none">
+            <Text
+              className="text-white text-base font-black tracking-widest leading-none"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               KAMAH
-            </AppText>
-            <AppText className="text-[#DBEE69] text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none">
+            </Text>
+            <Text
+              className="text-[#DBEE69] text-[9px] font-bold uppercase tracking-[0.25em] mt-0.5 leading-none"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               PROPERTIES
-            </AppText>
+            </Text>
           </View>
         </Animated.View>
 
@@ -251,21 +256,28 @@ export default function OnBoardingScreen() {
           <View className="flex-col gap-3.5">
             {/* Title / Welcome group */}
             <Animated.View style={titleAnimatedStyle} className="flex-col gap-3">
-              <AppText className="text-primary text-xs font-black uppercase tracking-[0.15em] text-start">
+              <Text
+                className="text-primary text-xs font-black uppercase tracking-[0.15em]"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("onboarding.welcome")}
-              </AppText>
-              <AppText
-                className="text-start text-4xl sm:text-5xl font-black text-white tracking-tight leading-[46px] sm:leading-[56px]"
+              </Text>
+              <Text
+                className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-[46px] sm:leading-[56px]"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
                 {t("onboarding.title")}
-              </AppText>
+              </Text>
             </Animated.View>
 
             {/* Description */}
             <Animated.View style={descAnimatedStyle}>
-              <AppText className="text-start text-base sm:text-lg text-zinc-400 leading-6 sm:leading-7 font-medium mt-1">
+              <Text
+                className="text-base sm:text-lg text-zinc-400 leading-6 sm:leading-7 font-medium mt-1"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("onboarding.description")}
-              </AppText>
+              </Text>
             </Animated.View>
           </View>
 
@@ -279,12 +291,15 @@ export default function OnBoardingScreen() {
               className="w-full h-16 bg-primary rounded-2xl flex-row items-center justify-between px-6 shadow-xl shadow-primary/25 active:opacity-95 mt-4"
             >
               <View className="w-8" />
-              <AppText className="text-center text-lg font-black text-primary-foreground leading-none">
+              <Text
+                className="text-center text-lg font-black text-primary-foreground leading-none"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("actions.getStarted")}
-              </AppText>
+              </Text>
               <View className="w-8 h-8 rounded-xl bg-primary-foreground/10 items-center justify-center">
                 <AppIcon
-                  name="arrowUpRight"
+                  name={isRTL ? "arrowUpLeft" : "arrowUpRight"}
                   size={16}
                   colorToken="--primary-foreground"
                 />

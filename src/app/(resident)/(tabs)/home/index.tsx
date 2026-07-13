@@ -1,13 +1,12 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { type Href, useNavigation } from "expo-router";
 import { router } from "@/lib/navigation";
 
 import { HomeHeader } from "@/components/home-header";
-import { AppText } from "@/components/app-text";
 import { DueBalanceCard } from "@/components/due-balance-card";
 import { QuickActions } from "@/components/quick-actions";
 import { CommunityUpdates } from "@/components/community-updates";
@@ -22,7 +21,7 @@ import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { getProfileImageSource } from "@/lib/image-source";
 
 export default function ResidentHomeScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const { resolvedTheme } = useTheme();
   const insets = useAppInsets();
   const background = useThemeToken("--background");
@@ -117,11 +116,12 @@ export default function ResidentHomeScreen() {
       >
         
         {/* Plain Greeting Text */}
-        <AppText
-          className="self-start text-start text-2xl text-foreground px-5 sm:px-8 font-bold"
+        <Text
+          className="text-2xl text-foreground px-5 sm:px-8 font-bold"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         >
           {greetingText}
-        </AppText>
+        </Text>
 
         {/* Connected Units Card Component */}
         <View className="px-5 sm:px-8">

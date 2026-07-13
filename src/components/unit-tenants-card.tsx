@@ -1,6 +1,5 @@
 import React from "react";
-import { View, Pressable, Alert } from "react-native";
-import { AppText } from "@/components/app-text";
+import { View, Pressable, Alert, Text } from "react-native";
 import { AppRow } from "@/components/app-row";
 import { AppIcon } from "@/components/app-icon";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
@@ -12,7 +11,7 @@ type UnitTenantsCardProps = {
 };
 
 export function UnitTenantsCard({ unitId }: UnitTenantsCardProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const { data, isLoading, refetch } = useTenantsQuery(unitId);
   const { removeTenant } = useOwnerStore();
 
@@ -55,30 +54,45 @@ export function UnitTenantsCard({ unitId }: UnitTenantsCardProps) {
         <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
           <AppIcon name="profile" size={16} colorToken="--primary" />
         </View>
-        <AppText className="text-start text-base font-bold text-foreground">
+        <Text
+          className="text-base font-bold text-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("familyTenant.tenants")}
-        </AppText>
+        </Text>
       </AppRow>
 
       {tenants.length === 0 ? (
-        <AppText className="text-start text-sm text-muted-foreground py-2 px-1">
+        <Text
+          className="text-sm text-muted-foreground py-2 px-1"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("familyTenant.noTenants")}
-        </AppText>
+        </Text>
       ) : (
         <View className="flex-col gap-4">
           {tenants.map((tenant, idx) => (
             <View key={tenant.id} className={`flex-col gap-2 ${idx > 0 ? "pt-3 border-t border-border/20" : ""}`}>
               <AppRow className="justify-between items-start">
                 <View className="flex-col flex-1 text-start">
-                  <AppText className="text-sm font-semibold text-foreground text-start">
+                  <Text
+                    className="text-sm font-semibold text-foreground"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
                     {tenant.residentName}
-                  </AppText>
-                  <AppText className="text-xs text-muted-foreground text-start mt-0.5">
+                  </Text>
+                  <Text
+                    className="text-xs text-muted-foreground mt-0.5"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
                     {tenant.residentEmail}
-                  </AppText>
-                  <AppText className="text-xs text-muted-foreground text-start mt-0.5">
+                  </Text>
+                  <Text
+                    className="text-xs text-muted-foreground mt-0.5"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
                     {tenant.contactNumber}
-                  </AppText>
+                  </Text>
                 </View>
 
                 <Pressable
@@ -87,9 +101,12 @@ export function UnitTenantsCard({ unitId }: UnitTenantsCardProps) {
                   accessibilityRole="button"
                   className="px-3 py-1.5 rounded-xl bg-destructive/10 active:opacity-60"
                 >
-                  <AppText className="text-xs font-bold text-destructive">
+                  <Text
+                    className="text-xs font-bold text-destructive"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
                     {t("familyTenant.removeTenant")}
-                  </AppText>
+                  </Text>
                 </Pressable>
               </AppRow>
             </View>

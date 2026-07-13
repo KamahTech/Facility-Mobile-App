@@ -12,7 +12,7 @@ import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
-import type { OwnerClaim } from "@/stores/owner-store";
+import type { OwnerClaim, OwnerInquiryParams } from "@/stores/owner-store";
 
 type InquiryFormValues = {
   subject: string;
@@ -24,16 +24,29 @@ type ClaimCardProps = {
   isExpanded: boolean;
   onPress: () => void;
   currentClaimDetails: OwnerClaim | null;
-  submitInquiry: (params: any) => Promise<any>;
+  detailsError: string | null;
+  detailsLoading: boolean;
+  onRetryDetails: () => void;
+  submitInquiry: (params: OwnerInquiryParams) => Promise<unknown>;
 };
 
 type ClaimExpandedDetailsProps = {
   claim: OwnerClaim;
   currentClaimDetails: OwnerClaim | null;
-  submitInquiry: (params: any) => Promise<any>;
+  detailsError: string | null;
+  detailsLoading: boolean;
+  onRetryDetails: () => void;
+  submitInquiry: (params: OwnerInquiryParams) => Promise<unknown>;
 };
 
-function ClaimExpandedDetails({ claim, currentClaimDetails, submitInquiry }: ClaimExpandedDetailsProps) {
+function ClaimExpandedDetails({
+  claim,
+  currentClaimDetails,
+  detailsError,
+  detailsLoading,
+  onRetryDetails,
+  submitInquiry,
+}: ClaimExpandedDetailsProps) {
   const { t } = useI18n();
   const { formatCurrency } = useFormatters();
   const [showInquiryForm, setShowInquiryForm] = React.useState(false);
@@ -77,7 +90,22 @@ function ClaimExpandedDetails({ claim, currentClaimDetails, submitInquiry }: Cla
 
   return (
     <View className="flex-col gap-4 mt-2 pt-4">
-      {currentClaimDetails && currentClaimDetails.id === claim.id && currentClaimDetails.services ? (
+      {detailsLoading ? (
+        <AppActivityIndicator />
+      ) : detailsError ? (
+        <View className="items-center gap-3 rounded-2xl bg-destructive/10 p-4">
+          <AppText className="text-center text-sm font-semibold text-destructive">
+            {t("claims.detailsLoadFailed")}
+          </AppText>
+          <Pressable
+            accessibilityRole="button"
+            className="rounded-xl bg-secondary px-4 py-2 active:opacity-75"
+            onPress={onRetryDetails}
+          >
+            <AppText className="text-sm font-bold text-foreground">{t("actions.retry")}</AppText>
+          </Pressable>
+        </View>
+      ) : currentClaimDetails?.id === claim.id && currentClaimDetails.services?.length ? (
         <View className="flex-col gap-3">
           <AppText className="text-start text-sm font-bold text-foreground mb-1">
             {t("ownerFinancials.serviceCost")}
@@ -101,7 +129,9 @@ function ClaimExpandedDetails({ claim, currentClaimDetails, submitInquiry }: Cla
           ))}
         </View>
       ) : (
-        <AppActivityIndicator  />
+        <AppText className="text-center text-sm text-muted-foreground">
+          {t("claims.noServices")}
+        </AppText>
       )}
 
       <View className="flex-col gap-2.5 bg-secondary/30 p-4 rounded-2xl">
@@ -200,7 +230,16 @@ function ClaimExpandedDetails({ claim, currentClaimDetails, submitInquiry }: Cla
   );
 }
 
-export function ClaimCard({ claim, isExpanded, onPress, currentClaimDetails, submitInquiry }: ClaimCardProps) {
+export function ClaimCard({
+  claim,
+  isExpanded,
+  onPress,
+  currentClaimDetails,
+  detailsError,
+  detailsLoading,
+  onRetryDetails,
+  submitInquiry,
+}: ClaimCardProps) {
   const { formatDate } = useFormatters();
 
   const getStatusColor = (state: string) => {
@@ -244,6 +283,9 @@ export function ClaimCard({ claim, isExpanded, onPress, currentClaimDetails, sub
         <ClaimExpandedDetails
           claim={claim}
           currentClaimDetails={currentClaimDetails}
+          detailsError={detailsError}
+          detailsLoading={detailsLoading}
+          onRetryDetails={onRetryDetails}
           submitInquiry={submitInquiry}
         />
       )}

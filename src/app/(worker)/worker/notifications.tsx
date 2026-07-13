@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View, Alert, RefreshControl } from "react-native";
+import { Pressable, View, Alert, RefreshControl, Text } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
@@ -7,14 +7,13 @@ import { LegendList } from "@legendapp/list/react-native";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { ScreenHeader } from "@/components/screen-header";
 import { useI18n } from "@/hooks/use-i18n";
 import { useCommunityStore, type NotificationItem } from "@/stores/community-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 
 export default function WorkerNotificationsScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const {
     notifications,
@@ -103,21 +102,26 @@ export default function WorkerNotificationsScreen() {
           </View>
 
           <View className="flex-1 min-w-0 flex-col gap-1">
-            <AppText
+            <Text
               numberOfLines={1}
-              className={`text-sm text-start ${item.unread ? "font-bold text-foreground" : "font-semibold text-foreground opacity-80"}`}
+              className={`text-sm ${item.unread ? "font-bold text-foreground" : "font-semibold text-foreground opacity-80"}`}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
             >
               {item.title}
-            </AppText>
-            <AppText
+            </Text>
+            <Text
               numberOfLines={2}
-              className="text-start text-xs text-muted-foreground leading-4"
+              className="text-xs text-muted-foreground leading-4"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
             >
               {item.description}
-            </AppText>
-            <AppText className="text-start text-[10px] text-muted-foreground mt-0.5">
+            </Text>
+            <Text
+              className="text-[10px] text-muted-foreground mt-0.5"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {item.time}
-            </AppText>
+            </Text>
           </View>
 
           {item.unread && (
@@ -126,14 +130,17 @@ export default function WorkerNotificationsScreen() {
         </AppRow>
       </Pressable>
     );
-  }, [handleNotificationPress]);
+  }, [handleNotificationPress, isRTL]);
 
   const renderEmpty = () => {
     return (
       <View className="flex-1 py-16 items-center justify-center">
-        <AppText className="text-muted-foreground text-sm font-semibold">
+        <Text
+          className="text-muted-foreground text-sm font-semibold text-center"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("notifications.empty" as any) || "No notifications yet"}
-        </AppText>
+        </Text>
       </View>
     );
   };
@@ -180,9 +187,12 @@ export default function WorkerNotificationsScreen() {
           <View className="flex-1">
             {error && (
               <View className="bg-destructive/10 p-3 rounded-xl mx-5 mb-4 mt-2">
-                <AppText className="text-sm font-semibold text-destructive text-start">
+                <Text
+                  className="text-sm font-semibold text-destructive"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {error}
-                </AppText>
+                </Text>
               </View>
             )}
 

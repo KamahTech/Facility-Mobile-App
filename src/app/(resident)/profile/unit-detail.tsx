@@ -1,21 +1,21 @@
 import React from "react";
-import { View, ScrollView, RefreshControl } from "react-native";
+import { View, ScrollView, RefreshControl, Text } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, useLocalSearchParams, router } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
-import { useOwnerStore, type OwnerUnit, type OwnerFinancialSummary } from "@/stores/owner-store";
+import { useOwnerStore, useTenantsQuery, type OwnerUnit, type OwnerFinancialSummary } from "@/stores/owner-store";
+import { useFamilyMembersQuery } from "@/stores/unit-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { UnitTenantsCard } from "@/components/unit-tenants-card";
 import { UnitFamilyMembersCard } from "@/components/unit-family-members-card";
 
 export default function UnitDetailScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { formatCurrency } = useFormatters();
   const { unitId } = useLocalSearchParams<{ unitId: string }>();
@@ -24,6 +24,9 @@ export default function UnitDetailScreen() {
 
   const [unitDetails, setUnitDetails] = React.useState<(OwnerUnit & { financialSummary?: OwnerFinancialSummary }) | null>(null);
   const [refreshing, setRefreshing] = React.useState(false);
+
+  const tenantsQuery = useTenantsQuery(unitId);
+  const familyQuery = useFamilyMembersQuery(unitId);
 
   const loadDetails = React.useCallback(async () => {
     if (!unitId) return;
@@ -45,11 +48,17 @@ export default function UnitDetailScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadDetails();
+    await Promise.all([
+      loadDetails(),
+      tenantsQuery.refetch(),
+      familyQuery.refetch(),
+    ]);
     setRefreshing(false);
   };
 
-  if (loading && !unitDetails) {
+  const isLoadingData = loading || !unitDetails || tenantsQuery.isLoading || familyQuery.isLoading;
+
+  if (isLoadingData) {
     return (
       <View
         className="flex-1 bg-background"
@@ -106,44 +115,117 @@ export default function UnitDetailScreen() {
       >
         {error && (
           <View className="bg-destructive/10 p-4 rounded-2xl mt-2">
-            <AppText className="text-sm font-semibold text-destructive text-start">{error}</AppText>
+            <Text
+              className="text-sm font-semibold text-destructive"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {error}
+            </Text>
           </View>
         )}
 
         {unitDetails && (
-          <AppText className="text-start text-sm text-muted-foreground mt-2 px-1">
+          <Text
+            className="text-sm text-muted-foreground mt-2 px-1 text-center self-center"
+            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+          >
             {`${unitDetails.projectName} • ${unitDetails.phaseName}`}
-          </AppText>
+          </Text>
         )}
 
         {unitDetails && (
           <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm">
-            <AppText className="text-start text-base font-bold text-foreground">{t("profile.title")}</AppText>
+            <Text
+              className="text-base font-bold text-foreground"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {t("profile.title")}
+            </Text>
             
             <View className="flex-col gap-3">
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerUnits.projectName")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{unitDetails.projectName}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerUnits.projectName")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {unitDetails.projectName}
+                </Text>
               </AppRow>
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerUnits.phaseName")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{unitDetails.phaseName}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerUnits.phaseName")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {unitDetails.phaseName}
+                </Text>
               </AppRow>
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("connectUnit.buildingNumber")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{unitDetails.buildingNumber}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("connectUnit.buildingNumber")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {unitDetails.buildingNumber}
+                </Text>
               </AppRow>
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("connectUnit.unitNumber")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{unitDetails.unitNumber}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("connectUnit.unitNumber")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {unitDetails.unitNumber}
+                </Text>
               </AppRow>
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerUnits.area")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{unitDetails.totalArea} m²</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerUnits.area")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {unitDetails.totalArea} m²
+                </Text>
               </AppRow>
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerUnits.operationalArea")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{unitDetails.operationalArea} m²</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerUnits.operationalArea")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {unitDetails.operationalArea} m²
+                </Text>
               </AppRow>
             </View>
           </View>
@@ -151,61 +233,169 @@ export default function UnitDetailScreen() {
 
         {summary && (
           <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm">
-            <AppText className="text-start text-base font-bold text-foreground">{t("ownerFinancials.title")}</AppText>
+            <Text
+              className="text-base font-bold text-foreground"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {t("ownerFinancials.title")}
+            </Text>
 
             <View className="flex-col gap-3">
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.totalInvoiced")}</AppText>
-                <AppText className="text-sm font-bold text-foreground">{formatCurrency(summary.totalInvoiced)}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.totalInvoiced")}
+                </Text>
+                <Text
+                  className="text-sm font-bold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {formatCurrency(summary.totalInvoiced)}
+                </Text>
               </AppRow>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.paidAmount")}</AppText>
-                <AppText className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(summary.paidAmount)}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.paidAmount")}
+                </Text>
+                <Text
+                  className="text-sm font-bold text-emerald-600 dark:text-emerald-400"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {formatCurrency(summary.paidAmount)}
+                </Text>
               </AppRow>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.unpaidAmount")}</AppText>
-                <AppText className="text-sm font-bold text-amber-600 dark:text-amber-400">{formatCurrency(summary.unpaidAmount)}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.unpaidAmount")}
+                </Text>
+                <Text
+                  className="text-sm font-bold text-amber-600 dark:text-amber-400"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {formatCurrency(summary.unpaidAmount)}
+                </Text>
               </AppRow>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.overdueAmount")}</AppText>
-                <AppText className="text-sm font-bold text-rose-600 dark:text-rose-400">{formatCurrency(summary.overdueAmount)}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.overdueAmount")}
+                </Text>
+                <Text
+                  className="text-sm font-bold text-rose-600 dark:text-rose-400"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {formatCurrency(summary.overdueAmount)}
+                </Text>
               </AppRow>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.invoiceCount")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.invoiceCount")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {summary.invoiceCount} ({summary.paidInvoiceCount} {t("invoices.status.paid" as any) || "Paid"})
-                </AppText>
+                </Text>
               </AppRow>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.claimCount")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{summary.claimCount}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.claimCount")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {summary.claimCount}
+                </Text>
               </AppRow>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.claimAmountToInvoice")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{formatCurrency(summary.claimAmountToInvoice)}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.claimAmountToInvoice")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {formatCurrency(summary.claimAmountToInvoice)}
+                </Text>
               </AppRow>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.claimDifference")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{formatCurrency(summary.claimDifference)}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.claimDifference")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {formatCurrency(summary.claimDifference)}
+                </Text>
               </AppRow>
 
-              <AppText className="text-start text-sm font-bold text-foreground">{t("ownerFinancials.serviceCost")}</AppText>
+              <Text
+                className="text-sm font-bold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("ownerFinancials.serviceCost")}
+              </Text>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.estimatedCost")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{formatCurrency(summary.serviceEstimatedCost)}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.estimatedCost")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {formatCurrency(summary.serviceEstimatedCost)}
+                </Text>
               </AppRow>
 
               <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground text-start">{t("ownerFinancials.actualCost")}</AppText>
-                <AppText className="text-sm font-semibold text-foreground">{formatCurrency(summary.serviceActualCost)}</AppText>
+                <Text
+                  className="text-sm text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("ownerFinancials.actualCost")}
+                </Text>
+                <Text
+                  className="text-sm font-semibold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {formatCurrency(summary.serviceActualCost)}
+                </Text>
               </AppRow>
             </View>
           </View>

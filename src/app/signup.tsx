@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Pressable, Alert } from "react-native";
+import { View, Pressable, Alert, BackHandler } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack, router, type Href } from "expo-router";
 import { useAppInsets } from "@/hooks/use-app-insets";
@@ -62,6 +62,26 @@ export default function SignupScreen() {
   React.useEffect(() => {
     clearError();
   }, [clearError, step]);
+
+  React.useEffect(() => {
+    const handleBackPress = () => {
+      if (step === 2) {
+        setStep(1);
+      } else if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/login" as Href);
+      }
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleBackPress
+    );
+
+    return () => subscription.remove();
+  }, [step]);
 
   const handleRequestOtp = async () => {
     clearError();
@@ -129,7 +149,17 @@ export default function SignupScreen() {
 
       <ScreenHeader
         title={t("auth.signupTitle")}
-        onBack={step === 2 ? () => setStep(1) : () => router.back()}
+        onBack={
+          step === 2
+            ? () => setStep(1)
+            : () => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/login" as Href);
+                }
+              }
+        }
       />
 
       <KeyboardAwareScrollContent

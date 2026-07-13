@@ -1,9 +1,8 @@
-import { Pressable, View } from "react-native";
+import { Pressable, View, Text } from "react-native";
 import { router } from "expo-router";
 
 import { AppChevron } from "@/components/app-chevron";
 import { AppRow } from "@/components/app-row";
-import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
 
 type ScreenHeaderProps = {
@@ -19,7 +18,7 @@ export function ScreenHeader({
   rightAction,
   showBorder = true,
 }: ScreenHeaderProps) {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const showBack = onBack !== undefined || router.canGoBack();
 
   const handleBack = onBack || (() => {
@@ -43,9 +42,13 @@ export function ScreenHeader({
         <View className="w-10 h-10" />
       )}
 
-      <AppText className="text-lg font-bold text-foreground">
+      <Text
+        className="text-lg font-bold text-foreground flex-1 text-center px-2"
+        numberOfLines={1}
+        style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+      >
         {title}
-      </AppText>
+      </Text>
 
       <View className="w-10 items-center justify-center">
         {rightAction}

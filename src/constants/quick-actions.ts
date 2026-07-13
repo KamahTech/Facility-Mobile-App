@@ -11,6 +11,7 @@ export type QuickActionItem = {
   descriptionKey: TranslationKey;
   icon: QuickActionIconName;
   route: string;
+  ownerOnly?: boolean;
 };
 
 export const quickActions: QuickActionItem[] = [
@@ -25,6 +26,7 @@ export const quickActions: QuickActionItem[] = [
     descriptionKey: "quickActions.ownerFinancialsDescription",
     icon: "facility",
     route: "/profile/owner-units",
+    ownerOnly: true,
   },
   {
     titleKey: "quickActions.viewInvoices",
@@ -55,18 +57,20 @@ export const quickActions: QuickActionItem[] = [
     descriptionKey: "quickActions.depositsDescription",
     icon: "linkUnit",
     route: "/profile/deposits",
+    ownerOnly: true,
   },
   {
     titleKey: "quickActions.ownerClaims",
     descriptionKey: "quickActions.ownerClaimsDescription",
     icon: "tickets",
     route: "/profile/claims",
+    ownerOnly: true,
   },
   {
     titleKey: "quickActions.serviceCosts",
     descriptionKey: "quickActions.serviceCostsDescription",
     icon: "requestService",
     route: "/profile/services",
+    ownerOnly: true,
   },
 ];
-

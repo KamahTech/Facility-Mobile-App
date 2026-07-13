@@ -1,6 +1,6 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, View, ScrollView, RefreshControl } from "react-native";
+import { Pressable, View, ScrollView, RefreshControl, Text } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { type Href, useNavigation } from "expo-router";
@@ -9,7 +9,6 @@ import { LegendList } from "@legendapp/list/react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { AppIcon } from "@/components/app-icon";
-import { AppText } from "@/components/app-text";
 import { WorkerTaskCard } from "@/components/worker-task-card";
 import { LogoutBottomSheet } from "@/components/logout-bottom-sheet";
 import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentation";
@@ -26,7 +25,7 @@ import { getProfileImageSource } from "@/lib/image-source";
 const AnimatedLegendList = Animated.createAnimatedComponent(LegendList);
 
 export default function WorkerHomeScreen() {
-  const { t, direction } = useI18n();
+  const { isRTL, t, direction } = useI18n();
   const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
   const isTransitionFinished = useScreenTransition();
@@ -139,17 +138,19 @@ export default function WorkerHomeScreen() {
       <Pressable
         key={tab.value}
         onPress={() => setActiveTab(tab.value)}
-        className={`px-4 py-2.5 rounded-full me-2 items-center justify-center ${
+        className={`px-4 py-2.5 rounded-full me-2 items-center justify-center shrink-0 ${
           isSelected ? "bg-primary" : "bg-card"
         }`}
       >
-        <AppText
+        <Text
           className={`text-sm font-semibold ${
             isSelected ? "text-primary-foreground font-bold" : "text-muted-foreground"
           }`}
+          numberOfLines={1}
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         >
           {t(tab.labelKey as any)}
-        </AppText>
+        </Text>
       </Pressable>
     );
   };
@@ -167,9 +168,12 @@ export default function WorkerHomeScreen() {
         <View className="w-16 h-16 rounded-full bg-secondary/50 items-center justify-center mb-4">
           <AppIcon name="worker" size={28} color={mutedColor} />
         </View>
-        <AppText align="center" className="text-base text-muted-foreground leading-6">
+        <Text
+          className="text-base text-muted-foreground leading-6 text-center"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("worker.noTasks")}
-        </AppText>
+        </Text>
       </View>
     );
   };
@@ -178,12 +182,18 @@ export default function WorkerHomeScreen() {
     <View className="w-full flex-col">
       {/* Welcome Block */}
       <View className="pt-5 pb-3 w-full text-start flex-col gap-1.5">
-        <AppText className="text-start text-2xl font-bold text-foreground">
+        <Text
+          className="text-2xl font-bold text-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("worker.welcome").replace("{{name}}", workerName)}
-        </AppText>
-        <AppText className="text-start text-sm text-muted-foreground">
+        </Text>
+        <Text
+          className="text-sm text-muted-foreground"
+          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+        >
           {t("worker.assignedTasks").replace("{{count}}", String(activeTasksCount))}
-        </AppText>
+        </Text>
       </View>
 
       {/* Tab Selectors */}
@@ -229,9 +239,12 @@ export default function WorkerHomeScreen() {
       <View className="flex-1 w-full max-w-xl self-center px-5">
         {error && (
           <View className="bg-destructive/10 p-3 rounded-xl mb-4 mt-4">
-            <AppText className="text-sm font-semibold text-destructive text-start">
+            <Text
+              className="text-sm font-semibold text-destructive"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {error}
-            </AppText>
+            </Text>
           </View>
         )}
         <AnimatedLegendList

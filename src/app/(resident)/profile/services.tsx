@@ -15,24 +15,25 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 export default function ServicesScreen() {
   const { t } = useI18n();
   const insets = useAppInsets();
-  const { services, fetchServices, fetchNextServices, hasNextServices, loading, error, clearError } = useOwnerStore({ enableServices: true });
+  const {
+    services,
+    fetchServices,
+    fetchNextServices,
+    hasNextServices,
+    servicesLoading,
+    servicesError,
+  } = useOwnerStore({ enableServices: true });
   const isTransitionFinished = useScreenTransition();
 
   const [refreshing, setRefreshing] = React.useState(false);
 
-  const loadData = React.useCallback(async () => {
-    clearError();
-    await fetchServices();
-  }, [fetchServices, clearError]);
-
-  React.useEffect(() => {
-    clearError();
-  }, [clearError]);
-
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
+    try {
+      await fetchServices();
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -52,15 +53,15 @@ export default function ServicesScreen() {
         onBack={() => router.back()}
       />
 
-      {loading && services.length === 0 ? (
+      {servicesLoading && services.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           {isTransitionFinished && <AppActivityIndicator size="large"  />}
         </View>
       ) : (
         <View className="flex-1 mt-2">
-          {error && (
+          {servicesError && (
             <View className="bg-destructive/10 p-4 rounded-2xl mx-5 mb-4">
-              <AppText className="text-sm font-semibold text-destructive text-start">{error}</AppText>
+              <AppText className="text-sm font-semibold text-destructive text-start">{servicesError}</AppText>
             </View>
           )}
 
@@ -90,7 +91,7 @@ export default function ServicesScreen() {
             className="flex-1 w-full max-w-xl self-center"
             ListEmptyComponent={
               <View className="items-center py-12">
-                <AppText className="text-sm text-muted-foreground">{t("ownerUnits.noUnits")}</AppText>
+                <AppText className="text-sm text-muted-foreground">{t("ownerFinancials.noServiceCosts")}</AppText>
               </View>
             }
           />

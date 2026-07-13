@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { Stack, type Href } from "expo-router";
 import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
@@ -7,9 +7,8 @@ import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
 import { QuickActionCard } from "@/components/quick-action-card";
-import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
-import { quickActions } from "@/constants/quick-actions";
+import { useAvailableQuickActions } from "@/hooks/use-available-quick-actions";
 
 const CARD_COLORS: Record<
   "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "tickets" | "facility",
@@ -27,8 +26,9 @@ const CARD_COLORS: Record<
 const DEFAULT_CARD_COLOR = "#6B7280";
 
 export default function ResidentHomeDetailsScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
+  const availableActions = useAvailableQuickActions();
 
   const handlePress = (route: string) => {
     router.push(route as Href);
@@ -36,9 +36,12 @@ export default function ResidentHomeDetailsScreen() {
 
   const renderHeader = () => (
     <View className="pt-6">
-      <AppText className="text-start text-base leading-6 text-muted-foreground px-5 sm:px-8 mb-6">
+      <Text
+        className="text-base leading-6 text-muted-foreground px-5 sm:px-8 mb-6"
+        style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+      >
         {t("quickActions.allDescription")}
-      </AppText>
+      </Text>
     </View>
   );
 
@@ -56,7 +59,7 @@ export default function ResidentHomeDetailsScreen() {
       <ScreenHeader title={t("quickActions.title")} onBack={() => router.back()} />
 
       <LegendList
-        data={quickActions}
+        data={availableActions}
         recycleItems={true}
         estimatedItemSize={92}
         keyExtractor={(item) => item.titleKey}
