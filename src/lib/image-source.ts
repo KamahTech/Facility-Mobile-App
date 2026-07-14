@@ -7,17 +7,17 @@ function getApiOrigin() {
   return API_BASE_URL.replace(/^(https?:\/\/[^/]+).*$/, "$1");
 }
 
-function withSessionCookie(uri: string) {
-  const sessionId = getSessionId();
+function withBearerToken(uri: string) {
+  const token = getSessionId();
 
-  if (!sessionId) {
+  if (!token) {
     return { uri };
   }
 
   return {
     uri,
     headers: {
-      Cookie: `session_id=${sessionId}`,
+      Authorization: `Bearer ${token}`,
     },
   };
 }
@@ -42,11 +42,11 @@ export function getBackendImageSource(imageUrl: BackendImageValue, fallback?: nu
   const apiOrigin = getApiOrigin();
 
   if (imageUrl.startsWith("/")) {
-    return withSessionCookie(`${apiOrigin}${imageUrl}`);
+    return withBearerToken(`${apiOrigin}${imageUrl}`);
   }
 
   if (imageUrl.startsWith(apiOrigin)) {
-    return withSessionCookie(imageUrl);
+    return withBearerToken(imageUrl);
   }
 
   return { uri: imageUrl };
