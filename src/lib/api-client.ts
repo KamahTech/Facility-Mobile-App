@@ -63,7 +63,10 @@ export async function apiRequest<T = ApiResponse>(
   params: ApiParams = {},
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const url = `${API_BASE_URL}${route}`;
+  let url = `${API_BASE_URL}${route}`;
+  if (currentSessionId) {
+    url += url.includes("?") ? `&session_id=${currentSessionId}` : `?session_id=${currentSessionId}`;
+  }
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -106,7 +109,11 @@ export async function apiRequest<T = ApiResponse>(
     route.startsWith("/auth/");
 
   try {
-    const response = await axios.post(url, payload, { headers, timeout: 15000 });
+    const response = await axios.post(url, payload, {
+      headers,
+      timeout: 15000,
+      withCredentials: true,
+    });
     const result = response.data;
 
     // Handle Odoo-level JSON-RPC errors
