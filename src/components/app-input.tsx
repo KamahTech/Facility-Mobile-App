@@ -80,6 +80,11 @@ export function AppInput({
               flex: 1,
               height: "100%",
               textAlignVertical: multiline ? "top" : "center",
+              paddingTop: 0,
+              paddingBottom: 0,
+              // Overriding Tailwind's line-height (from 'text-base')
+              // as applying lineHeight to a single-line TextInput on iOS causes vertical text misalignment.
+              lineHeight: undefined,
             },
           ]}
           className="text-base text-foreground"
