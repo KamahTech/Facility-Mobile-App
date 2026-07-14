@@ -8,6 +8,7 @@ import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
+import { useThemeToken } from "@/hooks/use-theme-token";
 import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 import type { OwnerUnit } from "@/stores/owner-store";
 
@@ -18,6 +19,7 @@ type OwnerUnitCardProps = {
 export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
   const { direction, isRTL, t } = useI18n();
   const { formatCurrency } = useFormatters();
+  const primaryColor = useThemeToken("--primary");
 
   const handlePress = () => {
     router.push({
@@ -31,18 +33,18 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
       case "active":
       case "connected":
         return {
-          bg: "bg-emerald-950/40 border border-emerald-800/30",
-          text: "text-emerald-400",
+          bg: "bg-emerald-500/10 border border-emerald-500/20",
+          text: "text-emerald-600 dark:text-emerald-400",
         };
       case "pending":
         return {
-          bg: "bg-amber-950/40 border border-amber-800/30",
-          text: "text-amber-400",
+          bg: "bg-amber-500/10 border border-amber-500/20",
+          text: "text-amber-600 dark:text-amber-400",
         };
       default:
         return {
-          bg: "bg-zinc-800 border border-zinc-700/30",
-          text: "text-zinc-400",
+          bg: "bg-secondary border border-border/55",
+          text: "text-muted-foreground",
         };
     }
   };
@@ -52,7 +54,7 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
   return (
     <Pressable
       onPress={handlePress}
-      className="w-full bg-zinc-900 rounded-[24px] shadow-md overflow-hidden active:opacity-90"
+      className="w-full bg-card rounded-[24px] shadow-sm overflow-hidden active:opacity-90"
       style={[getDirectionalRowStyle(direction), { marginBottom: 16 }]}
     >
       {/* Decorative vertical gradient bar on the start side (Primary Color Theme) */}
@@ -67,18 +69,18 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
         {/* Header Row */}
         <AppRow className="items-center justify-between" style={{ columnGap: 12 }}>
           <AppRow className="items-center flex-1 min-w-0" style={{ columnGap: 12 }}>
-            <View className="w-10 h-10 rounded-xl items-center justify-center bg-zinc-800">
+            <View className="w-10 h-10 rounded-xl items-center justify-center bg-secondary">
               <AppIcon name="facility" size={20} colorToken="--primary" />
             </View>
             <View className="flex-col flex-1 min-w-0 text-start">
               <Text
-                className="text-base font-bold text-white leading-5"
+                className="text-base font-bold text-foreground leading-5"
                 style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
                 {unit.name}
               </Text>
               <Text
-                className="text-xs text-zinc-400 mt-0.5"
+                className="text-xs text-muted-foreground mt-0.5"
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
@@ -103,18 +105,18 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
         {/* Details Grid-like Row */}
         <View className="flex-col" style={{ rowGap: 12 }}>
           <AppRow className="justify-between items-center">
-            <Text className="text-xs text-zinc-400" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.area")}</Text>
-            <Text className="text-xs font-semibold text-white" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{unit.totalArea} m²</Text>
+            <Text className="text-xs text-muted-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.area")}</Text>
+            <Text className="text-xs font-semibold text-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{unit.totalArea} m²</Text>
           </AppRow>
 
           <AppRow className="justify-between items-center">
-            <Text className="text-xs text-zinc-400" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.operationalArea")}</Text>
-            <Text className="text-xs font-semibold text-white" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{unit.operationalArea} m²</Text>
+            <Text className="text-xs text-muted-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.operationalArea")}</Text>
+            <Text className="text-xs font-semibold text-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{unit.operationalArea} m²</Text>
           </AppRow>
 
           <AppRow className="justify-between items-center">
-            <Text className="text-xs text-zinc-400" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.annualDeposit")}</Text>
-            <Text className="text-xs font-bold text-white" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{formatCurrency(unit.annualMaintenanceDeposit)}</Text>
+            <Text className="text-xs text-muted-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerUnits.annualDeposit")}</Text>
+            <Text className="text-xs font-bold text-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{formatCurrency(unit.annualMaintenanceDeposit)}</Text>
           </AppRow>
         </View>
 
@@ -123,8 +125,8 @@ export function OwnerUnitCard({ unit }: OwnerUnitCardProps) {
           className="justify-end items-center"
           style={{ columnGap: 4, paddingTop: 12 }}
         >
-          <Text className="text-xs font-bold text-white" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerFinancials.title")}</Text>
-          <AppChevron size={14} color="#FFFFFF" />
+          <Text className="text-xs font-bold text-primary" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>{t("ownerFinancials.title")}</Text>
+          <AppChevron size={14} color={primaryColor} />
         </AppRow>
       </View>
     </Pressable>

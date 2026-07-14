@@ -23,7 +23,7 @@ export default function OwnerUnitsScreen() {
     statement,
     fetchOwnerUnits,
     fetchStatement,
-    loading,
+    isFetching,
     clearError,
   } = useOwnerStore({ 
     enableOwnerUnits: true, 
@@ -117,9 +117,9 @@ export default function OwnerUnitsScreen() {
         showBorder={false}
       />
 
-      {loading && ownerUnits.length === 0 ? (
+      {isFetching && !refreshing ? (
         <View className="flex-1 items-center justify-center">
-          {isTransitionFinished && <AppActivityIndicator size="large"  />}
+          {isTransitionFinished && <AppActivityIndicator size="large" />}
         </View>
       ) : (
         <View className="flex-1">

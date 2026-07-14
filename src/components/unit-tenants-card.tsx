@@ -40,7 +40,7 @@ export function UnitTenantsCard({ unitId }: UnitTenantsCardProps) {
 
   if (isLoading) {
     return (
-      <View className="w-full bg-card rounded-3xl p-5 shadow-sm justify-center items-center py-8 border border-border/20">
+      <View className="w-full bg-card rounded-3xl p-5 shadow-sm justify-center items-center py-8">
         <AppActivityIndicator size="small" />
       </View>
     );
@@ -49,7 +49,7 @@ export function UnitTenantsCard({ unitId }: UnitTenantsCardProps) {
   const tenants = data?.items || [];
 
   return (
-    <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm border border-border/20">
+    <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm">
       <AppRow className="items-center gap-2">
         <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
           <AppIcon name="profile" size={16} colorToken="--primary" />

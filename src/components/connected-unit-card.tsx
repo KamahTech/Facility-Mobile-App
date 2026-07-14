@@ -21,6 +21,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
   const { isRTL, t } = useI18n();
   const destructiveColor = useThemeToken("--destructive");
   const primaryColor = useThemeToken("--primary");
+  const mutedForeground = useThemeToken("--muted-foreground");
   const primaryBgTranslucent = typeof primaryColor === "string" ? `${primaryColor}25` : "rgba(219, 238, 105, 0.15)";
 
   const handleDeletePress = () => {
@@ -150,7 +151,7 @@ export function ConnectedUnitCard({ unit, onDisconnect }: ConnectedUnitCardProps
                 {t("familyTenant.familyMembers")}
               </Text>
             </AppRow>
-            <AppChevron size={14} colorToken="--muted-foreground" />
+            <AppChevron size={14} color={mutedForeground} />
           </AppRow>
         </Pressable>
       ) : null}

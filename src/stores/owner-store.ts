@@ -322,6 +322,7 @@ export function useOwnerStore(options?: {
     claims,
     services,
     loading,
+    isFetching: ownerUnitsQuery.isFetching || statementQuery.isFetching,
     error,
     ownerUnitsError,
     statementError,
