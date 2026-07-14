@@ -5,7 +5,7 @@ import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { type Href, useNavigation } from "expo-router";
 import { router } from "@/lib/navigation";
-import { LegendList } from "@legendapp/list/react-native";
+import { AnimatedLegendList } from "@legendapp/list/reanimated";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { AppIcon } from "@/components/app-icon";
@@ -22,7 +22,6 @@ import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 import { HomeHeader } from "@/components/home-header";
 import { getProfileImageSource } from "@/lib/image-source";
 
-const AnimatedLegendList = Animated.createAnimatedComponent(LegendList);
 
 export default function WorkerHomeScreen() {
   const { isRTL, t, direction } = useI18n();
