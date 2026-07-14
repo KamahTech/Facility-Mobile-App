@@ -31,7 +31,8 @@ type UserState = {
 };
 
 type AuthResponse = {
-  sessionId: string;
+  accessToken: string;
+  refreshToken: string;
   profile: UserProfile;
   accountType?: "resident" | "worker";
 };
@@ -76,17 +77,15 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       const endpoint = accountType === "worker" ? "/auth/worker/login" : "/auth/login";
       const response = await apiRequest<AuthResponse>(endpoint, { email, password });
-      // The response payload for login:
-      // { sessionId, uid, accountType, profile }
-      const { sessionId, profile } = response;
+      const { accessToken, refreshToken, profile } = response;
       
-      await setSessionId(sessionId);
+      await setSessionId(accessToken, refreshToken);
       await SecureStore.setItemAsync("account_type", accountType);
       await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
       await SecureStore.deleteItemAsync("logged_out");
 
       set({
-        sessionId,
+        sessionId: accessToken,
         accountType,
         profile,
         loading: false,
@@ -114,15 +113,15 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const response = await apiRequest<AuthResponse>("/auth/signup", { name, email, password, otp, phone });
-      const { sessionId, profile } = response;
+      const { accessToken, refreshToken, profile } = response;
       
-      await setSessionId(sessionId);
+      await setSessionId(accessToken, refreshToken);
       await SecureStore.setItemAsync("account_type", "resident");
       await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
       await SecureStore.deleteItemAsync("logged_out");
 
       set({
-        sessionId,
+        sessionId: accessToken,
         accountType: "resident",
         profile,
         loading: false,
@@ -141,7 +140,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     } catch (e) {
       console.warn("Logout request to backend failed, clearing local session anyway.", e);
     } finally {
-      await setSessionId(null);
+      await setSessionId(null, null);
       await SecureStore.deleteItemAsync("account_type");
       await SecureStore.deleteItemAsync("profile_data");
       await SecureStore.setItemAsync("logged_out", "true");
@@ -208,7 +207,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await apiRequest("/me/delete", {});
-      await setSessionId(null);
+      await setSessionId(null, null);
       await SecureStore.deleteItemAsync("account_type");
       await SecureStore.deleteItemAsync("profile_data");
       await SecureStore.setItemAsync("logged_out", "true");
@@ -229,7 +228,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 // Handle session expiration: clear local data, update store, and redirect to login screen
 setSessionExpiredHandler(async () => {
   try {
-    await setSessionId(null);
+    await setSessionId(null, null);
     await SecureStore.deleteItemAsync("account_type");
     await SecureStore.deleteItemAsync("profile_data");
     await SecureStore.setItemAsync("logged_out", "true");

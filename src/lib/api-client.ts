@@ -1,11 +1,11 @@
 import axios, { isAxiosError } from "axios";
 import * as SecureStore from "expo-secure-store";
-import CookieManager from "@react-native-cookies/cookies";
 import { API_BASE_URL } from "@/constants/api";
 import { useToastStore } from "@/stores/toast-store";
 import { getFriendlyErrorMessage } from "@/lib/error-formatter";
 
-let currentSessionId: string | null = null;
+let currentAccessToken: string | null = null;
+let currentRefreshToken: string | null = null;
 let currentLanguage: string | null = null;
 
 export const setApiLanguage = (language: string | null) => {
@@ -15,62 +15,42 @@ export const setApiLanguage = (language: string | null) => {
 // Initialize session ID from storage
 export const initializeSession = async () => {
   try {
-    const stored = await SecureStore.getItemAsync("session_id");
-    if (stored) {
-      currentSessionId = stored;
-      // Re-inject cookie into the native iOS/Android cookie jars on app startup
-      const origin = API_BASE_URL.split("/facility_mobile_api")[0];
-      try {
-        await CookieManager.set(origin, {
-          name: "session_id",
-          value: stored,
-          path: "/",
-          secure: false,
-        }, false);
-        await CookieManager.set(origin, {
-          name: "session_id",
-          value: stored,
-          path: "/",
-          secure: false,
-        }, true);
-      } catch (err) {
-        console.error("Failed to re-inject native cookie on startup:", err);
-      }
+    const accessToken = await SecureStore.getItemAsync("access_token");
+    const refreshToken = await SecureStore.getItemAsync("refresh_token");
+    if (accessToken && refreshToken) {
+      currentAccessToken = accessToken;
+      currentRefreshToken = refreshToken;
+      return accessToken;
     }
-    return stored;
+    return null;
   } catch (error) {
-    console.error("Failed to load session ID from SecureStore", error);
+    console.error("Failed to load tokens from SecureStore", error);
     return null;
   }
 };
 
-export const getSessionId = () => currentSessionId;
+export const getSessionId = () => currentAccessToken;
 
-export const setSessionId = async (id: string | null) => {
-  currentSessionId = id;
+export const setSessionId = async (accessToken: string | null, refreshToken?: string | null) => {
+  currentAccessToken = accessToken;
+  if (refreshToken !== undefined) {
+    currentRefreshToken = refreshToken;
+  }
+  
   try {
-    if (id) {
-      await SecureStore.setItemAsync("session_id", id);
-      // Inject cookie manually into the native iOS/Android cookie jars
-      const origin = API_BASE_URL.split("/facility_mobile_api")[0];
-      await CookieManager.set(origin, {
-        name: "session_id",
-        value: id,
-        path: "/",
-        secure: false,
-      }, false);
-      await CookieManager.set(origin, {
-        name: "session_id",
-        value: id,
-        path: "/",
-        secure: false,
-      }, true);
+    if (accessToken) {
+      await SecureStore.setItemAsync("access_token", accessToken);
     } else {
-      await SecureStore.deleteItemAsync("session_id");
-      await CookieManager.clearAll();
+      await SecureStore.deleteItemAsync("access_token");
+    }
+    
+    if (refreshToken) {
+      await SecureStore.setItemAsync("refresh_token", refreshToken);
+    } else if (refreshToken === null) {
+      await SecureStore.deleteItemAsync("refresh_token");
     }
   } catch (error) {
-    console.error("Failed to set session ID in SecureStore / CookieManager", error);
+    console.error("Failed to set tokens in SecureStore", error);
   }
 };
 
@@ -92,22 +72,80 @@ export type ApiRequestOptions = {
   showErrorToast?: boolean;
 };
 
+let refreshPromise: Promise<{
+  accessToken: string;
+  refreshToken: string;
+  profile: any;
+  accountType: "resident" | "worker";
+}> | null = null;
+
+async function performTokenRefresh(): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  profile: any;
+  accountType: "resident" | "worker";
+}> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      if (!currentRefreshToken) {
+        throw new Error("No refresh token available");
+      }
+
+      const url = `${API_BASE_URL}/auth/refresh`;
+      const payload = {
+        jsonrpc: "2.0",
+        method: "call",
+        params: {
+          refreshToken: currentRefreshToken,
+        },
+        id: Date.now(),
+      };
+
+      const response = await axios.post(url, payload, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 10000,
+      });
+
+      const result = response.data;
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to refresh token");
+      }
+
+      const data = result.result;
+      if (!data || data.ok === false) {
+        const err = data?.error || {};
+        throw new Error(err.message || "Refresh token request failed");
+      }
+
+      const resData = Object.prototype.hasOwnProperty.call(data, "data") ? data.data : data;
+      return resData;
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+      throw error;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 export async function apiRequest<T = ApiResponse>(
   route: string,
   params: ApiParams = {},
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  let url = `${API_BASE_URL}${route}`;
-  if (currentSessionId) {
-    url += url.includes("?") ? `&session_id=${currentSessionId}` : `?session_id=${currentSessionId}`;
-  }
+  const url = `${API_BASE_URL}${route}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
 
-  if (currentSessionId) {
-    headers["Cookie"] = `session_id=${currentSessionId}`;
-    headers["X-Openerp-Session-Id"] = currentSessionId;
+  if (currentAccessToken) {
+    headers["Authorization"] = `Bearer ${currentAccessToken}`;
   }
 
   if (currentLanguage) {
@@ -140,26 +178,45 @@ export async function apiRequest<T = ApiResponse>(
     route === "/auth/login" ||
     route === "/auth/worker/login" ||
     route === "/auth/logout" ||
+    route === "/auth/refresh" ||
     route.startsWith("/auth/");
 
   try {
-    const response = await axios.post(url, payload, {
-      headers,
-      timeout: 15000,
-      withCredentials: true,
-    });
+    const response = await axios.post(url, payload, { headers, timeout: 15000 });
     const result = response.data;
 
     // Handle Odoo-level JSON-RPC errors
     if (result.error) {
       const errMsg = result.error.message || JSON.stringify(result.error);
-      if (
-        !isAuthRoute &&
-        (result.error.code === 100 ||
-          errMsg.toLowerCase().includes("session expired") ||
-          errMsg.toLowerCase().includes("sessionexpiredexception"))
-      ) {
-        handleSessionExpired();
+      const errCode = result.error.code;
+
+      const isAuthError = 
+        errCode === "access_denied" ||
+        errCode === 100 ||
+        errMsg.toLowerCase().includes("session expired") ||
+        errMsg.toLowerCase().includes("sessionexpiredexception") ||
+        errMsg.toLowerCase().includes("access denied") ||
+        errMsg.toLowerCase().includes("unauthorized");
+
+      if (!isAuthRoute && isAuthError) {
+        try {
+          const newTokens = await performTokenRefresh();
+          const { accessToken, refreshToken, profile, accountType } = newTokens;
+          await setSessionId(accessToken, refreshToken);
+
+          const { useUserStore } = require("@/stores/user-store");
+          useUserStore.setState({
+            sessionId: accessToken,
+            accountType,
+            profile,
+          });
+
+          // Retry the request
+          return await apiRequest<T>(route, params, options);
+        } catch (refreshErr) {
+          handleSessionExpired();
+          throw refreshErr;
+        }
       }
       throw new Error(errMsg);
     }
@@ -188,14 +245,33 @@ export async function apiRequest<T = ApiResponse>(
     const errCode = responseError?.code;
     const errMsg = responseError?.message || "";
 
-    if (
-      !isAuthRoute &&
-      (status === 401 ||
-        errCode === "access_denied" ||
-        errMsg.toLowerCase().includes("session expired") ||
-        errMsg.toLowerCase().includes("sessionexpiredexception"))
-    ) {
-      handleSessionExpired();
+    const isAuthError = 
+      status === 401 ||
+      errCode === "access_denied" ||
+      errMsg.toLowerCase().includes("session expired") ||
+      errMsg.toLowerCase().includes("sessionexpiredexception") ||
+      errMsg.toLowerCase().includes("access denied") ||
+      errMsg.toLowerCase().includes("unauthorized");
+
+    if (!isAuthRoute && isAuthError) {
+      try {
+        const newTokens = await performTokenRefresh();
+        const { accessToken, refreshToken, profile, accountType } = newTokens;
+        await setSessionId(accessToken, refreshToken);
+
+        const { useUserStore } = require("@/stores/user-store");
+        useUserStore.setState({
+          sessionId: accessToken,
+          accountType,
+          profile,
+        });
+
+        // Retry the request
+        return await apiRequest<T>(route, params, options);
+      } catch (refreshErr) {
+        handleSessionExpired();
+        throw refreshErr;
+      }
     }
 
     if (options.showErrorToast !== false) {
