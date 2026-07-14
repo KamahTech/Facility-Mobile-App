@@ -214,13 +214,22 @@ export async function apiRequest<T = ApiResponse>(
       if (!isAuthRoute && isAuthError) {
         try {
           const newTokens = await performTokenRefresh();
-          const { accessToken, refreshToken } = newTokens;
+          const accessToken = newTokens.accessToken || (newTokens as any).access_token;
+          const refreshToken = newTokens.refreshToken || (newTokens as any).refresh_token;
+
+          if (!accessToken) {
+            throw new Error("Refreshed access token is empty");
+          }
+
           await setSessionId(accessToken, refreshToken);
 
           const { useUserStore } = require("@/stores/user-store");
           useUserStore.setState({
             sessionId: accessToken,
           });
+
+          // Delay retry slightly to allow Odoo database transaction commit to settle
+          await new Promise((resolve) => setTimeout(resolve, 150));
 
           // Retry the request
           return await apiRequest<T>(route, params, options);
@@ -267,13 +276,22 @@ export async function apiRequest<T = ApiResponse>(
     if (!isAuthRoute && isAuthError) {
       try {
         const newTokens = await performTokenRefresh();
-        const { accessToken, refreshToken } = newTokens;
+        const accessToken = newTokens.accessToken || (newTokens as any).access_token;
+        const refreshToken = newTokens.refreshToken || (newTokens as any).refresh_token;
+
+        if (!accessToken) {
+          throw new Error("Refreshed access token is empty");
+        }
+
         await setSessionId(accessToken, refreshToken);
 
         const { useUserStore } = require("@/stores/user-store");
         useUserStore.setState({
           sessionId: accessToken,
         });
+
+        // Delay retry slightly to allow Odoo database transaction commit to settle
+        await new Promise((resolve) => setTimeout(resolve, 150));
 
         // Retry the request
         return await apiRequest<T>(route, params, options);
