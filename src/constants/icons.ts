@@ -87,6 +87,10 @@ export const appIcons = {
     ios: "camera.fill",
     android: "photo_camera",
   },
+  calendar: {
+    ios: "calendar",
+    android: "calendar_today",
+  },
   gallery: {
     ios: "photo.on.rectangle.angled",
     android: "collections",
