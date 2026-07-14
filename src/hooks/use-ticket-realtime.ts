@@ -169,15 +169,21 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
 
         const origin = API_BASE_URL.replace(/\/facility_mobile_api\/v1\/?$/, "");
         const wsProtocol = origin.startsWith("https:") ? "wss:" : "ws:";
-        const wsUrl = `${wsProtocol}//${origin.replace(/^https?:\/\//, "")}${realtimeData.websocketUrl}`;
         const sessionId = getSessionId();
+        
+        let wsUrl = `${wsProtocol}//${origin.replace(/^https?:\/\//, "")}${realtimeData.websocketUrl}`;
+        if (sessionId) {
+          wsUrl += `?access_token=${sessionId}`;
+        }
+
         const headers: Record<string, string> = {};
         if (sessionId) {
           headers["Authorization"] = `Bearer ${sessionId}`;
+          headers["X-Authorization"] = `Bearer ${sessionId}`;
         }
         const nextSocket = new (WebSocket as any)(
           wsUrl,
-          undefined,
+          [],
           sessionId ? { headers } : undefined,
         ) as WebSocket;
         socket = nextSocket;
