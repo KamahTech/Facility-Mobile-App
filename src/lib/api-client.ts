@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from "axios";
 import * as SecureStore from "expo-secure-store";
+import CookieManager from "@react-native-cookies/cookies";
 import { API_BASE_URL } from "@/constants/api";
 import { useToastStore } from "@/stores/toast-store";
 import { getFriendlyErrorMessage } from "@/lib/error-formatter";
@@ -17,6 +18,24 @@ export const initializeSession = async () => {
     const stored = await SecureStore.getItemAsync("session_id");
     if (stored) {
       currentSessionId = stored;
+      // Re-inject cookie into the native iOS/Android cookie jars on app startup
+      const origin = API_BASE_URL.split("/facility_mobile_api")[0];
+      try {
+        await CookieManager.set(origin, {
+          name: "session_id",
+          value: stored,
+          path: "/",
+          secure: false,
+        }, false);
+        await CookieManager.set(origin, {
+          name: "session_id",
+          value: stored,
+          path: "/",
+          secure: false,
+        }, true);
+      } catch (err) {
+        console.error("Failed to re-inject native cookie on startup:", err);
+      }
     }
     return stored;
   } catch (error) {
@@ -32,11 +51,26 @@ export const setSessionId = async (id: string | null) => {
   try {
     if (id) {
       await SecureStore.setItemAsync("session_id", id);
+      // Inject cookie manually into the native iOS/Android cookie jars
+      const origin = API_BASE_URL.split("/facility_mobile_api")[0];
+      await CookieManager.set(origin, {
+        name: "session_id",
+        value: id,
+        path: "/",
+        secure: false,
+      }, false);
+      await CookieManager.set(origin, {
+        name: "session_id",
+        value: id,
+        path: "/",
+        secure: false,
+      }, true);
     } else {
       await SecureStore.deleteItemAsync("session_id");
+      await CookieManager.clearAll();
     }
   } catch (error) {
-    console.error("Failed to set session ID in SecureStore", error);
+    console.error("Failed to set session ID in SecureStore / CookieManager", error);
   }
 };
 
