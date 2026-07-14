@@ -41,6 +41,7 @@ export default function WorkerDetailsScreen() {
   const taskId = params.id as string;
   const isTransitionFinished = useScreenTransition();
   const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const [tempDate, setTempDate] = React.useState<Date>(new Date());
 
   const {
     requests,
@@ -530,21 +531,29 @@ export default function WorkerDetailsScreen() {
                   const onDateChange = (event: any, selectedDate?: Date) => {
                     if (Platform.OS === "android") {
                       setShowDatePicker(false);
-                    }
-                    if (selectedDate) {
-                      const yyyy = selectedDate.getFullYear();
-                      const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
-                      const dd = String(selectedDate.getDate()).padStart(2, "0");
-                      onChange(`${yyyy}-${mm}-${dd}`);
+                      if (selectedDate) {
+                        const yyyy = selectedDate.getFullYear();
+                        const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                        const dd = String(selectedDate.getDate()).padStart(2, "0");
+                        onChange(`${yyyy}-${mm}-${dd}`);
+                      }
+                    } else {
+                      if (selectedDate) {
+                        setTempDate(selectedDate);
+                      }
                     }
                   };
 
-                  const parsedDate = value ? new Date(value) : new Date();
+                  const handleOpenPicker = () => {
+                    const parsedDate = value ? new Date(value) : new Date();
+                    setTempDate(parsedDate);
+                    setShowDatePicker(true);
+                  };
 
                   return (
                     <View className="flex-col">
                       <Pressable 
-                        onPress={() => setShowDatePicker(true)}
+                        onPress={handleOpenPicker}
                         className="active:opacity-80"
                       >
                         <View pointerEvents="none">
@@ -583,7 +592,7 @@ export default function WorkerDetailsScreen() {
                                   </Text>
                                   <View className="items-center justify-center py-4">
                                     <RNDateTimePicker
-                                      value={parsedDate}
+                                      value={tempDate}
                                       mode="date"
                                       display="spinner"
                                       onChange={onDateChange}
@@ -599,11 +608,17 @@ export default function WorkerDetailsScreen() {
                                       className="px-4 py-2 rounded-xl bg-secondary active:opacity-60"
                                     >
                                       <Text className="text-sm font-semibold text-muted-foreground">
-                                        {t("actions.clear" as any) || "Clear"}
+                                        {t("actions.clear")}
                                       </Text>
                                     </Pressable>
                                     <Pressable
-                                      onPress={() => setShowDatePicker(false)}
+                                      onPress={() => {
+                                        const yyyy = tempDate.getFullYear();
+                                        const mm = String(tempDate.getMonth() + 1).padStart(2, "0");
+                                        const dd = String(tempDate.getDate()).padStart(2, "0");
+                                        onChange(`${yyyy}-${mm}-${dd}`);
+                                        setShowDatePicker(false);
+                                      }}
                                       className="px-4 py-2 rounded-xl bg-primary active:opacity-60"
                                     >
                                       <Text className="text-sm font-semibold text-primary-foreground">
@@ -616,7 +631,7 @@ export default function WorkerDetailsScreen() {
                             </Modal>
                           ) : (
                             <RNDateTimePicker
-                              value={parsedDate}
+                              value={tempDate}
                               mode="date"
                               display="default"
                               onChange={onDateChange}

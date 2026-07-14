@@ -17,45 +17,57 @@ export function useAppImagePicker() {
 
   const pickImage = React.useCallback(
     async (source: PickImageSource, options: PickImageOptions = {}) => {
-      const {
-        allowsEditing = false,
-        aspect,
-        quality = 0.8,
-      } = options;
-      const permissionResult =
-        source === "camera"
-          ? await ImagePicker.requestCameraPermissionsAsync()
-          : await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (!permissionResult.granted) {
-        const messageKey: TranslationKey =
+      try {
+        const {
+          allowsEditing = false,
+          aspect,
+          quality = 0.8,
+        } = options;
+        const permissionResult =
           source === "camera"
-            ? "permissions.cameraRequired"
-            : "permissions.photoLibraryRequired";
-        Alert.alert(t("permissions.requiredTitle"), t(messageKey));
+            ? await ImagePicker.requestCameraPermissionsAsync()
+            : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permissionResult.granted) {
+          const messageKey: TranslationKey =
+            source === "camera"
+              ? "permissions.cameraRequired"
+              : "permissions.photoLibraryRequired";
+          Alert.alert(t("permissions.requiredTitle"), t(messageKey));
+          return null;
+        }
+
+        const result =
+          source === "camera"
+            ? await ImagePicker.launchCameraAsync({
+                allowsEditing,
+                aspect,
+                mediaTypes: ["images"],
+                quality,
+              })
+            : await ImagePicker.launchImageLibraryAsync({
+                allowsEditing,
+                aspect,
+                mediaTypes: ["images"],
+                quality,
+              });
+
+        if (result.canceled || !result.assets.length) {
+          return null;
+        }
+
+        return result.assets[0].uri;
+      } catch (error: any) {
+        console.error(`[ImagePicker Error] source=${source}:`, error);
+        
+        // Handle simulator camera lack gracefully
+        if (source === "camera" && error?.message?.includes("Camera not available")) {
+          Alert.alert(t("common.error"), "Camera is not available on this device.");
+        } else {
+          Alert.alert(t("common.error"), error?.message || "Failed to access image.");
+        }
         return null;
       }
-
-      const result =
-        source === "camera"
-          ? await ImagePicker.launchCameraAsync({
-              allowsEditing,
-              aspect,
-              mediaTypes: ["images"],
-              quality,
-            })
-          : await ImagePicker.launchImageLibraryAsync({
-              allowsEditing,
-              aspect,
-              mediaTypes: ["images"],
-              quality,
-            });
-
-      if (result.canceled || !result.assets.length) {
-        return null;
-      }
-
-      return result.assets[0].uri;
     },
     [t],
   );
