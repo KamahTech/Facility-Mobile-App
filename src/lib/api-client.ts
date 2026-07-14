@@ -70,6 +70,7 @@ export async function apiRequest<T = ApiResponse>(
 
   if (currentSessionId) {
     headers["Cookie"] = `session_id=${currentSessionId}`;
+    headers["X-Openerp-Session-Id"] = currentSessionId;
   }
 
   if (currentLanguage) {
