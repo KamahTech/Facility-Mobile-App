@@ -236,7 +236,7 @@ export function ChatView({
           </AppRow>
 
           {/* Chat Bubble Body */}
-          <View className="px-4 py-2.5 bg-card rounded-2xl rounded-tl-none w-full shadow-2xs border border-border/40">
+          <View className="px-4 py-2.5 bg-card rounded-2xl rounded-tl-none w-full shadow-2xs">
             {/* Render attachment image if present */}
             {typeof item.image === "string" && (
               <Pressable
