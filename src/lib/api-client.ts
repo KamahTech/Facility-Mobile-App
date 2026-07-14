@@ -75,15 +75,11 @@ export type ApiRequestOptions = {
 let refreshPromise: Promise<{
   accessToken: string;
   refreshToken: string;
-  profile: any;
-  accountType: "resident" | "worker";
 }> | null = null;
 
 async function performTokenRefresh(): Promise<{
   accessToken: string;
   refreshToken: string;
-  profile: any;
-  accountType: "resident" | "worker";
 }> {
   if (refreshPromise) {
     return refreshPromise;
@@ -201,14 +197,12 @@ export async function apiRequest<T = ApiResponse>(
       if (!isAuthRoute && isAuthError) {
         try {
           const newTokens = await performTokenRefresh();
-          const { accessToken, refreshToken, profile, accountType } = newTokens;
+          const { accessToken, refreshToken } = newTokens;
           await setSessionId(accessToken, refreshToken);
 
           const { useUserStore } = require("@/stores/user-store");
           useUserStore.setState({
             sessionId: accessToken,
-            accountType,
-            profile,
           });
 
           // Retry the request
@@ -256,14 +250,12 @@ export async function apiRequest<T = ApiResponse>(
     if (!isAuthRoute && isAuthError) {
       try {
         const newTokens = await performTokenRefresh();
-        const { accessToken, refreshToken, profile, accountType } = newTokens;
+        const { accessToken, refreshToken } = newTokens;
         await setSessionId(accessToken, refreshToken);
 
         const { useUserStore } = require("@/stores/user-store");
         useUserStore.setState({
           sessionId: accessToken,
-          accountType,
-          profile,
         });
 
         // Retry the request
