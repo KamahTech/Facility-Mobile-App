@@ -550,6 +550,12 @@ export default function WorkerDetailsScreen() {
                     setShowDatePicker(true);
                   };
 
+                  const getTodayMidnight = () => {
+                    const d = new Date();
+                    d.setHours(0, 0, 0, 0);
+                    return d;
+                  };
+
                   return (
                     <View className="flex-col">
                       <Pressable 
@@ -590,13 +596,13 @@ export default function WorkerDetailsScreen() {
                                   <Text className="text-base font-bold text-foreground text-center">
                                     {t("worker.deadlineLabel")}
                                   </Text>
-                                  <View className="items-center justify-center py-4">
+                                  <View className="items-center justify-center py-2">
                                     <RNDateTimePicker
                                       value={tempDate}
                                       mode="date"
-                                      display="spinner"
+                                      display="inline"
                                       onChange={onDateChange}
-                                      minimumDate={new Date()}
+                                      minimumDate={getTodayMidnight()}
                                     />
                                   </View>
                                   <AppRow className="justify-end gap-3 mt-2">
