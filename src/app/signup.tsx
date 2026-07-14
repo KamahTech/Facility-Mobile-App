@@ -138,7 +138,7 @@ export default function SignupScreen() {
 
   return (
     <View
-      className="flex-1 bg-background"
+      className="flex-1 bg-card"
       style={{
         paddingTop: insets.top,
         paddingStart: insets.left,
@@ -354,7 +354,7 @@ export default function SignupScreen() {
             disabled={loading}
             className="mt-2 py-2 items-center justify-center"
           >
-            <AppText className="text-sm font-bold text-primary text-center">
+            <AppText className="text-sm font-bold text-foreground text-center">
               {t("auth.hasAccount")}
             </AppText>
           </Pressable>
