@@ -171,11 +171,14 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
         const wsProtocol = origin.startsWith("https:") ? "wss:" : "ws:";
         const wsUrl = `${wsProtocol}//${origin.replace(/^https?:\/\//, "")}${realtimeData.websocketUrl}`;
         const sessionId = getSessionId();
-        const headers = sessionId ? { Cookie: `session_id=${sessionId}` } : undefined;
+        const headers: Record<string, string> = {};
+        if (sessionId) {
+          headers["Authorization"] = `Bearer ${sessionId}`;
+        }
         const nextSocket = new (WebSocket as any)(
           wsUrl,
           undefined,
-          headers ? { headers } : undefined,
+          sessionId ? { headers } : undefined,
         ) as WebSocket;
         socket = nextSocket;
 
