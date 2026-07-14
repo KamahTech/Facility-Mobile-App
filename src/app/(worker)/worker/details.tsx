@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Alert, Pressable, Text, Platform, Modal } from "react-native";
 import { useLocalSearchParams, Stack, type Href } from "expo-router";
+import RNDateTimePicker from "@expo/ui/community/datetime-picker";
 import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { Image } from "expo-image";
@@ -525,40 +526,108 @@ export default function WorkerDetailsScreen() {
               <Controller
                 control={control}
                 name="deadline"
-                render={({ field: { onChange, value } }) => (
-                  <View className="flex-col">
-                    <Pressable 
-                      onPress={() => setShowDatePicker(true)}
-                      className="active:opacity-80"
-                    >
-                      <View pointerEvents="none">
-                        <AppInput
-                          label={t("worker.deadlineLabel")}
-                          placeholder={t("worker.deadlinePlaceholder")}
-                          value={value}
-                          editable={false}
-                          error={errors.deadline?.message}
-                        />
-                      </View>
-                      <View 
-                        className="absolute right-4 justify-center" 
-                        style={{ 
-                          top: 28,
-                          bottom: errors.deadline?.message ? 20 : 0 
-                        }}
-                      >
-                        <AppIcon name="calendar" size={18} colorToken="--muted-foreground" />
-                      </View>
-                    </Pressable>
+                render={({ field: { onChange, value } }) => {
+                  const onDateChange = (event: any, selectedDate?: Date) => {
+                    if (Platform.OS === "android") {
+                      setShowDatePicker(false);
+                    }
+                    if (selectedDate) {
+                      const yyyy = selectedDate.getFullYear();
+                      const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                      const dd = String(selectedDate.getDate()).padStart(2, "0");
+                      onChange(`${yyyy}-${mm}-${dd}`);
+                    }
+                  };
 
-                    <JSCalendar
-                      visible={showDatePicker}
-                      value={value || ""}
-                      onClose={() => setShowDatePicker(false)}
-                      onChange={onChange}
-                    />
-                  </View>
-                )}
+                  const parsedDate = value ? new Date(value) : new Date();
+
+                  return (
+                    <View className="flex-col">
+                      <Pressable 
+                        onPress={() => setShowDatePicker(true)}
+                        className="active:opacity-80"
+                      >
+                        <View pointerEvents="none">
+                          <AppInput
+                            label={t("worker.deadlineLabel")}
+                            placeholder={t("worker.deadlinePlaceholder")}
+                            value={value}
+                            editable={false}
+                            error={errors.deadline?.message}
+                          />
+                        </View>
+                        <View 
+                          className="absolute right-4 justify-center" 
+                          style={{ 
+                            top: 28,
+                            bottom: errors.deadline?.message ? 20 : 0 
+                          }}
+                        >
+                          <AppIcon name="calendar" size={18} colorToken="--muted-foreground" />
+                        </View>
+                      </Pressable>
+
+                      {showDatePicker && (
+                        <>
+                          {Platform.OS === "ios" ? (
+                            <Modal
+                              transparent
+                              visible={showDatePicker}
+                              animationType="fade"
+                              onRequestClose={() => setShowDatePicker(false)}
+                            >
+                              <View className="flex-1 bg-black/50 items-center justify-center p-6">
+                                <View className="w-full max-w-sm bg-card rounded-3xl p-6 shadow-xl flex-col gap-5 border border-border/20">
+                                  <Text className="text-base font-bold text-foreground text-center">
+                                    {t("worker.deadlineLabel")}
+                                  </Text>
+                                  <View className="items-center justify-center py-4">
+                                    <RNDateTimePicker
+                                      value={parsedDate}
+                                      mode="date"
+                                      display="spinner"
+                                      onChange={onDateChange}
+                                      minimumDate={new Date()}
+                                    />
+                                  </View>
+                                  <AppRow className="justify-end gap-3 mt-2">
+                                    <Pressable
+                                      onPress={() => {
+                                        onChange("");
+                                        setShowDatePicker(false);
+                                      }}
+                                      className="px-4 py-2 rounded-xl bg-secondary active:opacity-60"
+                                    >
+                                      <Text className="text-sm font-semibold text-muted-foreground">
+                                        {t("actions.clear" as any) || "Clear"}
+                                      </Text>
+                                    </Pressable>
+                                    <Pressable
+                                      onPress={() => setShowDatePicker(false)}
+                                      className="px-4 py-2 rounded-xl bg-primary active:opacity-60"
+                                    >
+                                      <Text className="text-sm font-semibold text-primary-foreground">
+                                        {t("common.ok") || "OK"}
+                                      </Text>
+                                    </Pressable>
+                                  </AppRow>
+                                </View>
+                              </View>
+                            </Modal>
+                          ) : (
+                            <RNDateTimePicker
+                              value={parsedDate}
+                              mode="date"
+                              display="default"
+                              onChange={onDateChange}
+                              minimumDate={new Date()}
+                            />
+                          )}
+                        </>
+                      )}
+                    </View>
+                  );
+                }}
               />
 
               {/* Photos upload block */}
@@ -708,174 +777,3 @@ export default function WorkerDetailsScreen() {
   );
 }
 
-type JSCalendarProps = {
-  visible: boolean;
-  value: string;
-  onClose: () => void;
-  onChange: (date: string) => void;
-};
-
-function JSCalendar({ visible, value, onClose, onChange }: JSCalendarProps) {
-  const { isRTL, t } = useI18n();
-  const primaryColor = useThemeToken("--primary");
-  const mutedColor = useThemeToken("--muted-foreground");
-
-  const initialDate = React.useMemo(() => {
-    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      const [y, m, d] = value.split("-").map(Number);
-      return new Date(y, m - 1, d);
-    }
-    return new Date();
-  }, [value]);
-
-  const [currentMonth, setCurrentMonth] = React.useState(initialDate.getMonth());
-  const [currentYear, setCurrentYear] = React.useState(initialDate.getFullYear());
-
-  const daysInMonth = React.useMemo(() => {
-    return new Date(currentYear, currentMonth + 1, 0).getDate();
-  }, [currentMonth, currentYear]);
-
-  const firstDayOfWeek = React.useMemo(() => {
-    return new Date(currentYear, currentMonth, 1).getDay();
-  }, [currentMonth, currentYear]);
-
-  const handlePrevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
-  };
-
-  const handleSelectDay = (day: number) => {
-    const mm = String(currentMonth + 1).padStart(2, "0");
-    const dd = String(day).padStart(2, "0");
-    onChange(`${currentYear}-${mm}-${dd}`);
-    onClose();
-  };
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
-  const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-  const gridCells = [];
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    gridCells.push(<View key={`empty-${i}`} style={{ width: "14.28%", aspectRatio: 1 }} />);
-  }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dayStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const isSelected = value === dayStr;
-
-    const cellDate = new Date(currentYear, currentMonth, day);
-    cellDate.setHours(23, 59, 59, 999);
-    const isPast = cellDate < today;
-
-    gridCells.push(
-      <Pressable
-        key={`day-${day}`}
-        disabled={isPast}
-        onPress={() => handleSelectDay(day)}
-        style={{ width: "14.28%", aspectRatio: 1 }}
-        className="items-center justify-center p-1"
-      >
-        <View
-          className={`w-8 h-8 rounded-full items-center justify-center ${
-            isSelected
-              ? "bg-primary"
-              : isPast
-                ? "opacity-35"
-                : "active:bg-secondary"
-          }`}
-        >
-          <Text
-            className={`text-sm ${
-              isSelected
-                ? "text-primary-foreground font-bold"
-                : isPast
-                  ? "text-muted-foreground line-through"
-                  : "text-foreground"
-            }`}
-          >
-            {day}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  }
-
-  return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <View className="flex-1 bg-black/50 items-center justify-center p-6">
-        <View className="w-full max-w-sm bg-card rounded-3xl p-5 shadow-xl flex-col gap-4 border border-border/20">
-          <AppRow className="justify-between items-center px-1">
-            <Pressable onPress={handlePrevMonth} className="p-2 active:opacity-60">
-              <AppIcon name={isRTL ? "chevronRight" : "chevronLeft"} size={16} color={mutedColor} />
-            </Pressable>
-            <Text className="text-base font-bold text-foreground">
-              {monthNames[currentMonth]} {currentYear}
-            </Text>
-            <Pressable onPress={handleNextMonth} className="p-2 active:opacity-60">
-              <AppIcon name={isRTL ? "chevronLeft" : "chevronRight"} size={16} color={mutedColor} />
-            </Pressable>
-          </AppRow>
-
-          <View className="flex-row flex-wrap w-full">
-            {weekDays.map((wd) => (
-              <View key={wd} style={{ width: "14.28%" }} className="items-center justify-center py-2">
-                <Text className="text-xs font-bold text-muted-foreground uppercase">{wd}</Text>
-              </View>
-            ))}
-          </View>
-
-          <View className="flex-row flex-wrap w-full">
-            {gridCells}
-          </View>
-
-          <AppRow className="justify-end gap-3 mt-2">
-            <Pressable
-              onPress={() => {
-                onChange("");
-                onClose();
-              }}
-              className="px-4 py-2 rounded-xl bg-secondary active:opacity-60"
-            >
-              <Text className="text-sm font-semibold text-muted-foreground">
-                {t("actions.clear" as any) || "Clear"}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={onClose}
-              className="px-4 py-2 rounded-xl bg-secondary active:opacity-60"
-            >
-              <Text className="text-sm font-semibold text-muted-foreground">
-                {t("actions.cancel") || "Cancel"}
-              </Text>
-            </Pressable>
-          </AppRow>
-        </View>
-      </View>
-    </Modal>
-  );
-}
