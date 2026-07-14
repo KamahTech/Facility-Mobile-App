@@ -12,21 +12,31 @@ export const setApiLanguage = (language: string | null) => {
   currentLanguage = language;
 };
 
+let initPromise: Promise<string | null> | null = null;
+
 // Initialize session ID from storage
-export const initializeSession = async () => {
-  try {
-    const accessToken = await SecureStore.getItemAsync("access_token");
-    const refreshToken = await SecureStore.getItemAsync("refresh_token");
-    if (accessToken && refreshToken) {
-      currentAccessToken = accessToken;
-      currentRefreshToken = refreshToken;
-      return accessToken;
-    }
-    return null;
-  } catch (error) {
-    console.error("Failed to load tokens from SecureStore", error);
-    return null;
+export const initializeSession = () => {
+  if (initPromise) {
+    return initPromise;
   }
+
+  initPromise = (async () => {
+    try {
+      const accessToken = await SecureStore.getItemAsync("access_token");
+      const refreshToken = await SecureStore.getItemAsync("refresh_token");
+      if (accessToken && refreshToken) {
+        currentAccessToken = accessToken;
+        currentRefreshToken = refreshToken;
+        return accessToken;
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to load tokens from SecureStore", error);
+      return null;
+    }
+  })();
+
+  return initPromise;
 };
 
 export const getSessionId = () => currentAccessToken;
@@ -36,6 +46,8 @@ export const setSessionId = async (accessToken: string | null, refreshToken?: st
   if (refreshToken !== undefined) {
     currentRefreshToken = refreshToken;
   }
+
+  initPromise = Promise.resolve(accessToken);
   
   try {
     if (accessToken) {
@@ -135,6 +147,11 @@ export async function apiRequest<T = ApiResponse>(
   params: ApiParams = {},
   options: ApiRequestOptions = {},
 ): Promise<T> {
+  // Ensure session is initialized before sending any request
+  if (!currentAccessToken) {
+    await initializeSession();
+  }
+
   const url = `${API_BASE_URL}${route}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

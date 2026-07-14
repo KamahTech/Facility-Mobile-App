@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { Stack } from "expo-router";
 import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
@@ -20,7 +20,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
  * RTL/LTR positioning, and utilizes animated shimmer skeletons during load states.
  */
 export default function AllCommunityUpdatesScreen() {
-  const { t } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { updates, loading, fetchNextUpdates, hasNextUpdates } = useCommunityStore({ enableUpdates: true });
   const isTransitionFinished = useScreenTransition();
@@ -71,9 +71,14 @@ export default function AllCommunityUpdatesScreen() {
               paddingBottom: insets.bottom + 40,
             }}
             ListHeaderComponent={
-              <AppText className="text-start text-base leading-6 text-muted-foreground mb-6">
+              <Text 
+                className="text-start text-base leading-6 text-muted-foreground mb-6"
+                style={{ 
+                  writingDirection: isRTL ? "rtl" : "ltr"
+                }}
+              >
                 {t("communityUpdates.allDescription")}
-              </AppText>
+              </Text>
             }
             renderItem={({ item }) => {
               if (item.type === "news") {
