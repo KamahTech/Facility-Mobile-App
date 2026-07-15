@@ -7,8 +7,14 @@ import {
   Pressable,
   PanResponder,
   Dimensions,
+  InteractionManager,
 } from "react-native";
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+} from "react-native-reanimated";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppIcon } from "@/components/app-icon";
@@ -39,12 +45,19 @@ export function MediaSourceSheet({
   const translateY = useSharedValue(SCREEN_HEIGHT);
 
   const onDismissRef = React.useRef(onDismiss);
+  const pendingSelectionRef = React.useRef<(() => void) | null>(null);
   React.useEffect(() => {
     onDismissRef.current = onDismiss;
   }, [onDismiss]);
 
   const handleDismissCallback = React.useCallback(() => {
+    const pendingSelection = pendingSelectionRef.current;
+    pendingSelectionRef.current = null;
     onDismissRef.current();
+
+    if (pendingSelection) {
+      InteractionManager.runAfterInteractions(pendingSelection);
+    }
   }, []);
 
   // Sync animation with presentation state
@@ -57,20 +70,24 @@ export function MediaSourceSheet({
   }, [isPresented, translateY]);
 
   const handleDismiss = React.useCallback(() => {
-    translateY.value = withTiming(SCREEN_HEIGHT, { duration: 200 }, (finished) => {
-      if (finished) {
-        runOnJS(handleDismissCallback)();
-      }
-    });
+    translateY.value = withTiming(
+      SCREEN_HEIGHT,
+      { duration: 200 },
+      (finished) => {
+        if (finished) {
+          runOnJS(handleDismissCallback)();
+        }
+      },
+    );
   }, [translateY, handleDismissCallback]);
 
   const handleSelectCamera = () => {
-    onSelectCamera();
+    pendingSelectionRef.current = onSelectCamera;
     handleDismiss();
   };
 
   const handleSelectLibrary = () => {
-    onSelectLibrary();
+    pendingSelectionRef.current = onSelectLibrary;
     handleDismiss();
   };
 
@@ -88,7 +105,9 @@ export function MediaSourceSheet({
         onStartShouldSetPanResponder: () => false,
         onMoveShouldSetPanResponder: (_, gestureState) => {
           // Trigger responder only when swiping down vertically
-          return gestureState.dy > 10 && gestureState.dy > Math.abs(gestureState.dx);
+          return (
+            gestureState.dy > 10 && gestureState.dy > Math.abs(gestureState.dx)
+          );
         },
         onPanResponderMove: (_, gestureState) => {
           if (gestureState.dy > 0) {
@@ -97,17 +116,21 @@ export function MediaSourceSheet({
         },
         onPanResponderRelease: (_, gestureState) => {
           if (gestureState.dy > 120 || gestureState.vy > 0.5) {
-            translateY.value = withTiming(SCREEN_HEIGHT, { duration: 200 }, (finished) => {
-              if (finished) {
-                runOnJS(handleDismissCallback)();
-              }
-            });
+            translateY.value = withTiming(
+              SCREEN_HEIGHT,
+              { duration: 200 },
+              (finished) => {
+                if (finished) {
+                  runOnJS(handleDismissCallback)();
+                }
+              },
+            );
           } else {
             translateY.value = withTiming(0, { duration: 200 });
           }
         },
       }),
-    [translateY, handleDismissCallback]
+    [translateY, handleDismissCallback],
   );
   /* eslint-enable react-hooks/refs */
 
@@ -138,7 +161,7 @@ export function MediaSourceSheet({
             {
               marginBottom: Math.max(insets.bottom, 24),
               zIndex: 2,
-            }
+            },
           ]}
         >
           {/* Title */}
@@ -157,7 +180,9 @@ export function MediaSourceSheet({
                 <AppIcon name="camera" size={24} color={primaryColor} />
               </View>
               <AppText className="text-sm font-bold text-foreground text-center">
-                {t("worker.mediaSourceCamera").replace(/\(.*?\)/g, "").trim()}
+                {t("worker.mediaSourceCamera")
+                  .replace(/\(.*?\)/g, "")
+                  .trim()}
               </AppText>
             </Pressable>
 
