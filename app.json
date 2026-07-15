@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "facility-management",
+    "name": "Facility Management",
     "slug": "facility-management",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/images/icon.png",
-      "bundleIdentifier": "com.moxas3d.facilitymanagement",
+      "bundleIdentifier": "com.kamahtech.facilitymanagement",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires camera access to take photos of maintenance issues and unit inspections.",
         "NSPhotoLibraryUsageDescription": "This app requires photo library access to upload photos for maintenance requests and task updates."
