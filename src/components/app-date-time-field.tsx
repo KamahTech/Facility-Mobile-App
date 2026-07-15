@@ -107,7 +107,7 @@ export function AppDateTimeField({
           onRequestClose={() => setIsOpen(false)}
         >
           <View className="flex-1 bg-black/50 items-center justify-center p-6">
-            <View className="w-full max-w-sm bg-card rounded-3xl p-6 shadow-xl flex-col gap-5 border border-border/20">
+            <View className="w-full max-w-sm bg-card rounded-3xl p-6 shadow-xl flex-col gap-5">
               <Text className="text-base font-bold text-foreground text-center">
                 {label}
               </Text>
@@ -115,13 +115,13 @@ export function AppDateTimeField({
                 <RNDateTimePicker
                   value={pendingValue}
                   mode={mode}
-                  display={mode === "date" ? "inline" : "spinner"}
+                  display="spinner"
                   onChange={handleNativeChange}
                   minimumDate={minimumDate}
                   maximumDate={maximumDate}
                   style={{
                     width: Math.min(windowWidth - 96, 320),
-                    height: mode === "date" ? 340 : 180,
+                    height: 216,
                   }}
                 />
               </View>
