@@ -7,6 +7,10 @@ import {
   setSessionExpiredHandler,
 } from "@/lib/api-client";
 import { router } from "expo-router";
+import { useToastStore } from "@/stores/toast-store";
+import { getStoredLanguagePreference, getSystemLanguage } from "@/lib/language-storage";
+import { translations } from "@/constants/translations";
+
 
 export type UserProfile = {
   name: string;
@@ -308,12 +312,28 @@ setSessionExpiredHandler(async () => {
     );
   }
 
+  // Get localized session expiration message
+  let message = "Session expired. Please login again.";
+  try {
+    const langPref = await getStoredLanguagePreference();
+    const lang = langPref === "system" ? getSystemLanguage() : langPref;
+    const localizedMessage = translations[lang]["auth.sessionExpired"];
+    if (localizedMessage) {
+      message = localizedMessage;
+    }
+  } catch (err) {
+    console.error("Failed to load localized session expiration message:", err);
+  }
+
+  // Show the toast popup
+  useToastStore.getState().showToast(message, "error");
+
   useUserStore.setState({
     sessionId: null,
     accountType: null,
     profile: null,
     loading: false,
-    error: "Session expired. Please login again.",
+    error: message,
   });
 
   router.replace("/choose-login-method" as any);

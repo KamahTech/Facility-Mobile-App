@@ -497,6 +497,7 @@ export const translations = {
     "communityUpdates.update-4.title": "New Smart Access Gates Active Next Month",
     "communityUpdates.update-4.description": "Starting next month, a new smart RFID access system will be active at the entrance. Please collect your RFID keycards from the management office by Friday.",
     "communityUpdates.update-4.date": "June 19, 2026",
+    "auth.sessionExpired": "Session expired. Please login again.",
   },
   ar: {
     "actions.getStarted": "ابدأ الآن",
@@ -994,6 +995,7 @@ export const translations = {
     "communityUpdates.update-4.title": "تفعيل بوابات الدخول الذكية الجديدة الشهر المقبل",
     "communityUpdates.update-4.description": "بدءاً من الشهر المقبل، سيتم تفعيل نظام دخول ذكي جديد باستخدام بطاقات التعريف RFID عند المدخل. يرجى استلام بطاقاتك من مكتب الإدارة بحلول يوم الجمعة.",
     "communityUpdates.update-4.date": "19 يونيو 2026",
+    "auth.sessionExpired": "انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.",
   },
 } as const;
 
