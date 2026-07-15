@@ -1,5 +1,5 @@
 import { Pressable, View, Text } from "react-native";
-import { router } from "expo-router";
+import { router } from "@/lib/navigation";
 
 import { AppChevron } from "@/components/app-chevron";
 import { AppRow } from "@/components/app-row";

@@ -1,7 +1,8 @@
 import React from "react";
 import { View } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
-import { useLocalSearchParams, Stack, router } from "expo-router";
+import { useLocalSearchParams, Stack } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";

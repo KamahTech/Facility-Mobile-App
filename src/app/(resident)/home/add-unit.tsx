@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Alert, StyleSheet, Text } from "react-native";
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
+import { router } from "@/lib/navigation";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { useAppInsets } from "@/hooks/use-app-insets";

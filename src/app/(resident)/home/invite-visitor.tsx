@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Alert, Text } from "react-native";
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

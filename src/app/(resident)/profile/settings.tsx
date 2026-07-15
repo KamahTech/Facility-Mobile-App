@@ -1,6 +1,7 @@
 import React from "react";
 import { ScrollView, View, Text } from "react-native";
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";

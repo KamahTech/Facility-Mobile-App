@@ -1,5 +1,6 @@
 import { View } from "react-native";
-import { Stack, router, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { router } from "@/lib/navigation";
 
 import { AppText } from "@/components/app-text";
 import { ScreenHeader } from "@/components/screen-header";

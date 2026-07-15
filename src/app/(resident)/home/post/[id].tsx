@@ -1,6 +1,7 @@
 import React from "react";
 import { ScrollView, View, StyleSheet, Text } from "react-native";
-import { Stack, useLocalSearchParams, router } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { router } from "@/lib/navigation";
 import { Image } from "expo-image";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { useQuery } from "@tanstack/react-query";

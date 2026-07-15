@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Pressable, Alert, BackHandler } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
-import { Stack, router, type Href } from "expo-router";
+import { Stack, type Href } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";

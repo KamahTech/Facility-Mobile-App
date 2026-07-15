@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, ScrollView, View, Alert, Text } from "react-native";
-import { Stack, useLocalSearchParams, router } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { AppIcon } from "@/components/app-icon";
