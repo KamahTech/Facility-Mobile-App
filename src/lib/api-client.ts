@@ -28,10 +28,6 @@ export const initializeSession = () => {
         "access_token_expires_at",
       );
       const expiresAt = Number(expiresAtValue);
-
-      // Remove credentials left by the previous refresh-token workflow.
-      await SecureStore.deleteItemAsync("refresh_token");
-
       if (accessToken && Number.isFinite(expiresAt) && expiresAt > Date.now()) {
         currentAccessToken = accessToken;
         currentAccessTokenExpiresAt = expiresAt;
@@ -79,14 +75,12 @@ export const setSessionId = async (
         await Promise.all([
           SecureStore.deleteItemAsync("access_token"),
           SecureStore.deleteItemAsync("access_token_expires_at"),
-          SecureStore.deleteItemAsync("refresh_token"),
         ]);
       }
     } catch (error) {
       await Promise.allSettled([
         SecureStore.deleteItemAsync("access_token"),
         SecureStore.deleteItemAsync("access_token_expires_at"),
-        SecureStore.deleteItemAsync("refresh_token"),
       ]);
       currentAccessToken = null;
       currentAccessTokenExpiresAt = null;
