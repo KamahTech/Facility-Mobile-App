@@ -7,6 +7,8 @@ import { getFriendlyErrorMessage } from "@/lib/error-formatter";
 let currentAccessToken: string | null = null;
 let currentRefreshToken: string | null = null;
 let currentLanguage: string | null = null;
+let sessionRevision = 0;
+let sessionWriteQueue: Promise<void> = Promise.resolve();
 
 export const setApiLanguage = (language: string | null) => {
   currentLanguage = language;
@@ -41,40 +43,59 @@ export const initializeSession = () => {
 
 export const getSessionId = () => currentAccessToken;
 
-export const setSessionId = async (accessToken: string | null, refreshToken?: string | null) => {
-  currentAccessToken = accessToken;
-  if (refreshToken !== undefined) {
-    currentRefreshToken = refreshToken;
-  }
+export const setSessionId = async (
+  accessToken: string | null,
+  refreshToken?: string | null,
+) => {
+  // Invalidate any refresh request that started for the previous local session.
+  sessionRevision += 1;
+  const write = sessionWriteQueue.then(async () => {
+    try {
+      // Store a rotated refresh token first. The old one becomes invalid as soon as
+      // refresh succeeds, so we must not report success unless the new pair is durable.
+      if (refreshToken) {
+        await SecureStore.setItemAsync("refresh_token", refreshToken);
+      } else if (refreshToken === null) {
+        await SecureStore.deleteItemAsync("refresh_token");
+      }
 
-  initPromise = Promise.resolve(accessToken);
-  
-  try {
-    if (accessToken) {
-      await SecureStore.setItemAsync("access_token", accessToken);
-    } else {
-      await SecureStore.deleteItemAsync("access_token");
+      if (accessToken) {
+        await SecureStore.setItemAsync("access_token", accessToken);
+      } else {
+        await SecureStore.deleteItemAsync("access_token");
+      }
+    } catch (error) {
+      // Never leave a partially-written token pair that cannot be refreshed later.
+      await Promise.allSettled([
+        SecureStore.deleteItemAsync("access_token"),
+        SecureStore.deleteItemAsync("refresh_token"),
+      ]);
+      currentAccessToken = null;
+      currentRefreshToken = null;
+      initPromise = Promise.resolve(null);
+      throw error;
     }
-    
-    if (refreshToken) {
-      await SecureStore.setItemAsync("refresh_token", refreshToken);
-    } else if (refreshToken === null) {
-      await SecureStore.deleteItemAsync("refresh_token");
-    }
-  } catch (error) {
-    console.error("Failed to set tokens in SecureStore", error);
-  }
+
+    currentAccessToken = accessToken;
+    if (refreshToken !== undefined) currentRefreshToken = refreshToken;
+    initPromise = Promise.resolve(accessToken);
+  });
+
+  sessionWriteQueue = write.catch(() => undefined);
+  await write;
 };
 
-let sessionExpiredHandler: (() => void) | null = null;
+let sessionExpiredHandler: (() => void | Promise<void>) | null = null;
 
-export const setSessionExpiredHandler = (handler: () => void) => {
+export const setSessionExpiredHandler = (
+  handler: () => void | Promise<void>,
+) => {
   sessionExpiredHandler = handler;
 };
 
-const handleSessionExpired = () => {
+const handleSessionExpired = async () => {
   if (sessionExpiredHandler) {
-    sessionExpiredHandler();
+    await sessionExpiredHandler();
   }
 };
 
@@ -90,6 +111,8 @@ let refreshPromise: Promise<{
   refreshToken: string;
 }> | null = null;
 
+class RefreshRejectedError extends Error {}
+
 async function performTokenRefresh(): Promise<{
   accessToken: string;
   refreshToken: string;
@@ -101,15 +124,18 @@ async function performTokenRefresh(): Promise<{
   refreshPromise = (async () => {
     try {
       if (!currentRefreshToken) {
-        throw new Error("No refresh token available");
+        throw new RefreshRejectedError("No refresh token available");
       }
+
+      const submittedRefreshToken = currentRefreshToken;
+      const submittedSessionRevision = sessionRevision;
 
       const url = `${API_BASE_URL}/auth/refresh`;
       const payload = {
         jsonrpc: "2.0",
         method: "call",
         params: {
-          refreshToken: currentRefreshToken,
+          refreshToken: submittedRefreshToken,
         },
         id: Date.now(),
       };
@@ -121,18 +147,43 @@ async function performTokenRefresh(): Promise<{
 
       const result = response.data;
       if (result.error) {
-        throw new Error(result.error.message || "Failed to refresh token");
+        throw new RefreshRejectedError(
+          result.error.message || "Failed to refresh token",
+        );
       }
 
       const data = result.result;
       if (!data || data.ok === false) {
         const err = data?.error || {};
-        throw new Error(err.message || "Refresh token request failed");
+        throw new RefreshRejectedError(
+          err.message || "Refresh token request failed",
+        );
       }
 
-      const resData = Object.prototype.hasOwnProperty.call(data, "data") ? data.data : data;
-      return resData;
+      const resData = Object.prototype.hasOwnProperty.call(data, "data")
+        ? data.data
+        : data;
+      const accessToken = resData?.accessToken || resData?.access_token;
+      const refreshToken = resData?.refreshToken || resData?.refresh_token;
+      if (!accessToken || !refreshToken) {
+        throw new RefreshRejectedError(
+          "Refresh response did not contain a complete token pair",
+        );
+      }
+
+      // Logout or a new login may have happened while the request was in flight.
+      if (
+        currentRefreshToken !== submittedRefreshToken ||
+        sessionRevision !== submittedSessionRevision
+      ) {
+        throw new Error("Session changed while token refresh was in progress");
+      }
+
+      return { accessToken, refreshToken };
     } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 401) {
+        throw new RefreshRejectedError("Refresh token was rejected");
+      }
       console.error("Token refresh failed:", error);
       throw error;
     } finally {
@@ -153,14 +204,15 @@ async function refreshTokenFlow(): Promise<string> {
   tokenRefreshPromise = (async () => {
     try {
       const newTokens = await performTokenRefresh();
-      const accessToken = newTokens.accessToken || (newTokens as any).access_token;
-      const refreshToken = newTokens.refreshToken || (newTokens as any).refresh_token;
+      const { accessToken, refreshToken } = newTokens;
 
-      if (!accessToken) {
-        throw new Error("Refreshed access token is empty");
+      try {
+        await setSessionId(accessToken, refreshToken);
+      } catch {
+        throw new RefreshRejectedError(
+          "Failed to securely store the refreshed token pair",
+        );
       }
-
-      await setSessionId(accessToken, refreshToken);
 
       const { useUserStore } = require("@/stores/user-store");
       useUserStore.setState({
@@ -169,7 +221,11 @@ async function refreshTokenFlow(): Promise<string> {
 
       return accessToken;
     } catch (error) {
-      handleSessionExpired();
+      // A network/timeout failure is recoverable. Keep the current tokens so a
+      // later request can retry, as required by the backend authentication guide.
+      if (error instanceof RefreshRejectedError) {
+        await handleSessionExpired();
+      }
       throw error;
     } finally {
       tokenRefreshPromise = null;
@@ -205,7 +261,8 @@ export async function apiRequest<T = ApiResponse>(
 
   if (currentLanguage) {
     headers["X-Language"] = currentLanguage;
-    headers["Accept-Language"] = currentLanguage === "ar" ? "ar-EG,ar;q=0.9,en;q=0.8" : "en-US,en;q=0.9";
+    headers["Accept-Language"] =
+      currentLanguage === "ar" ? "ar-EG,ar;q=0.9,en;q=0.8" : "en-US,en;q=0.9";
   }
 
   const getBackendLang = (lang: unknown) => {
@@ -237,26 +294,28 @@ export async function apiRequest<T = ApiResponse>(
     route.startsWith("/auth/");
 
   try {
-    const response = await axios.post(url, payload, { headers, timeout: 15000 });
+    const response = await axios.post(url, payload, {
+      headers,
+      timeout: 15000,
+    });
     const result = response.data;
 
     // Handle Odoo-level JSON-RPC errors
     if (result.error) {
       const errMsg = result.error.message || JSON.stringify(result.error);
-      const errCode = result.error.code;
 
-      const isAuthError = 
-        errCode === "access_denied" ||
-        errCode === 100 ||
+      const isAuthError =
         errMsg.toLowerCase().includes("session expired") ||
         errMsg.toLowerCase().includes("sessionexpiredexception") ||
-        errMsg.toLowerCase().includes("access denied") ||
-        errMsg.toLowerCase().includes("unauthorized");
+        errMsg.toLowerCase().includes("invalid access token") ||
+        errMsg.toLowerCase().includes("expired access token");
 
       if (!isAuthRoute && isAuthError) {
         if (options._isRetry) {
-          handleSessionExpired();
-          throw new Error("Session expired. Retried request failed authentication.");
+          await handleSessionExpired();
+          throw new Error(
+            "Session expired. Retried request failed authentication.",
+          );
         }
 
         try {
@@ -266,7 +325,10 @@ export async function apiRequest<T = ApiResponse>(
           await new Promise((resolve) => setTimeout(resolve, 150));
 
           // Retry the request
-          return await apiRequest<T>(route, params, { ...options, _isRetry: true });
+          return await apiRequest<T>(route, params, {
+            ...options,
+            _isRetry: true,
+          });
         } catch (refreshErr) {
           throw refreshErr;
         }
@@ -282,20 +344,19 @@ export async function apiRequest<T = ApiResponse>(
     if (data.ok === false) {
       const err = data.error || {};
       const errMsg = err.message || "API request failed";
-      const errCode = err.code;
 
-      const isAuthError = 
-        errCode === "access_denied" ||
-        errCode === 100 ||
+      const isAuthError =
         errMsg.toLowerCase().includes("session expired") ||
         errMsg.toLowerCase().includes("sessionexpiredexception") ||
-        errMsg.toLowerCase().includes("access denied") ||
-        errMsg.toLowerCase().includes("unauthorized");
+        errMsg.toLowerCase().includes("invalid access token") ||
+        errMsg.toLowerCase().includes("expired access token");
 
       if (!isAuthRoute && isAuthError) {
         if (options._isRetry) {
-          handleSessionExpired();
-          throw new Error("Session expired. Retried request failed authentication.");
+          await handleSessionExpired();
+          throw new Error(
+            "Session expired. Retried request failed authentication.",
+          );
         }
 
         try {
@@ -305,7 +366,10 @@ export async function apiRequest<T = ApiResponse>(
           await new Promise((resolve) => setTimeout(resolve, 150));
 
           // Retry the request
-          return await apiRequest<T>(route, params, { ...options, _isRetry: true });
+          return await apiRequest<T>(route, params, {
+            ...options,
+            _isRetry: true,
+          });
         } catch (refreshErr) {
           throw refreshErr;
         }
@@ -314,21 +378,26 @@ export async function apiRequest<T = ApiResponse>(
       throw new Error(errMsg);
     }
 
-    return Object.prototype.hasOwnProperty.call(data, "data") ? data.data : data;
+    return Object.prototype.hasOwnProperty.call(data, "data")
+      ? data.data
+      : data;
   } catch (error: unknown) {
     const axiosError = isAxiosError(error) ? error : null;
     const status = axiosError?.response?.status;
     const responseData = axiosError?.response?.data as
       | {
           error?: { code?: string | number; message?: string };
-          result?: { ok?: boolean; error?: { code?: string | number; message?: string } };
+          result?: {
+            ok?: boolean;
+            error?: { code?: string | number; message?: string };
+          };
         }
       | undefined;
     const responseError = responseData?.error || responseData?.result?.error;
     const errCode = responseError?.code;
     const errMsg = responseError?.message || "";
 
-    const isAuthError = 
+    const isAuthError =
       status === 401 ||
       errCode === "access_denied" ||
       errMsg.toLowerCase().includes("session expired") ||
@@ -338,8 +407,21 @@ export async function apiRequest<T = ApiResponse>(
 
     if (!isAuthRoute && isAuthError) {
       if (options._isRetry) {
-        handleSessionExpired();
-        throw new Error("Session expired. Retried request failed authentication.");
+        // A fresh access token followed by a plain access_denied response is a
+        // business permission failure, not an expired session.
+        if (
+          errCode === "access_denied" &&
+          !errMsg.toLowerCase().includes("expired") &&
+          !errMsg.toLowerCase().includes("invalid") &&
+          !errMsg.toLowerCase().includes("session")
+        ) {
+          throw error;
+        }
+
+        await handleSessionExpired();
+        throw new Error(
+          "Session expired. Retried request failed authentication.",
+        );
       }
 
       try {
@@ -349,7 +431,10 @@ export async function apiRequest<T = ApiResponse>(
         await new Promise((resolve) => setTimeout(resolve, 150));
 
         // Retry the request
-        return await apiRequest<T>(route, params, { ...options, _isRetry: true });
+        return await apiRequest<T>(route, params, {
+          ...options,
+          _isRetry: true,
+        });
       } catch (refreshErr) {
         throw refreshErr;
       }
@@ -360,7 +445,10 @@ export async function apiRequest<T = ApiResponse>(
       useToastStore.getState().showToast(friendly, "error");
     }
 
-    console.error(`[API Error] ${route}:`, error instanceof Error ? error.message : error);
+    console.error(
+      `[API Error] ${route}:`,
+      error instanceof Error ? error.message : error,
+    );
     throw error;
   }
 }

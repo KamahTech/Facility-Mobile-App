@@ -255,6 +255,7 @@ export function useOwnerStore(options?: {
     refetch: refetchServices,
   } = servicesQuery;
   const { mutateAsync: submitInquiryMutateAsync, reset: resetSubmitInquiryMutation } = submitInquiryMutation;
+  const { mutateAsync: removeTenantMutateAsync, reset: resetRemoveTenantMutation } = removeTenantMutation;
 
   // Actions
   const fetchOwnerUnits = React.useCallback(async () => {
@@ -308,13 +309,13 @@ export function useOwnerStore(options?: {
   }, [submitInquiryMutateAsync]);
 
   const removeTenant = React.useCallback(async (unitId: string, unitLinkId: string) => {
-    return await removeTenantMutation.mutateAsync({ unitId, unitLinkId });
-  }, [removeTenantMutation]);
+    return await removeTenantMutateAsync({ unitId, unitLinkId });
+  }, [removeTenantMutateAsync]);
 
   const clearError = React.useCallback(() => {
     resetSubmitInquiryMutation();
-    removeTenantMutation.reset();
-  }, [resetSubmitInquiryMutation, removeTenantMutation]);
+    resetRemoveTenantMutation();
+  }, [resetSubmitInquiryMutation, resetRemoveTenantMutation]);
 
   return {
     ownerUnits,
