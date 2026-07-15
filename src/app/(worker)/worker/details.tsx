@@ -1,7 +1,6 @@
 import React from "react";
-import { View, Alert, Pressable, Text, Platform, Modal } from "react-native";
+import { View, Alert, Pressable, Text } from "react-native";
 import { useLocalSearchParams, Stack, type Href } from "expo-router";
-import RNDateTimePicker from "@expo/ui/community/datetime-picker";
 import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { Image } from "expo-image";
@@ -15,6 +14,7 @@ import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
+import { AppDateTimeField } from "@/components/app-date-time-field";
 import { FullScreenLoader } from "@/components/full-screen-loader";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
@@ -27,6 +27,7 @@ import { useToastStore } from "@/stores/toast-store";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { getTodayAtMidnight } from "@/lib/date-time";
 
 type InspectFormValues = {
   notes: string;
@@ -40,8 +41,6 @@ export default function WorkerDetailsScreen() {
   const params = useLocalSearchParams();
   const taskId = params.id as string;
   const isTransitionFinished = useScreenTransition();
-  const [showDatePicker, setShowDatePicker] = React.useState(false);
-  const [tempDate, setTempDate] = React.useState<Date>(new Date());
 
   const {
     requests,
@@ -78,7 +77,11 @@ export default function WorkerDetailsScreen() {
   );
 
   // Form states for Inspection
-  const { control, handleSubmit, formState: { errors } } = useForm<InspectFormValues>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<InspectFormValues>({
     resolver: zodResolver(inspectSchema),
     defaultValues: {
       notes: "",
@@ -89,12 +92,19 @@ export default function WorkerDetailsScreen() {
 
   const [selectedPhotos, setSelectedPhotos] = React.useState<string[]>([]);
   const [isMediaSheetVisible, setIsMediaSheetVisible] = React.useState(false);
-  const [selectedViewerImage, setSelectedViewerImage] = React.useState<string | null>(null);
+  const [selectedViewerImage, setSelectedViewerImage] = React.useState<
+    string | null
+  >(null);
   const [isViewerVisible, setIsViewerVisible] = React.useState(false);
   const [actionLoading, setActionLoading] = React.useState(false);
 
   const getCategoryConfig = () => {
-    if (!task) return { icon: "otherService" as const, bgClass: "bg-gray-50", iconColor: "#6B7280" };
+    if (!task)
+      return {
+        icon: "otherService" as const,
+        bgClass: "bg-gray-50",
+        iconColor: "#6B7280",
+      };
     switch (task.category) {
       case "plumbing":
         return {
@@ -177,7 +187,10 @@ export default function WorkerDetailsScreen() {
         }}
       >
         <Stack.Screen options={{ headerShown: false }} />
-        <ScreenHeader title={t("worker.detailsTitle")} onBack={() => router.back()} />
+        <ScreenHeader
+          title={t("worker.detailsTitle")}
+          onBack={() => router.back()}
+        />
         <View className="flex-1 items-center justify-center p-6">
           <Text
             className="text-base text-muted-foreground"
@@ -199,15 +212,16 @@ export default function WorkerDetailsScreen() {
       await acceptTask(task.id);
       await addRequestComment(
         task.id,
-        t("worker.acceptedComment").replace("{{name}}", workerName)
+        t("worker.acceptedComment").replace("{{name}}", workerName),
       );
       Alert.alert(
         t("worker.status.accepted"),
         t("worker.status.acceptedDesc"),
-        [{ text: t("common.ok") }]
+        [{ text: t("common.ok") }],
       );
     } catch (e: unknown) {
-      const errMsg = e instanceof Error ? e.message : t("errors.acceptTaskFailed");
+      const errMsg =
+        e instanceof Error ? e.message : t("errors.acceptTaskFailed");
       useToastStore.getState().showToast(errMsg, "error");
       Alert.alert(t("common.error"), errMsg);
     } finally {
@@ -238,7 +252,7 @@ export default function WorkerDetailsScreen() {
     try {
       // Encode photos to base64 payload
       const photosPayload = await Promise.all(
-        selectedPhotos.map((photoUri) => encodeImageUri(photoUri))
+        selectedPhotos.map((photoUri) => encodeImageUri(photoUri)),
       );
 
       await inspectTask(task.id, {
@@ -251,18 +265,27 @@ export default function WorkerDetailsScreen() {
       await addRequestComment(
         task.id,
         t("worker.inspectionComment")
-          .replace("{{materials}}", (data.materials || "").trim() || t("common.none"))
-          .replace("{{deadline}}", (data.deadline || "").trim() || t("common.notAvailable"))
-          .replace("{{notes}}", data.notes.trim())
+          .replace(
+            "{{materials}}",
+            (data.materials || "").trim() || t("common.none"),
+          )
+          .replace(
+            "{{deadline}}",
+            (data.deadline || "").trim() || t("common.notAvailable"),
+          )
+          .replace("{{notes}}", data.notes.trim()),
       );
 
       Alert.alert(
         t("worker.status.inspected"),
         t("worker.status.inspectedDesc"),
-        [{ text: t("common.ok") }]
+        [{ text: t("common.ok") }],
       );
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.inspectTaskFailed"));
+      Alert.alert(
+        t("common.error"),
+        e instanceof Error ? e.message : t("errors.inspectTaskFailed"),
+      );
     } finally {
       setActionLoading(false);
     }
@@ -274,15 +297,16 @@ export default function WorkerDetailsScreen() {
       await startTask(task.id);
       await addRequestComment(
         task.id,
-        t("worker.startedComment").replace("{{name}}", workerName)
+        t("worker.startedComment").replace("{{name}}", workerName),
       );
-      Alert.alert(
-        t("worker.status.working"),
-        t("worker.status.workingDesc"),
-        [{ text: t("common.ok") }]
-      );
+      Alert.alert(t("worker.status.working"), t("worker.status.workingDesc"), [
+        { text: t("common.ok") },
+      ]);
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.startTaskFailed"));
+      Alert.alert(
+        t("common.error"),
+        e instanceof Error ? e.message : t("errors.startTaskFailed"),
+      );
     } finally {
       setActionLoading(false);
     }
@@ -292,28 +316,30 @@ export default function WorkerDetailsScreen() {
     setActionLoading(true);
     try {
       await completeTask(task.id);
-      await addRequestComment(
-        task.id,
-        t("worker.completedComment")
-      );
+      await addRequestComment(task.id, t("worker.completedComment"));
 
       Alert.alert(
         t("worker.status.completed"),
         t("worker.status.completedDesc"),
-        [{ text: t("common.ok"), onPress: () => router.back() }]
+        [{ text: t("common.ok"), onPress: () => router.back() }],
       );
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.completeTaskFailed"));
+      Alert.alert(
+        t("common.error"),
+        e instanceof Error ? e.message : t("errors.completeTaskFailed"),
+      );
     } finally {
       setActionLoading(false);
     }
   };
 
   const isAssignedToMe = task.workerName === workerName;
-  const needsInspection = isAssignedToMe && (!task.workerPhase || task.workerPhase === "accepted");
+  const needsInspection =
+    isAssignedToMe && (!task.workerPhase || task.workerPhase === "accepted");
   const needsStartTask = isAssignedToMe && task.workerPhase === "inspected";
   const needsCloseMission = isAssignedToMe && task.workerPhase === "working";
-  const isCompleted = task.status === "completed" || task.workerPhase === "completed";
+  const isCompleted =
+    task.status === "completed" || task.workerPhase === "completed";
 
   return (
     <View
@@ -325,7 +351,10 @@ export default function WorkerDetailsScreen() {
       }}
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <ScreenHeader title={t("worker.detailsTitle")} onBack={() => router.back()} />
+      <ScreenHeader
+        title={t("worker.detailsTitle")}
+        onBack={() => router.back()}
+      />
 
       <KeyboardAwareScrollContent
         showsVerticalScrollIndicator={false}
@@ -340,8 +369,14 @@ export default function WorkerDetailsScreen() {
         <View className="w-full bg-card rounded-2xl p-5 flex-col gap-4 shadow-sm mb-6">
           <AppRow className="items-center justify-between gap-3">
             <AppRow className="items-center gap-3.5 flex-1 min-w-0">
-              <View className={`w-12 h-12 rounded-xl items-center justify-center ${categoryConfig.bgClass}`}>
-                <AppIcon name={categoryConfig.icon} size={24} color={categoryConfig.iconColor} />
+              <View
+                className={`w-12 h-12 rounded-xl items-center justify-center ${categoryConfig.bgClass}`}
+              >
+                <AppIcon
+                  name={categoryConfig.icon}
+                  size={24}
+                  color={categoryConfig.iconColor}
+                />
               </View>
               <View className="flex-1 min-w-0 text-start">
                 <Text
@@ -361,7 +396,9 @@ export default function WorkerDetailsScreen() {
             </AppRow>
 
             {/* Status Badge */}
-            <View className={`px-3 py-1 rounded-full shrink-0 ${statusConfig.bgClass}`}>
+            <View
+              className={`px-3 py-1 rounded-full shrink-0 ${statusConfig.bgClass}`}
+            >
               <Text
                 className={`text-xs font-bold uppercase tracking-wider ${statusConfig.textClass}`}
                 numberOfLines={1}
@@ -527,128 +564,18 @@ export default function WorkerDetailsScreen() {
               <Controller
                 control={control}
                 name="deadline"
-                render={({ field: { onChange, value } }) => {
-                  const onDateChange = (event: any, selectedDate?: Date) => {
-                    if (Platform.OS === "android") {
-                      setShowDatePicker(false);
-                      if (selectedDate) {
-                        const yyyy = selectedDate.getFullYear();
-                        const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
-                        const dd = String(selectedDate.getDate()).padStart(2, "0");
-                        onChange(`${yyyy}-${mm}-${dd}`);
-                      }
-                    } else {
-                      if (selectedDate) {
-                        setTempDate(selectedDate);
-                      }
-                    }
-                  };
-
-                  const handleOpenPicker = () => {
-                    const parsedDate = value ? new Date(value) : new Date();
-                    setTempDate(parsedDate);
-                    setShowDatePicker(true);
-                  };
-
-                  const getTodayMidnight = () => {
-                    const d = new Date();
-                    d.setHours(0, 0, 0, 0);
-                    return d;
-                  };
-
-                  return (
-                    <View className="flex-col">
-                      <Pressable 
-                        onPress={handleOpenPicker}
-                        className="active:opacity-80"
-                      >
-                        <View pointerEvents="none">
-                          <AppInput
-                            label={t("worker.deadlineLabel")}
-                            placeholder={t("worker.deadlinePlaceholder")}
-                            value={value}
-                            editable={false}
-                            error={errors.deadline?.message}
-                          />
-                        </View>
-                        <View 
-                          className="absolute right-4 justify-center" 
-                          style={{ 
-                            top: 28,
-                            bottom: errors.deadline?.message ? 20 : 0 
-                          }}
-                        >
-                          <AppIcon name="calendar" size={18} colorToken="--muted-foreground" />
-                        </View>
-                      </Pressable>
-
-                      {showDatePicker && (
-                        <>
-                          {Platform.OS === "ios" ? (
-                            <Modal
-                              transparent
-                              visible={showDatePicker}
-                              animationType="fade"
-                              onRequestClose={() => setShowDatePicker(false)}
-                            >
-                              <View className="flex-1 bg-black/50 items-center justify-center p-6">
-                                <View className="w-full max-w-sm bg-card rounded-3xl p-6 shadow-xl flex-col gap-5 border border-border/20">
-                                  <Text className="text-base font-bold text-foreground text-center">
-                                    {t("worker.deadlineLabel")}
-                                  </Text>
-                                  <View className="items-center justify-center py-2">
-                                    <RNDateTimePicker
-                                      value={tempDate}
-                                      mode="date"
-                                      display="inline"
-                                      onChange={onDateChange}
-                                      minimumDate={getTodayMidnight()}
-                                    />
-                                  </View>
-                                  <AppRow className="justify-end gap-3 mt-2">
-                                    <Pressable
-                                      onPress={() => {
-                                        onChange("");
-                                        setShowDatePicker(false);
-                                      }}
-                                      className="px-4 py-2 rounded-xl bg-secondary active:opacity-60"
-                                    >
-                                      <Text className="text-sm font-semibold text-muted-foreground">
-                                        {t("actions.clear")}
-                                      </Text>
-                                    </Pressable>
-                                    <Pressable
-                                      onPress={() => {
-                                        const yyyy = tempDate.getFullYear();
-                                        const mm = String(tempDate.getMonth() + 1).padStart(2, "0");
-                                        const dd = String(tempDate.getDate()).padStart(2, "0");
-                                        onChange(`${yyyy}-${mm}-${dd}`);
-                                        setShowDatePicker(false);
-                                      }}
-                                      className="px-4 py-2 rounded-xl bg-primary active:opacity-60"
-                                    >
-                                      <Text className="text-sm font-semibold text-primary-foreground">
-                                        {t("common.ok") || "OK"}
-                                      </Text>
-                                    </Pressable>
-                                  </AppRow>
-                                </View>
-                              </View>
-                            </Modal>
-                          ) : (
-                            <RNDateTimePicker
-                              value={tempDate}
-                              mode="date"
-                              display="default"
-                              onChange={onDateChange}
-                              minimumDate={new Date()}
-                            />
-                          )}
-                        </>
-                      )}
-                    </View>
-                  );
-                }}
+                render={({ field: { onChange, value } }) => (
+                  <AppDateTimeField
+                    label={t("worker.deadlineLabel")}
+                    placeholder={t("worker.deadlinePlaceholder")}
+                    value={value || ""}
+                    onChange={onChange}
+                    mode="date"
+                    minimumDate={getTodayAtMidnight()}
+                    error={errors.deadline?.message}
+                    allowClear
+                  />
+                )}
               />
 
               {/* Photos upload block */}
@@ -656,19 +583,25 @@ export default function WorkerDetailsScreen() {
                 <Text className="text-sm font-semibold text-muted-foreground text-start">
                   {t("worker.uploadImages")}
                 </Text>
-                
+
                 <AppRow className="items-center gap-3">
-	                  <Pressable
-	                    onPress={handleUploadPhoto}
-	                    accessibilityLabel={t("worker.uploadImages")}
-	                    accessibilityRole="button"
-	                    className="w-12 h-12 rounded-xl bg-secondary justify-center items-center active:opacity-75"
+                  <Pressable
+                    onPress={handleUploadPhoto}
+                    accessibilityLabel={t("worker.uploadImages")}
+                    accessibilityRole="button"
+                    className="w-12 h-12 rounded-xl bg-secondary justify-center items-center active:opacity-75"
                   >
                     <AppIcon name="camera" size={20} color={mutedToken} />
                   </Pressable>
 
-                  <Text className="text-sm text-muted-foreground" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
-                    {t("worker.imagesCount").replace("{{count}}", String(selectedPhotos.length))}
+                  <Text
+                    className="text-sm text-muted-foreground"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
+                    {t("worker.imagesCount").replace(
+                      "{{count}}",
+                      String(selectedPhotos.length),
+                    )}
                   </Text>
                 </AppRow>
 
@@ -676,43 +609,51 @@ export default function WorkerDetailsScreen() {
                 {selectedPhotos.length > 0 && (
                   <AppRow className="gap-2.5 mt-2 flex-wrap">
                     {selectedPhotos.map((photoUri, idx) => (
-	                      <View
-	                        key={photoUri}
-	                        className="w-16 h-16 rounded-xl bg-muted overflow-hidden relative"
-	                      >
-	                        <Pressable
+                      <View
+                        key={photoUri}
+                        className="w-16 h-16 rounded-xl bg-muted overflow-hidden relative"
+                      >
+                        <Pressable
                           onPress={() => {
                             setSelectedViewerImage(photoUri);
                             setIsViewerVisible(true);
-	                          }}
-	                          accessibilityLabel={t("tickets.openAttachment")}
-	                          accessibilityRole="imagebutton"
-	                          className="w-full h-full active:opacity-90"
+                          }}
+                          accessibilityLabel={t("tickets.openAttachment")}
+                          accessibilityRole="imagebutton"
+                          className="w-full h-full active:opacity-90"
                         >
-                          <Image source={photoUri} style={{ width: "100%", height: "100%" }} contentFit="cover" />
+                          <Image
+                            source={photoUri}
+                            style={{ width: "100%", height: "100%" }}
+                            contentFit="cover"
+                          />
                         </Pressable>
-                        
+
                         {/* Remove button */}
-	                        <Pressable
-	                          onPress={() => handleRemovePhoto(idx)}
-	                          accessibilityLabel={t("tickets.removeAttachment")}
-	                          accessibilityRole="button"
-	                          className="absolute -top-1 -end-1 bg-rose-600 w-5 h-5 rounded-full items-center justify-center shadow-sm z-10 active:opacity-75"
+                        <Pressable
+                          onPress={() => handleRemovePhoto(idx)}
+                          accessibilityLabel={t("tickets.removeAttachment")}
+                          accessibilityRole="button"
+                          className="absolute -top-1 -end-1 bg-rose-600 w-5 h-5 rounded-full items-center justify-center shadow-sm z-10 active:opacity-75"
                         >
-                          <AppIcon name="trash" size={10} colorToken="--primary-foreground" />
+                          <AppIcon
+                            name="trash"
+                            size={10}
+                            colorToken="--primary-foreground"
+                          />
                         </Pressable>
                       </View>
                     ))}
                   </AppRow>
                 )}
               </View>
-            <View className="mt-2">
-              <AppButton
-                label={t("worker.submitInspectionBtn")}
-                onPress={handleSubmit(handleSubmitInspection)}
-              />
+              <View className="mt-2">
+                <AppButton
+                  label={t("worker.submitInspectionBtn")}
+                  onPress={handleSubmit(handleSubmitInspection)}
+                />
+              </View>
             </View>
-          </View>
           </View>
         )}
 
@@ -721,10 +662,16 @@ export default function WorkerDetailsScreen() {
           <View className="flex-col gap-6 w-full mt-2">
             {/* Inspection details card */}
             <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-4">
-              <Text className="text-base font-bold text-foreground text-start pb-3" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
+              <Text
+                className="text-base font-bold text-foreground text-start pb-3"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {t("worker.notesLabel")}
               </Text>
-              <Text className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
+              <Text
+                className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {typeof task.notes === "string" ? task.notes : ""}
               </Text>
             </View>
@@ -744,16 +691,25 @@ export default function WorkerDetailsScreen() {
             {/* Inspection details card */}
             <View className="w-full bg-card rounded-2xl p-5 shadow-sm flex-col gap-4">
               <AppRow className="items-center justify-between pb-3">
-                <Text className="text-base font-bold text-foreground text-start" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
+                <Text
+                  className="text-base font-bold text-foreground text-start"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
                   {t("worker.notesLabel")}
                 </Text>
                 <View className="px-2.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/30">
-                  <Text className="text-xs font-bold text-blue-600 dark:text-blue-400" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
+                  <Text
+                    className="text-xs font-bold text-blue-600 dark:text-blue-400"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
                     {t("worker.status.working")}
                   </Text>
                 </View>
               </AppRow>
-              <Text className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
+              <Text
+                className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {typeof task.notes === "string" ? task.notes : ""}
               </Text>
             </View>
@@ -770,17 +726,25 @@ export default function WorkerDetailsScreen() {
         {/* Case 5: Completed Tasks - Read Only Summary */}
         {isCompleted && task.notes && (
           <View className="w-full bg-card rounded-2xl p-5 shadow-sm mt-2 flex-col gap-4">
-            <Text className="text-base font-bold text-foreground text-start pb-3" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
+            <Text
+              className="text-base font-bold text-foreground text-start pb-3"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {t("worker.notesLabel")}
             </Text>
-            <Text className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl" style={{ writingDirection: isRTL ? "rtl" : "ltr" }}>
+            <Text
+              className="text-sm text-card-foreground leading-6 text-start bg-secondary/40 p-4 rounded-xl"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
               {typeof task.notes === "string" ? task.notes : ""}
             </Text>
           </View>
         )}
       </KeyboardAwareScrollContent>
 
-      <FullScreenLoader visible={actionLoading || (loading && isTransitionFinished)} />
+      <FullScreenLoader
+        visible={actionLoading || (loading && isTransitionFinished)}
+      />
 
       <MediaSourceSheet
         isPresented={isMediaSheetVisible}
@@ -797,4 +761,3 @@ export default function WorkerDetailsScreen() {
     </View>
   );
 }
-

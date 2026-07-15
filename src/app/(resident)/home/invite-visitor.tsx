@@ -9,14 +9,19 @@ import * as z from "zod";
 import { ScreenHeader } from "@/components/screen-header";
 import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
+import { AppDateTimeField } from "@/components/app-date-time-field";
 import { AppSelectField } from "@/components/app-select-field";
 import { FullScreenLoader } from "@/components/full-screen-loader";
 import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { VisitorPurposeBottomSheet } from "@/components/visitor-purpose-bottom-sheet";
-import { visitorPurposeOptions, type VisitorPurposeId } from "@/constants/visitor-purposes";
+import {
+  visitorPurposeOptions,
+  type VisitorPurposeId,
+} from "@/constants/visitor-purposes";
 import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentation";
 import { useI18n } from "@/hooks/use-i18n";
 import { useCommunityStore } from "@/stores/community-store";
+import { getTodayAtMidnight } from "@/lib/date-time";
 
 type InviteVisitorFormValues = {
   visitorName: string;
@@ -35,14 +40,25 @@ export default function InviteVisitorScreen() {
     () =>
       z.object({
         visitorName: z.string().min(1, t("validation.required")),
-        visitDate: z.string().min(1, t("validation.required")).regex(/^\d{4}-\d{2}-\d{2}$/, t("validation.dateFormat")),
-        visitTime: z.string().min(1, t("validation.required")).regex(/^\d{2}:\d{2}$/, t("validation.timeFormat")),
+        visitDate: z
+          .string()
+          .min(1, t("validation.required"))
+          .regex(/^\d{4}-\d{2}-\d{2}$/, t("validation.dateFormat")),
+        visitTime: z
+          .string()
+          .min(1, t("validation.required"))
+          .regex(/^\d{2}:\d{2}$/, t("validation.timeFormat")),
         purpose: z.string().min(1, t("validation.required")),
       }),
     [t],
   );
 
-  const { control, handleSubmit, setValue, formState: { errors } } = useForm<InviteVisitorFormValues>({
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<InviteVisitorFormValues>({
     resolver: zodResolver(inviteVisitorSchema),
     defaultValues: {
       visitorName: "",
@@ -53,7 +69,9 @@ export default function InviteVisitorScreen() {
   });
 
   const selectedPurpose = useWatch({ control, name: "purpose" });
-  const selectedPurposeOption = visitorPurposeOptions.find((option) => option.id === selectedPurpose);
+  const selectedPurposeOption = visitorPurposeOptions.find(
+    (option) => option.id === selectedPurpose,
+  );
 
   React.useEffect(() => {
     clearError();
@@ -73,10 +91,13 @@ export default function InviteVisitorScreen() {
       Alert.alert(
         t("inviteVisitor.successTitle"),
         `${t("inviteVisitor.successDesc")}\n\n${t("inviteVisitor.accessCode")}: ${invite.accessCode}`,
-        [{ text: t("common.ok"), onPress: () => router.back() }]
+        [{ text: t("common.ok"), onPress: () => router.back() }],
       );
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.generic"));
+      Alert.alert(
+        t("common.error"),
+        e instanceof Error ? e.message : t("errors.generic"),
+      );
     } finally {
       setLocalLoading(false);
     }
@@ -93,7 +114,10 @@ export default function InviteVisitorScreen() {
     >
       <Stack.Screen options={{ headerShown: false }} />
 
-      <ScreenHeader title={t("quickActions.inviteVisitor")} onBack={() => router.back()} />
+      <ScreenHeader
+        title={t("quickActions.inviteVisitor")}
+        onBack={() => router.back()}
+      />
 
       <KeyboardAwareScrollContent
         contentContainerStyle={{
@@ -129,13 +153,14 @@ export default function InviteVisitorScreen() {
           <Controller
             control={control}
             name="visitDate"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <AppInput
+            render={({ field: { onChange, value } }) => (
+              <AppDateTimeField
                 label={t("inviteVisitor.visitDate")}
                 placeholder={t("inviteVisitor.visitDatePlaceholder")}
                 value={value}
-                onBlur={onBlur}
-                onChangeText={onChange}
+                onChange={onChange}
+                mode="date"
+                minimumDate={getTodayAtMidnight()}
                 error={errors.visitDate?.message}
               />
             )}
@@ -144,13 +169,13 @@ export default function InviteVisitorScreen() {
           <Controller
             control={control}
             name="visitTime"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <AppInput
+            render={({ field: { onChange, value } }) => (
+              <AppDateTimeField
                 label={t("inviteVisitor.visitTime")}
                 placeholder={t("inviteVisitor.visitTimePlaceholder")}
                 value={value}
-                onBlur={onBlur}
-                onChangeText={onChange}
+                onChange={onChange}
+                mode="time"
                 error={errors.visitTime?.message}
               />
             )}
@@ -159,7 +184,11 @@ export default function InviteVisitorScreen() {
           <AppSelectField
             label={t("inviteVisitor.purpose")}
             placeholder={t("inviteVisitor.purposePlaceholder")}
-            value={selectedPurposeOption ? t(selectedPurposeOption.labelKey) : undefined}
+            value={
+              selectedPurposeOption
+                ? t(selectedPurposeOption.labelKey)
+                : undefined
+            }
             onPress={purposeSheet.present}
             error={errors.purpose?.message}
           />
