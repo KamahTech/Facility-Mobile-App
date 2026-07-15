@@ -18,6 +18,7 @@ import { AppSelectField } from "@/components/app-select-field";
 import { UnitSelectBottomSheet } from "@/components/unit-select-bottom-sheet";
 import { useUnitStore } from "@/stores/unit-store";
 import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentation";
+import { getConnectedUnitReference } from "@/lib/unit-reference";
 
 type FeedbackFormValues = {
   subject: string;
@@ -44,7 +45,12 @@ export default function FeedbackScreen() {
     [t],
   );
 
-  const { control, handleSubmit, setValue, formState: { errors } } = useForm<FeedbackFormValues>({
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
       subject: "",
@@ -55,7 +61,7 @@ export default function FeedbackScreen() {
   });
 
   const selectedUnitId = useWatch({ control, name: "unitId" });
-  const selectedUnit = units.find(u => u.id === selectedUnitId) || null;
+  const selectedUnit = units.find((u) => u.id === selectedUnitId) || null;
 
   React.useEffect(() => {
     clearError();
@@ -72,23 +78,19 @@ export default function FeedbackScreen() {
       };
 
       if (selectedUnit) {
-        const idNum = parseInt(selectedUnit.id, 10);
-        if (selectedUnit.source === "mobile_unit_link") {
-          payload.mobileUnitLinkId = idNum;
-        } else {
-          payload.unitId = idNum;
-        }
+        Object.assign(payload, getConnectedUnitReference(selectedUnit));
       }
 
       await submitFeedback(payload);
 
-      Alert.alert(
-        t("feedback.successTitle"),
-        t("feedback.successDesc"),
-        [{ text: t("common.ok"), onPress: () => router.back() }]
-      );
+      Alert.alert(t("feedback.successTitle"), t("feedback.successDesc"), [
+        { text: t("common.ok"), onPress: () => router.back() },
+      ]);
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.feedbackSubmitFailed"));
+      Alert.alert(
+        t("common.error"),
+        e instanceof Error ? e.message : t("errors.feedbackSubmitFailed"),
+      );
     } finally {
       setLocalLoading(false);
     }
@@ -110,7 +112,10 @@ export default function FeedbackScreen() {
     >
       <Stack.Screen options={{ headerShown: false }} />
 
-      <ScreenHeader title={t("quickActions.feedback")} onBack={() => router.back()} />
+      <ScreenHeader
+        title={t("quickActions.feedback")}
+        onBack={() => router.back()}
+      />
 
       <KeyboardAwareScrollContent
         contentContainerStyle={{

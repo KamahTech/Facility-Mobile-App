@@ -11,6 +11,7 @@ import { AppInput } from "@/components/app-input";
 import { AppButton } from "@/components/app-button";
 import { AppDateTimeField } from "@/components/app-date-time-field";
 import { AppSelectField } from "@/components/app-select-field";
+import { UnitSelectBottomSheet } from "@/components/unit-select-bottom-sheet";
 import { FullScreenLoader } from "@/components/full-screen-loader";
 import { KeyboardAwareScrollContent } from "@/components/keyboard-aware-scroll-content";
 import { VisitorPurposeBottomSheet } from "@/components/visitor-purpose-bottom-sheet";
@@ -22,20 +23,25 @@ import { useBottomSheetPresentation } from "@/hooks/use-bottom-sheet-presentatio
 import { useI18n } from "@/hooks/use-i18n";
 import { useCommunityStore } from "@/stores/community-store";
 import { getTodayAtMidnight } from "@/lib/date-time";
+import { useUnitStore } from "@/stores/unit-store";
+import { getConnectedUnitReference } from "@/lib/unit-reference";
 
 type InviteVisitorFormValues = {
   visitorName: string;
   visitDate: string;
   visitTime: string;
   purpose: string;
+  unitId: string;
 };
 
 export default function InviteVisitorScreen() {
   const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { createVisitor, loading, error, clearError } = useCommunityStore();
+  const { units, loading: unitsLoading } = useUnitStore();
   const [localLoading, setLocalLoading] = React.useState(false);
   const purposeSheet = useBottomSheetPresentation();
+  const unitSheet = useBottomSheetPresentation();
   const inviteVisitorSchema = React.useMemo(
     () =>
       z.object({
@@ -49,6 +55,7 @@ export default function InviteVisitorScreen() {
           .min(1, t("validation.required"))
           .regex(/^\d{2}:\d{2}$/, t("validation.timeFormat")),
         purpose: z.string().min(1, t("validation.required")),
+        unitId: z.string().min(1, t("tickets.noUnitSelected")),
       }),
     [t],
   );
@@ -65,10 +72,13 @@ export default function InviteVisitorScreen() {
       visitDate: "",
       visitTime: "",
       purpose: "",
+      unitId: "",
     },
   });
 
   const selectedPurpose = useWatch({ control, name: "purpose" });
+  const selectedUnitId = useWatch({ control, name: "unitId" });
+  const selectedUnit = units.find((unit) => unit.id === selectedUnitId) || null;
   const selectedPurposeOption = visitorPurposeOptions.find(
     (option) => option.id === selectedPurpose,
   );
@@ -77,15 +87,26 @@ export default function InviteVisitorScreen() {
     clearError();
   }, [clearError]);
 
+  React.useEffect(() => {
+    if (units.length === 1 && !selectedUnitId) {
+      setValue("unitId", units[0].id, { shouldValidate: true });
+    }
+  }, [selectedUnitId, setValue, units]);
+
   const onSubmit = async (data: InviteVisitorFormValues) => {
     clearError();
     setLocalLoading(true);
     try {
+      if (!selectedUnit) {
+        throw new Error(t("tickets.noUnitSelected"));
+      }
+
       const invite = await createVisitor({
         visitorName: data.visitorName.trim(),
         visitDate: data.visitDate.trim(),
         visitTime: data.visitTime.trim(),
         purpose: data.purpose,
+        ...getConnectedUnitReference(selectedUnit),
       });
 
       Alert.alert(
@@ -148,6 +169,18 @@ export default function InviteVisitorScreen() {
                 error={errors.visitorName?.message}
               />
             )}
+          />
+
+          <AppSelectField
+            label={t("tickets.selectUnit")}
+            placeholder={t("tickets.selectUnit")}
+            value={
+              selectedUnit
+                ? `${selectedUnit.buildingNumber} - ${selectedUnit.unitNumber}`
+                : undefined
+            }
+            onPress={unitSheet.present}
+            error={errors.unitId?.message}
           />
 
           <Controller
@@ -213,7 +246,17 @@ export default function InviteVisitorScreen() {
         </View>
       </KeyboardAwareScrollContent>
 
-      <FullScreenLoader visible={localLoading || loading} />
+      <FullScreenLoader visible={localLoading || loading || unitsLoading} />
+
+      <UnitSelectBottomSheet
+        isPresented={unitSheet.isPresented}
+        units={units}
+        selectedUnitId={selectedUnit?.id}
+        onDismiss={unitSheet.dismiss}
+        onSelect={(unit) => {
+          setValue("unitId", unit.id, { shouldValidate: true });
+        }}
+      />
 
       <VisitorPurposeBottomSheet
         isPresented={purposeSheet.isPresented}

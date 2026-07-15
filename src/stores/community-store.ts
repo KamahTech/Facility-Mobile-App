@@ -1,5 +1,9 @@
 import React from "react";
-import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useUserStore } from "@/stores/user-store";
@@ -70,7 +74,14 @@ export type NotificationItem = {
   title: string;
   description: string;
   time: string;
-  type: "payment" | "maintenance" | "visitor" | "announcement" | "task_assigned" | "inspection" | "general";
+  type:
+    | "payment"
+    | "maintenance"
+    | "visitor"
+    | "announcement"
+    | "task_assigned"
+    | "inspection"
+    | "general";
   unread: boolean;
   read: boolean;
 };
@@ -80,6 +91,8 @@ export type CreateVisitorParams = {
   visitDate: string;
   visitTime: string;
   purpose: string;
+  unitId?: number | string;
+  mobileUnitLinkId?: number | string;
 };
 
 export type SubmitFeedbackParams = {
@@ -133,7 +146,11 @@ export function useCommunityStore(options?: {
   const updatesQuery = useInfiniteQuery<PaginatedUpdates>({
     queryKey: ["community-updates", language],
     queryFn: ({ pageParam }) =>
-      apiRequest<PaginatedUpdates>("/community/updates", { limit: 20, cursor: pageParam, lang: language }),
+      apiRequest<PaginatedUpdates>("/community/updates", {
+        limit: 20,
+        cursor: pageParam,
+        lang: language,
+      }),
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableUpdates,
@@ -142,7 +159,10 @@ export function useCommunityStore(options?: {
   const visitorsQuery = useInfiniteQuery<PaginatedVisitors>({
     queryKey: ["visitors"],
     queryFn: ({ pageParam }) =>
-      apiRequest<PaginatedVisitors>("/resident/visitors", { limit: 20, cursor: pageParam }),
+      apiRequest<PaginatedVisitors>("/resident/visitors", {
+        limit: 20,
+        cursor: pageParam,
+      }),
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableVisitors,
@@ -151,7 +171,10 @@ export function useCommunityStore(options?: {
   const feedbacksQuery = useInfiniteQuery<PaginatedFeedbacks>({
     queryKey: ["feedbacks"],
     queryFn: ({ pageParam }) =>
-      apiRequest<PaginatedFeedbacks>("/resident/feedback", { limit: 20, cursor: pageParam }),
+      apiRequest<PaginatedFeedbacks>("/resident/feedback", {
+        limit: 20,
+        cursor: pageParam,
+      }),
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableFeedbacks,
@@ -160,7 +183,10 @@ export function useCommunityStore(options?: {
   const notificationsQuery = useInfiniteQuery<PaginatedNotifications>({
     queryKey: ["notifications", accountType],
     queryFn: ({ pageParam }) =>
-      apiRequest<PaginatedNotifications>("/notifications", { limit: 20, cursor: pageParam }),
+      apiRequest<PaginatedNotifications>("/notifications", {
+        limit: 20,
+        cursor: pageParam,
+      }),
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableNotifications,
@@ -169,82 +195,110 @@ export function useCommunityStore(options?: {
   // Mutations
   const votePollMutation = useMutation({
     mutationFn: (params: { pollId: string; optionId: string | number }) => {
-      const optionIdNum = typeof params.optionId === "number" ? params.optionId : parseInt(params.optionId, 10);
-      return apiRequest(`/community/polls/${params.pollId}/vote`, { optionId: optionIdNum });
+      const optionIdNum =
+        typeof params.optionId === "number"
+          ? params.optionId
+          : parseInt(params.optionId, 10);
+      return apiRequest(`/community/polls/${params.pollId}/vote`, {
+        optionId: optionIdNum,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-updates"] });
-    }
+    },
   });
 
   const createVisitorMutation = useMutation({
-    mutationFn: (params: CreateVisitorParams) => apiRequest<VisitorInvite>("/resident/visitors/invite", params),
+    mutationFn: (params: CreateVisitorParams) =>
+      apiRequest<VisitorInvite>("/resident/visitors/invite", params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["visitors"] });
-    }
+    },
   });
 
   const cancelVisitorMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/resident/visitors/${id}/cancel`, {}),
+    mutationFn: (id: string) =>
+      apiRequest(`/resident/visitors/${id}/cancel`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["visitors"] });
-    }
+    },
   });
 
   const submitFeedbackMutation = useMutation({
-    mutationFn: (params: SubmitFeedbackParams) => apiRequest("/resident/feedback/submit", params),
+    mutationFn: (params: SubmitFeedbackParams) =>
+      apiRequest("/resident/feedback/submit", params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
-    }
+    },
   });
 
   const markNotificationReadMutation = useMutation({
     mutationFn: (id: string) =>
-      apiRequest<{ id: string; read: boolean; unread: boolean }>(`/notifications/${id}/read`, {}),
+      apiRequest<{ id: string; read: boolean; unread: boolean }>(
+        `/notifications/${id}/read`,
+        {},
+      ),
     onSuccess: (data, id) => {
-      queryClient.setQueryData<{ pages: PaginatedNotifications[]; pageParams: unknown[] }>(
-        ["notifications", accountType],
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              items: page.items.map((item) =>
-                item.id === id ? { ...item, unread: false, read: true } : item
-              ),
-            })),
-          };
-        }
-      );
+      queryClient.setQueryData<{
+        pages: PaginatedNotifications[];
+        pageParams: unknown[];
+      }>(["notifications", accountType], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            items: page.items.map((item) =>
+              item.id === id ? { ...item, unread: false, read: true } : item,
+            ),
+          })),
+        };
+      });
     },
   });
 
   const markAllNotificationsReadMutation = useMutation({
-    mutationFn: () => apiRequest<{ markedRead: number }>("/notifications/mark-all-read", {}),
+    mutationFn: () =>
+      apiRequest<{ markedRead: number }>("/notifications/mark-all-read", {}),
     onSuccess: () => {
-      queryClient.setQueryData<{ pages: PaginatedNotifications[]; pageParams: unknown[] }>(
-        ["notifications", accountType],
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              items: page.items.map((item) => ({ ...item, unread: false, read: true })),
+      queryClient.setQueryData<{
+        pages: PaginatedNotifications[];
+        pageParams: unknown[];
+      }>(["notifications", accountType], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            items: page.items.map((item) => ({
+              ...item,
+              unread: false,
+              read: true,
             })),
-          };
-        }
-      );
+          })),
+        };
+      });
     },
   });
 
   // States
-  const updates = React.useMemo(() => updatesQuery.data?.pages.flatMap((page) => page.items) || [], [updatesQuery.data]);
-  const visitors = React.useMemo(() => visitorsQuery.data?.pages.flatMap((page) => page.items) || [], [visitorsQuery.data]);
-  const feedbacks = React.useMemo(() => feedbacksQuery.data?.pages.flatMap((page) => page.items) || [], [feedbacksQuery.data]);
-  const notifications = React.useMemo(() => notificationsQuery.data?.pages.flatMap((page) => page.items) || [], [notificationsQuery.data]);
-  
+  const updates = React.useMemo(
+    () => updatesQuery.data?.pages.flatMap((page) => page.items) || [],
+    [updatesQuery.data],
+  );
+  const visitors = React.useMemo(
+    () => visitorsQuery.data?.pages.flatMap((page) => page.items) || [],
+    [visitorsQuery.data],
+  );
+  const feedbacks = React.useMemo(
+    () => feedbacksQuery.data?.pages.flatMap((page) => page.items) || [],
+    [feedbacksQuery.data],
+  );
+  const notifications = React.useMemo(
+    () => notificationsQuery.data?.pages.flatMap((page) => page.items) || [],
+    [notificationsQuery.data],
+  );
+
   const loading =
     updatesQuery.isLoading ||
     updatesQuery.isFetchingNextPage ||
@@ -297,10 +351,20 @@ export function useCommunityStore(options?: {
     isFetchingNextPage: isFetchingNextNotificationsPage,
     refetch: refetchNotifications,
   } = notificationsQuery;
-  const { mutateAsync: votePollMutateAsync, reset: resetVotePollMutation } = votePollMutation;
-  const { mutateAsync: createVisitorMutateAsync, reset: resetCreateVisitorMutation } = createVisitorMutation;
-  const { mutateAsync: cancelVisitorMutateAsync, reset: resetCancelVisitorMutation } = cancelVisitorMutation;
-  const { mutateAsync: submitFeedbackMutateAsync, reset: resetSubmitFeedbackMutation } = submitFeedbackMutation;
+  const { mutateAsync: votePollMutateAsync, reset: resetVotePollMutation } =
+    votePollMutation;
+  const {
+    mutateAsync: createVisitorMutateAsync,
+    reset: resetCreateVisitorMutation,
+  } = createVisitorMutation;
+  const {
+    mutateAsync: cancelVisitorMutateAsync,
+    reset: resetCancelVisitorMutation,
+  } = cancelVisitorMutation;
+  const {
+    mutateAsync: submitFeedbackMutateAsync,
+    reset: resetSubmitFeedbackMutation,
+  } = submitFeedbackMutation;
   const {
     mutateAsync: markNotificationReadMutateAsync,
     reset: resetMarkNotificationReadMutation,
@@ -321,13 +385,21 @@ export function useCommunityStore(options?: {
     }
   }, [fetchNextUpdatesPage, hasNextUpdatesPage, isFetchingNextUpdatesPage]);
 
-  const fetchUpdateDetails = React.useCallback(async (id: string) => {
-    return await apiRequest<CommunityUpdate>(`/community/updates/${id}`, { lang: language });
-  }, [language]);
+  const fetchUpdateDetails = React.useCallback(
+    async (id: string) => {
+      return await apiRequest<CommunityUpdate>(`/community/updates/${id}`, {
+        lang: language,
+      });
+    },
+    [language],
+  );
 
-  const votePoll = React.useCallback(async (pollId: string, optionId: string | number) => {
-    await votePollMutateAsync({ pollId, optionId });
-  }, [votePollMutateAsync]);
+  const votePoll = React.useCallback(
+    async (pollId: string, optionId: string | number) => {
+      await votePollMutateAsync({ pollId, optionId });
+    },
+    [votePollMutateAsync],
+  );
 
   const fetchVisitors = React.useCallback(async () => {
     await refetchVisitors();
@@ -339,13 +411,19 @@ export function useCommunityStore(options?: {
     }
   }, [fetchNextVisitorsPage, hasNextVisitorsPage, isFetchingNextVisitorsPage]);
 
-  const createVisitor = React.useCallback(async (params: CreateVisitorParams) => {
-    return await createVisitorMutateAsync(params);
-  }, [createVisitorMutateAsync]);
+  const createVisitor = React.useCallback(
+    async (params: CreateVisitorParams) => {
+      return await createVisitorMutateAsync(params);
+    },
+    [createVisitorMutateAsync],
+  );
 
-  const cancelVisitor = React.useCallback(async (id: string) => {
-    await cancelVisitorMutateAsync(id);
-  }, [cancelVisitorMutateAsync]);
+  const cancelVisitor = React.useCallback(
+    async (id: string) => {
+      await cancelVisitorMutateAsync(id);
+    },
+    [cancelVisitorMutateAsync],
+  );
 
   const fetchFeedbacks = React.useCallback(async () => {
     await refetchFeedbacks();
@@ -355,11 +433,18 @@ export function useCommunityStore(options?: {
     if (hasNextFeedbacksPage && !isFetchingNextFeedbacksPage) {
       await fetchNextFeedbacksPage();
     }
-  }, [fetchNextFeedbacksPage, hasNextFeedbacksPage, isFetchingNextFeedbacksPage]);
+  }, [
+    fetchNextFeedbacksPage,
+    hasNextFeedbacksPage,
+    isFetchingNextFeedbacksPage,
+  ]);
 
-  const submitFeedback = React.useCallback(async (params: SubmitFeedbackParams) => {
-    return await submitFeedbackMutateAsync(params);
-  }, [submitFeedbackMutateAsync]);
+  const submitFeedback = React.useCallback(
+    async (params: SubmitFeedbackParams) => {
+      return await submitFeedbackMutateAsync(params);
+    },
+    [submitFeedbackMutateAsync],
+  );
 
   const fetchNotifications = React.useCallback(async () => {
     await refetchNotifications();
@@ -375,9 +460,12 @@ export function useCommunityStore(options?: {
     isFetchingNextNotificationsPage,
   ]);
 
-  const markNotificationRead = React.useCallback(async (id: string) => {
-    await markNotificationReadMutateAsync(id);
-  }, [markNotificationReadMutateAsync]);
+  const markNotificationRead = React.useCallback(
+    async (id: string) => {
+      await markNotificationReadMutateAsync(id);
+    },
+    [markNotificationReadMutateAsync],
+  );
 
   const markAllNotificationsRead = React.useCallback(async () => {
     await markAllNotificationsReadMutateAsync();
