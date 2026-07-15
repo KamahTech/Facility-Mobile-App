@@ -82,6 +82,7 @@ export type ApiParams = Record<string, unknown>;
 export type ApiResponse = unknown;
 export type ApiRequestOptions = {
   showErrorToast?: boolean;
+  _isRetry?: boolean;
 };
 
 let refreshPromise: Promise<{
@@ -142,6 +143,42 @@ async function performTokenRefresh(): Promise<{
   return refreshPromise;
 }
 
+let tokenRefreshPromise: Promise<string> | null = null;
+
+async function refreshTokenFlow(): Promise<string> {
+  if (tokenRefreshPromise) {
+    return tokenRefreshPromise;
+  }
+
+  tokenRefreshPromise = (async () => {
+    try {
+      const newTokens = await performTokenRefresh();
+      const accessToken = newTokens.accessToken || (newTokens as any).access_token;
+      const refreshToken = newTokens.refreshToken || (newTokens as any).refresh_token;
+
+      if (!accessToken) {
+        throw new Error("Refreshed access token is empty");
+      }
+
+      await setSessionId(accessToken, refreshToken);
+
+      const { useUserStore } = require("@/stores/user-store");
+      useUserStore.setState({
+        sessionId: accessToken,
+      });
+
+      return accessToken;
+    } catch (error) {
+      handleSessionExpired();
+      throw error;
+    } finally {
+      tokenRefreshPromise = null;
+    }
+  })();
+
+  return tokenRefreshPromise;
+}
+
 export async function apiRequest<T = ApiResponse>(
   route: string,
   params: ApiParams = {},
@@ -150,6 +187,11 @@ export async function apiRequest<T = ApiResponse>(
   // Ensure session is initialized before sending any request
   if (!currentAccessToken) {
     await initializeSession();
+  }
+
+  // If a token refresh is currently in progress, wait for it to complete
+  if (tokenRefreshPromise) {
+    await tokenRefreshPromise;
   }
 
   const url = `${API_BASE_URL}${route}`;
@@ -212,29 +254,20 @@ export async function apiRequest<T = ApiResponse>(
         errMsg.toLowerCase().includes("unauthorized");
 
       if (!isAuthRoute && isAuthError) {
+        if (options._isRetry) {
+          handleSessionExpired();
+          throw new Error("Session expired. Retried request failed authentication.");
+        }
+
         try {
-          const newTokens = await performTokenRefresh();
-          const accessToken = newTokens.accessToken || (newTokens as any).access_token;
-          const refreshToken = newTokens.refreshToken || (newTokens as any).refresh_token;
-
-          if (!accessToken) {
-            throw new Error("Refreshed access token is empty");
-          }
-
-          await setSessionId(accessToken, refreshToken);
-
-          const { useUserStore } = require("@/stores/user-store");
-          useUserStore.setState({
-            sessionId: accessToken,
-          });
+          await refreshTokenFlow();
 
           // Delay retry slightly to allow Odoo database transaction commit to settle
           await new Promise((resolve) => setTimeout(resolve, 150));
 
           // Retry the request
-          return await apiRequest<T>(route, params, options);
+          return await apiRequest<T>(route, params, { ...options, _isRetry: true });
         } catch (refreshErr) {
-          handleSessionExpired();
           throw refreshErr;
         }
       }
@@ -248,7 +281,37 @@ export async function apiRequest<T = ApiResponse>(
 
     if (data.ok === false) {
       const err = data.error || {};
-      throw new Error(err.message || "API request failed");
+      const errMsg = err.message || "API request failed";
+      const errCode = err.code;
+
+      const isAuthError = 
+        errCode === "access_denied" ||
+        errCode === 100 ||
+        errMsg.toLowerCase().includes("session expired") ||
+        errMsg.toLowerCase().includes("sessionexpiredexception") ||
+        errMsg.toLowerCase().includes("access denied") ||
+        errMsg.toLowerCase().includes("unauthorized");
+
+      if (!isAuthRoute && isAuthError) {
+        if (options._isRetry) {
+          handleSessionExpired();
+          throw new Error("Session expired. Retried request failed authentication.");
+        }
+
+        try {
+          await refreshTokenFlow();
+
+          // Delay retry slightly to allow Odoo database transaction commit to settle
+          await new Promise((resolve) => setTimeout(resolve, 150));
+
+          // Retry the request
+          return await apiRequest<T>(route, params, { ...options, _isRetry: true });
+        } catch (refreshErr) {
+          throw refreshErr;
+        }
+      }
+
+      throw new Error(errMsg);
     }
 
     return Object.prototype.hasOwnProperty.call(data, "data") ? data.data : data;
@@ -274,29 +337,20 @@ export async function apiRequest<T = ApiResponse>(
       errMsg.toLowerCase().includes("unauthorized");
 
     if (!isAuthRoute && isAuthError) {
+      if (options._isRetry) {
+        handleSessionExpired();
+        throw new Error("Session expired. Retried request failed authentication.");
+      }
+
       try {
-        const newTokens = await performTokenRefresh();
-        const accessToken = newTokens.accessToken || (newTokens as any).access_token;
-        const refreshToken = newTokens.refreshToken || (newTokens as any).refresh_token;
-
-        if (!accessToken) {
-          throw new Error("Refreshed access token is empty");
-        }
-
-        await setSessionId(accessToken, refreshToken);
-
-        const { useUserStore } = require("@/stores/user-store");
-        useUserStore.setState({
-          sessionId: accessToken,
-        });
+        await refreshTokenFlow();
 
         // Delay retry slightly to allow Odoo database transaction commit to settle
         await new Promise((resolve) => setTimeout(resolve, 150));
 
         // Retry the request
-        return await apiRequest<T>(route, params, options);
+        return await apiRequest<T>(route, params, { ...options, _isRetry: true });
       } catch (refreshErr) {
-        handleSessionExpired();
         throw refreshErr;
       }
     }
