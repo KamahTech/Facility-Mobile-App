@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
-import { apiRequest, setSessionId, initializeSession, setSessionExpiredHandler } from "@/lib/api-client";
+import {
+  apiRequest,
+  setSessionId,
+  initializeSession,
+  setSessionExpiredHandler,
+} from "@/lib/api-client";
 import { router } from "expo-router";
 
 export type UserProfile = {
@@ -19,9 +24,24 @@ type UserState = {
   initialized: boolean;
 
   initialize: () => Promise<void>;
-  login: (email: string, password: string, accountType: "resident" | "worker") => Promise<void>;
-  requestOtp: (name: string, email: string, password: string, phone?: string) => Promise<any>;
-  signup: (name: string, email: string, password: string, otp: string, phone?: string) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    accountType: "resident" | "worker",
+  ) => Promise<void>;
+  requestOtp: (
+    name: string,
+    email: string,
+    password: string,
+    phone?: string,
+  ) => Promise<any>;
+  signup: (
+    name: string,
+    email: string,
+    password: string,
+    otp: string,
+    phone?: string,
+  ) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updated: Partial<UserProfile>) => Promise<void>;
   updateProfileImage: (image: string | false) => Promise<void>;
@@ -32,7 +52,7 @@ type UserState = {
 
 type AuthResponse = {
   accessToken: string;
-  refreshToken: string;
+  expiresIn: number;
   profile: UserProfile;
   accountType?: "resident" | "worker";
 };
@@ -52,14 +72,20 @@ export const useUserStore = create<UserState>((set, get) => ({
   initialize: async () => {
     try {
       const storedSession = await initializeSession();
-      const accountType = (await SecureStore.getItemAsync("account_type")) as "resident" | "worker" | null;
+      const accountType = (await SecureStore.getItemAsync("account_type")) as
+        | "resident"
+        | "worker"
+        | null;
       const profileStr = await SecureStore.getItemAsync("profile_data");
-      
+
       if (!storedSession) {
+        await SecureStore.deleteItemAsync("account_type");
+        await SecureStore.deleteItemAsync("profile_data");
+        await SecureStore.setItemAsync("logged_out", "true");
         set({ initialized: true });
         return;
       }
-      
+
       set({
         sessionId: storedSession,
         accountType,
@@ -75,11 +101,15 @@ export const useUserStore = create<UserState>((set, get) => ({
   login: async (email, password, accountType) => {
     set({ loading: true, error: null });
     try {
-      const endpoint = accountType === "worker" ? "/auth/worker/login" : "/auth/login";
-      const response = await apiRequest<AuthResponse>(endpoint, { email, password });
-      const { accessToken, refreshToken, profile } = response;
-      
-      await setSessionId(accessToken, refreshToken);
+      const endpoint =
+        accountType === "worker" ? "/auth/worker/login" : "/auth/login";
+      const response = await apiRequest<AuthResponse>(endpoint, {
+        email,
+        password,
+      });
+      const { accessToken, expiresIn, profile } = response;
+
+      await setSessionId(accessToken, expiresIn);
       await SecureStore.setItemAsync("account_type", accountType);
       await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
       await SecureStore.deleteItemAsync("logged_out");
@@ -100,11 +130,17 @@ export const useUserStore = create<UserState>((set, get) => ({
   requestOtp: async (name, email, password, phone) => {
     set({ loading: true, error: null });
     try {
-      const response = await apiRequest<{ ok?: boolean }>("/auth/signup/request-otp", { name, email, password, phone });
+      const response = await apiRequest<{ ok?: boolean }>(
+        "/auth/signup/request-otp",
+        { name, email, password, phone },
+      );
       set({ loading: false, error: null });
       return response;
     } catch (e: unknown) {
-      set({ loading: false, error: getErrorMessage(e, "Failed to request OTP") });
+      set({
+        loading: false,
+        error: getErrorMessage(e, "Failed to request OTP"),
+      });
       throw e;
     }
   },
@@ -112,10 +148,16 @@ export const useUserStore = create<UserState>((set, get) => ({
   signup: async (name, email, password, otp, phone) => {
     set({ loading: true, error: null });
     try {
-      const response = await apiRequest<AuthResponse>("/auth/signup", { name, email, password, otp, phone });
-      const { accessToken, refreshToken, profile } = response;
-      
-      await setSessionId(accessToken, refreshToken);
+      const response = await apiRequest<AuthResponse>("/auth/signup", {
+        name,
+        email,
+        password,
+        otp,
+        phone,
+      });
+      const { accessToken, expiresIn, profile } = response;
+
+      await setSessionId(accessToken, expiresIn);
       await SecureStore.setItemAsync("account_type", "resident");
       await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
       await SecureStore.deleteItemAsync("logged_out");
@@ -138,9 +180,12 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       await apiRequest("/auth/logout", {});
     } catch (e) {
-      console.warn("Logout request to backend failed, clearing local session anyway.", e);
+      console.warn(
+        "Logout request to backend failed, clearing local session anyway.",
+        e,
+      );
     } finally {
-      await setSessionId(null, null);
+      await setSessionId(null);
       await SecureStore.deleteItemAsync("account_type");
       await SecureStore.deleteItemAsync("profile_data");
       await SecureStore.setItemAsync("logged_out", "true");
@@ -157,15 +202,24 @@ export const useUserStore = create<UserState>((set, get) => ({
   updateProfile: async (updated) => {
     set({ loading: true, error: null });
     try {
-      const updatedProfile = await apiRequest<UserProfile>("/me/update", updated);
-      
-      await SecureStore.setItemAsync("profile_data", JSON.stringify(updatedProfile));
+      const updatedProfile = await apiRequest<UserProfile>(
+        "/me/update",
+        updated,
+      );
+
+      await SecureStore.setItemAsync(
+        "profile_data",
+        JSON.stringify(updatedProfile),
+      );
       set({
         profile: updatedProfile,
         loading: false,
       });
     } catch (e: unknown) {
-      set({ loading: false, error: getErrorMessage(e, "Profile update failed") });
+      set({
+        loading: false,
+        error: getErrorMessage(e, "Profile update failed"),
+      });
       throw e;
     }
   },
@@ -173,15 +227,24 @@ export const useUserStore = create<UserState>((set, get) => ({
   updateProfileImage: async (image) => {
     set({ loading: true, error: null });
     try {
-      const updatedProfile = await apiRequest<UserProfile>("/me/profile-image", { image });
+      const updatedProfile = await apiRequest<UserProfile>(
+        "/me/profile-image",
+        { image },
+      );
 
-      await SecureStore.setItemAsync("profile_data", JSON.stringify(updatedProfile));
+      await SecureStore.setItemAsync(
+        "profile_data",
+        JSON.stringify(updatedProfile),
+      );
       set({
         profile: updatedProfile,
         loading: false,
       });
     } catch (e: unknown) {
-      set({ loading: false, error: getErrorMessage(e, "Profile image update failed") });
+      set({
+        loading: false,
+        error: getErrorMessage(e, "Profile image update failed"),
+      });
       throw e;
     }
   },
@@ -196,7 +259,10 @@ export const useUserStore = create<UserState>((set, get) => ({
         loading: false,
       });
     } catch (e: unknown) {
-      set({ loading: false, error: getErrorMessage(e, "Failed to fetch profile") });
+      set({
+        loading: false,
+        error: getErrorMessage(e, "Failed to fetch profile"),
+      });
       throw e;
     }
   },
@@ -207,7 +273,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await apiRequest("/me/delete", {});
-      await setSessionId(null, null);
+      await setSessionId(null);
       await SecureStore.deleteItemAsync("account_type");
       await SecureStore.deleteItemAsync("profile_data");
       await SecureStore.setItemAsync("logged_out", "true");
@@ -219,7 +285,10 @@ export const useUserStore = create<UserState>((set, get) => ({
         error: null,
       });
     } catch (e: unknown) {
-      set({ loading: false, error: getErrorMessage(e, "Account deletion failed") });
+      set({
+        loading: false,
+        error: getErrorMessage(e, "Account deletion failed"),
+      });
       throw e;
     }
   },
@@ -228,12 +297,15 @@ export const useUserStore = create<UserState>((set, get) => ({
 // Handle session expiration: clear local data, update store, and redirect to login screen
 setSessionExpiredHandler(async () => {
   try {
-    await setSessionId(null, null);
+    await setSessionId(null);
     await SecureStore.deleteItemAsync("account_type");
     await SecureStore.deleteItemAsync("profile_data");
     await SecureStore.setItemAsync("logged_out", "true");
   } catch (error) {
-    console.error("Failed to clear session storage in session expiration handler:", error);
+    console.error(
+      "Failed to clear session storage in session expiration handler:",
+      error,
+    );
   }
 
   useUserStore.setState({

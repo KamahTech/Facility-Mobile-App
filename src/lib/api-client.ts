@@ -5,9 +5,8 @@ import { useToastStore } from "@/stores/toast-store";
 import { getFriendlyErrorMessage } from "@/lib/error-formatter";
 
 let currentAccessToken: string | null = null;
-let currentRefreshToken: string | null = null;
+let currentAccessTokenExpiresAt: number | null = null;
 let currentLanguage: string | null = null;
-let sessionRevision = 0;
 let sessionWriteQueue: Promise<void> = Promise.resolve();
 
 export const setApiLanguage = (language: string | null) => {
@@ -25,12 +24,24 @@ export const initializeSession = () => {
   initPromise = (async () => {
     try {
       const accessToken = await SecureStore.getItemAsync("access_token");
-      const refreshToken = await SecureStore.getItemAsync("refresh_token");
-      if (accessToken && refreshToken) {
+      const expiresAtValue = await SecureStore.getItemAsync(
+        "access_token_expires_at",
+      );
+      const expiresAt = Number(expiresAtValue);
+
+      // Remove credentials left by the previous refresh-token workflow.
+      await SecureStore.deleteItemAsync("refresh_token");
+
+      if (accessToken && Number.isFinite(expiresAt) && expiresAt > Date.now()) {
         currentAccessToken = accessToken;
-        currentRefreshToken = refreshToken;
+        currentAccessTokenExpiresAt = expiresAt;
         return accessToken;
       }
+
+      await Promise.allSettled([
+        SecureStore.deleteItemAsync("access_token"),
+        SecureStore.deleteItemAsync("access_token_expires_at"),
+      ]);
       return null;
     } catch (error) {
       console.error("Failed to load tokens from SecureStore", error);
@@ -45,39 +56,46 @@ export const getSessionId = () => currentAccessToken;
 
 export const setSessionId = async (
   accessToken: string | null,
-  refreshToken?: string | null,
+  expiresInSeconds?: number,
 ) => {
-  // Invalidate any refresh request that started for the previous local session.
-  sessionRevision += 1;
+  const expiresAt =
+    accessToken &&
+    Number.isFinite(expiresInSeconds) &&
+    Number(expiresInSeconds) > 0
+      ? Date.now() + Number(expiresInSeconds) * 1000
+      : null;
   const write = sessionWriteQueue.then(async () => {
     try {
-      // Store a rotated refresh token first. The old one becomes invalid as soon as
-      // refresh succeeds, so we must not report success unless the new pair is durable.
-      if (refreshToken) {
-        await SecureStore.setItemAsync("refresh_token", refreshToken);
-      } else if (refreshToken === null) {
-        await SecureStore.deleteItemAsync("refresh_token");
-      }
-
       if (accessToken) {
+        if (!expiresAt) {
+          throw new Error("Access token expiry is required");
+        }
         await SecureStore.setItemAsync("access_token", accessToken);
+        await SecureStore.setItemAsync(
+          "access_token_expires_at",
+          String(expiresAt),
+        );
       } else {
-        await SecureStore.deleteItemAsync("access_token");
+        await Promise.all([
+          SecureStore.deleteItemAsync("access_token"),
+          SecureStore.deleteItemAsync("access_token_expires_at"),
+          SecureStore.deleteItemAsync("refresh_token"),
+        ]);
       }
     } catch (error) {
-      // Never leave a partially-written token pair that cannot be refreshed later.
       await Promise.allSettled([
         SecureStore.deleteItemAsync("access_token"),
+        SecureStore.deleteItemAsync("access_token_expires_at"),
         SecureStore.deleteItemAsync("refresh_token"),
       ]);
       currentAccessToken = null;
-      currentRefreshToken = null;
+      currentAccessTokenExpiresAt = null;
       initPromise = Promise.resolve(null);
       throw error;
     }
 
     currentAccessToken = accessToken;
-    if (refreshToken !== undefined) currentRefreshToken = refreshToken;
+    currentAccessTokenExpiresAt = expiresAt;
     initPromise = Promise.resolve(accessToken);
   });
 
@@ -86,6 +104,7 @@ export const setSessionId = async (
 };
 
 let sessionExpiredHandler: (() => void | Promise<void>) | null = null;
+let sessionExpirationPromise: Promise<void> | null = null;
 
 export const setSessionExpiredHandler = (
   handler: () => void | Promise<void>,
@@ -94,160 +113,58 @@ export const setSessionExpiredHandler = (
 };
 
 const handleSessionExpired = async () => {
-  if (sessionExpiredHandler) {
-    await sessionExpiredHandler();
+  if (!sessionExpirationPromise) {
+    sessionExpirationPromise = Promise.resolve(
+      sessionExpiredHandler?.(),
+    ).finally(() => {
+      sessionExpirationPromise = null;
+    });
   }
+  await sessionExpirationPromise;
 };
 
 export type ApiParams = Record<string, unknown>;
 export type ApiResponse = unknown;
 export type ApiRequestOptions = {
   showErrorToast?: boolean;
-  _isRetry?: boolean;
 };
 
-let refreshPromise: Promise<{
-  accessToken: string;
-  refreshToken: string;
-}> | null = null;
-
-class RefreshRejectedError extends Error {}
-
-async function performTokenRefresh(): Promise<{
-  accessToken: string;
-  refreshToken: string;
-}> {
-  if (refreshPromise) {
-    return refreshPromise;
-  }
-
-  refreshPromise = (async () => {
-    try {
-      if (!currentRefreshToken) {
-        throw new RefreshRejectedError("No refresh token available");
-      }
-
-      const submittedRefreshToken = currentRefreshToken;
-      const submittedSessionRevision = sessionRevision;
-
-      const url = `${API_BASE_URL}/auth/refresh`;
-      const payload = {
-        jsonrpc: "2.0",
-        method: "call",
-        params: {
-          refreshToken: submittedRefreshToken,
-        },
-        id: Date.now(),
-      };
-
-      const response = await axios.post(url, payload, {
-        headers: { "Content-Type": "application/json" },
-        timeout: 10000,
-      });
-
-      const result = response.data;
-      if (result.error) {
-        throw new RefreshRejectedError(
-          result.error.message || "Failed to refresh token",
-        );
-      }
-
-      const data = result.result;
-      if (!data || data.ok === false) {
-        const err = data?.error || {};
-        throw new RefreshRejectedError(
-          err.message || "Refresh token request failed",
-        );
-      }
-
-      const resData = Object.prototype.hasOwnProperty.call(data, "data")
-        ? data.data
-        : data;
-      const accessToken = resData?.accessToken || resData?.access_token;
-      const refreshToken = resData?.refreshToken || resData?.refresh_token;
-      if (!accessToken || !refreshToken) {
-        throw new RefreshRejectedError(
-          "Refresh response did not contain a complete token pair",
-        );
-      }
-
-      // Logout or a new login may have happened while the request was in flight.
-      if (
-        currentRefreshToken !== submittedRefreshToken ||
-        sessionRevision !== submittedSessionRevision
-      ) {
-        throw new Error("Session changed while token refresh was in progress");
-      }
-
-      return { accessToken, refreshToken };
-    } catch (error) {
-      if (isAxiosError(error) && error.response?.status === 401) {
-        throw new RefreshRejectedError("Refresh token was rejected");
-      }
-      console.error("Token refresh failed:", error);
-      throw error;
-    } finally {
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
+function isAccessTokenAuthenticationError(message: unknown): boolean {
+  const normalizedMessage = String(message || "").toLowerCase();
+  return (
+    normalizedMessage.includes("session expired") ||
+    normalizedMessage.includes("sessionexpiredexception") ||
+    /\b(?:invalid|expired)\b.*\b(?:access\s+)?token\b/.test(normalizedMessage)
+  );
 }
 
-let tokenRefreshPromise: Promise<string> | null = null;
-
-async function refreshTokenFlow(): Promise<string> {
-  if (tokenRefreshPromise) {
-    return tokenRefreshPromise;
-  }
-
-  tokenRefreshPromise = (async () => {
-    try {
-      const newTokens = await performTokenRefresh();
-      const { accessToken, refreshToken } = newTokens;
-
-      try {
-        await setSessionId(accessToken, refreshToken);
-      } catch {
-        throw new RefreshRejectedError(
-          "Failed to securely store the refreshed token pair",
-        );
-      }
-
-      const { useUserStore } = require("@/stores/user-store");
-      useUserStore.setState({
-        sessionId: accessToken,
-      });
-
-      return accessToken;
-    } catch (error) {
-      // A network/timeout failure is recoverable. Keep the current tokens so a
-      // later request can retry, as required by the backend authentication guide.
-      if (error instanceof RefreshRejectedError) {
-        await handleSessionExpired();
-      }
-      throw error;
-    } finally {
-      tokenRefreshPromise = null;
-    }
-  })();
-
-  return tokenRefreshPromise;
-}
+class SessionExpiredError extends Error {}
 
 export async function apiRequest<T = ApiResponse>(
   route: string,
   params: ApiParams = {},
   options: ApiRequestOptions = {},
 ): Promise<T> {
+  const isAuthRoute = route.startsWith("/auth/");
+
   // Ensure session is initialized before sending any request
   if (!currentAccessToken) {
     await initializeSession();
   }
 
-  // If a token refresh is currently in progress, wait for it to complete
-  if (tokenRefreshPromise) {
-    await tokenRefreshPromise;
+  if (!isAuthRoute && !currentAccessToken) {
+    await handleSessionExpired();
+    throw new SessionExpiredError("No valid access token is available");
+  }
+
+  if (
+    !isAuthRoute &&
+    currentAccessToken &&
+    currentAccessTokenExpiresAt !== null &&
+    currentAccessTokenExpiresAt <= Date.now()
+  ) {
+    await handleSessionExpired();
+    throw new SessionExpiredError("Access token has expired");
   }
 
   const url = `${API_BASE_URL}${route}`;
@@ -286,13 +203,6 @@ export async function apiRequest<T = ApiResponse>(
     id: Date.now(),
   };
 
-  const isAuthRoute =
-    route === "/auth/login" ||
-    route === "/auth/worker/login" ||
-    route === "/auth/logout" ||
-    route === "/auth/refresh" ||
-    route.startsWith("/auth/");
-
   try {
     const response = await axios.post(url, payload, {
       headers,
@@ -304,34 +214,11 @@ export async function apiRequest<T = ApiResponse>(
     if (result.error) {
       const errMsg = result.error.message || JSON.stringify(result.error);
 
-      const isAuthError =
-        errMsg.toLowerCase().includes("session expired") ||
-        errMsg.toLowerCase().includes("sessionexpiredexception") ||
-        errMsg.toLowerCase().includes("invalid access token") ||
-        errMsg.toLowerCase().includes("expired access token");
+      const isAuthError = isAccessTokenAuthenticationError(errMsg);
 
       if (!isAuthRoute && isAuthError) {
-        if (options._isRetry) {
-          await handleSessionExpired();
-          throw new Error(
-            "Session expired. Retried request failed authentication.",
-          );
-        }
-
-        try {
-          await refreshTokenFlow();
-
-          // Delay retry slightly to allow Odoo database transaction commit to settle
-          await new Promise((resolve) => setTimeout(resolve, 150));
-
-          // Retry the request
-          return await apiRequest<T>(route, params, {
-            ...options,
-            _isRetry: true,
-          });
-        } catch (refreshErr) {
-          throw refreshErr;
-        }
+        await handleSessionExpired();
+        throw new SessionExpiredError(errMsg);
       }
       throw new Error(errMsg);
     }
@@ -345,34 +232,11 @@ export async function apiRequest<T = ApiResponse>(
       const err = data.error || {};
       const errMsg = err.message || "API request failed";
 
-      const isAuthError =
-        errMsg.toLowerCase().includes("session expired") ||
-        errMsg.toLowerCase().includes("sessionexpiredexception") ||
-        errMsg.toLowerCase().includes("invalid access token") ||
-        errMsg.toLowerCase().includes("expired access token");
+      const isAuthError = isAccessTokenAuthenticationError(errMsg);
 
       if (!isAuthRoute && isAuthError) {
-        if (options._isRetry) {
-          await handleSessionExpired();
-          throw new Error(
-            "Session expired. Retried request failed authentication.",
-          );
-        }
-
-        try {
-          await refreshTokenFlow();
-
-          // Delay retry slightly to allow Odoo database transaction commit to settle
-          await new Promise((resolve) => setTimeout(resolve, 150));
-
-          // Retry the request
-          return await apiRequest<T>(route, params, {
-            ...options,
-            _isRetry: true,
-          });
-        } catch (refreshErr) {
-          throw refreshErr;
-        }
+        await handleSessionExpired();
+        throw new SessionExpiredError(errMsg);
       }
 
       throw new Error(errMsg);
@@ -383,7 +247,6 @@ export async function apiRequest<T = ApiResponse>(
       : data;
   } catch (error: unknown) {
     const axiosError = isAxiosError(error) ? error : null;
-    const status = axiosError?.response?.status;
     const responseData = axiosError?.response?.data as
       | {
           error?: { code?: string | number; message?: string };
@@ -394,50 +257,17 @@ export async function apiRequest<T = ApiResponse>(
         }
       | undefined;
     const responseError = responseData?.error || responseData?.result?.error;
-    const errCode = responseError?.code;
     const errMsg = responseError?.message || "";
 
-    const isAuthError =
-      status === 401 ||
-      errCode === "access_denied" ||
-      errMsg.toLowerCase().includes("session expired") ||
-      errMsg.toLowerCase().includes("sessionexpiredexception") ||
-      errMsg.toLowerCase().includes("access denied") ||
-      errMsg.toLowerCase().includes("unauthorized");
+    const isAuthError = isAccessTokenAuthenticationError(errMsg);
 
     if (!isAuthRoute && isAuthError) {
-      if (options._isRetry) {
-        // A fresh access token followed by a plain access_denied response is a
-        // business permission failure, not an expired session.
-        if (
-          errCode === "access_denied" &&
-          !errMsg.toLowerCase().includes("expired") &&
-          !errMsg.toLowerCase().includes("invalid") &&
-          !errMsg.toLowerCase().includes("session")
-        ) {
-          throw error;
-        }
+      await handleSessionExpired();
+      throw new SessionExpiredError(errMsg);
+    }
 
-        await handleSessionExpired();
-        throw new Error(
-          "Session expired. Retried request failed authentication.",
-        );
-      }
-
-      try {
-        await refreshTokenFlow();
-
-        // Delay retry slightly to allow Odoo database transaction commit to settle
-        await new Promise((resolve) => setTimeout(resolve, 150));
-
-        // Retry the request
-        return await apiRequest<T>(route, params, {
-          ...options,
-          _isRetry: true,
-        });
-      } catch (refreshErr) {
-        throw refreshErr;
-      }
+    if (error instanceof SessionExpiredError) {
+      throw error;
     }
 
     if (options.showErrorToast !== false) {
