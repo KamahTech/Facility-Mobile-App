@@ -171,15 +171,11 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
         const wsProtocol = origin.startsWith("https:") ? "wss:" : "ws:";
         const sessionId = getSessionId();
         
-        let wsUrl = `${wsProtocol}//${origin.replace(/^https?:\/\//, "")}${realtimeData.websocketUrl}`;
-        if (sessionId) {
-          wsUrl += `?access_token=${sessionId}`;
-        }
+        const wsUrl = `${wsProtocol}//${origin.replace(/^https?:\/\//, "")}${realtimeData.websocketUrl}`;
 
         const headers: Record<string, string> = {};
         if (sessionId) {
           headers["Authorization"] = `Bearer ${sessionId}`;
-          headers["X-Authorization"] = `Bearer ${sessionId}`;
         }
         const nextSocket = new (WebSocket as any)(
           wsUrl,

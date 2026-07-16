@@ -123,9 +123,18 @@ export type ApiRequestOptions = {
   showErrorToast?: boolean;
 };
 
+const PUBLIC_API_ROUTES = new Set([
+  "/auth/login",
+  "/auth/worker/login",
+  "/auth/signup",
+  "/auth/signup/request-otp",
+]);
+
 function isAccessTokenAuthenticationError(message: unknown): boolean {
   const normalizedMessage = String(message || "").toLowerCase();
   return (
+    normalizedMessage.includes("authentication required") ||
+    normalizedMessage.includes("bearer access token is required") ||
     normalizedMessage.includes("session expired") ||
     normalizedMessage.includes("sessionexpiredexception") ||
     /\b(?:invalid|expired)\b.*\b(?:access\s+)?token\b/.test(normalizedMessage)
@@ -139,20 +148,20 @@ export async function apiRequest<T = ApiResponse>(
   params: ApiParams = {},
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const isAuthRoute = route.startsWith("/auth/");
+  const isPublicRoute = PUBLIC_API_ROUTES.has(route);
 
   // Ensure session is initialized before sending any request
   if (!currentAccessToken) {
     await initializeSession();
   }
 
-  if (!isAuthRoute && !currentAccessToken) {
+  if (!isPublicRoute && !currentAccessToken) {
     await handleSessionExpired();
     throw new SessionExpiredError("No valid access token is available");
   }
 
   if (
-    !isAuthRoute &&
+    !isPublicRoute &&
     currentAccessToken &&
     currentAccessTokenExpiresAt !== null &&
     currentAccessTokenExpiresAt <= Date.now()
@@ -166,7 +175,7 @@ export async function apiRequest<T = ApiResponse>(
     "Content-Type": "application/json",
   };
 
-  if (currentAccessToken) {
+  if (!isPublicRoute && currentAccessToken) {
     headers["Authorization"] = `Bearer ${currentAccessToken}`;
   }
 
@@ -210,7 +219,7 @@ export async function apiRequest<T = ApiResponse>(
 
       const isAuthError = isAccessTokenAuthenticationError(errMsg);
 
-      if (!isAuthRoute && isAuthError) {
+      if (!isPublicRoute && isAuthError) {
         await handleSessionExpired();
         throw new SessionExpiredError(errMsg);
       }
@@ -228,7 +237,7 @@ export async function apiRequest<T = ApiResponse>(
 
       const isAuthError = isAccessTokenAuthenticationError(errMsg);
 
-      if (!isAuthRoute && isAuthError) {
+      if (!isPublicRoute && isAuthError) {
         await handleSessionExpired();
         throw new SessionExpiredError(errMsg);
       }
@@ -255,7 +264,7 @@ export async function apiRequest<T = ApiResponse>(
 
     const isAuthError = isAccessTokenAuthenticationError(errMsg);
 
-    if (!isAuthRoute && isAuthError) {
+    if (!isPublicRoute && isAuthError) {
       await handleSessionExpired();
       throw new SessionExpiredError(errMsg);
     }

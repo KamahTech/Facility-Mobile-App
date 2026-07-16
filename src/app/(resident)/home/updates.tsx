@@ -6,7 +6,6 @@ import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 
 import { ScreenHeader } from "@/components/screen-header";
-import { AppText } from "@/components/app-text";
 import { NewsCard } from "@/components/news-card";
 import { PollCard } from "@/components/poll-card";
 import { CommunityUpdatesSkeleton } from "@/components/community-updates-skeleton";
