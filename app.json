@@ -12,7 +12,8 @@
       "bundleIdentifier": "com.kamahtech.facilitymanagement",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires camera access to take photos of maintenance issues and unit inspections.",
-        "NSPhotoLibraryUsageDescription": "This app requires photo library access to upload photos for maintenance requests and task updates."
+        "NSPhotoLibraryUsageDescription": "This app requires photo library access to upload photos for maintenance requests and task updates.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -56,6 +57,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c69434a1-5a5f-4c97-bee1-01dd27afbb72"
+      }
+    },
+    "owner": "kamahtechs-team"
   }
 }
