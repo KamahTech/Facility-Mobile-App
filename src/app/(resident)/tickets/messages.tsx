@@ -11,12 +11,22 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useRequestsStore, useTicketCommentsQuery } from "@/stores/requests-store";
 import { ChatView } from "@/components/chat-view";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
+import { usePushNotificationStore } from "@/stores/push-notification-store";
 
 export default function ResidentTicketMessagesScreen() {
   const { t } = useI18n();
   const insets = useAppInsets();
   const params = useLocalSearchParams();
   const requestId = params.id as string;
+
+  React.useEffect(() => {
+    if (requestId) {
+      usePushNotificationStore.getState().setActiveChatTicketId(requestId);
+      return () => {
+        usePushNotificationStore.getState().setActiveChatTicketId(null);
+      };
+    }
+  }, [requestId]);
 
   const isTransitionFinished = useScreenTransition();
   const { requests, addRequestComment } = useRequestsStore({ enableResidentRequests: true });

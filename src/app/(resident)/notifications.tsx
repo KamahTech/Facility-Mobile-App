@@ -12,6 +12,7 @@ import { ScreenHeader } from "@/components/screen-header";
 import { useI18n } from "@/hooks/use-i18n";
 import { useCommunityStore, type NotificationItem } from "@/stores/community-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
+import { handleNotificationNavigation } from "@/lib/notification-router";
 
 export default function NotificationsScreen() {
   const { isRTL, t } = useI18n();
@@ -51,13 +52,19 @@ export default function NotificationsScreen() {
 
   const handleNotificationPress = React.useCallback(
     async (item: NotificationItem) => {
-      Alert.alert(item.title, item.description);
       if (item.unread) {
-        try {
-          await markNotificationRead(item.id);
-        } catch (err) {
+        markNotificationRead(item.id).catch((err) => {
           console.error("Failed to mark notification as read", err);
-        }
+        });
+      }
+
+      const didNavigate = handleNotificationNavigation(
+        { notificationId: item.id, type: item.type },
+        "resident"
+      );
+
+      if (!didNavigate) {
+        Alert.alert(item.title, item.description);
       }
     },
     [markNotificationRead]

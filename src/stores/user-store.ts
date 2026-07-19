@@ -10,6 +10,7 @@ import { router } from "expo-router";
 import { useToastStore } from "@/stores/toast-store";
 import { getStoredLanguagePreference, getSystemLanguage } from "@/lib/language-storage";
 import { translations } from "@/constants/translations";
+import { usePushNotificationStore } from "@/stores/push-notification-store";
 
 
 export type UserProfile = {
@@ -182,6 +183,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   logout: async () => {
     set({ loading: true });
     try {
+      await usePushNotificationStore.getState().unregisterDevice();
       await apiRequest("/auth/logout", {});
     } catch (e) {
       console.warn(
@@ -276,6 +278,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   deleteAccount: async () => {
     set({ loading: true, error: null });
     try {
+      await usePushNotificationStore.getState().unregisterDevice();
       await apiRequest("/me/delete", {});
       await setSessionId(null);
       await SecureStore.deleteItemAsync("account_type");

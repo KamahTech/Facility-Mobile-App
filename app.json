@@ -23,7 +23,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.moxas3d.facilitymanagement"
+      "package": "com.kamahtech.facilitymanagement",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",

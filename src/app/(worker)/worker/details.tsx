@@ -28,6 +28,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { getTodayAtMidnight } from "@/lib/date-time";
+import { usePushNotificationStore } from "@/stores/push-notification-store";
 
 type InspectFormValues = {
   notes: string;
@@ -40,6 +41,16 @@ export default function WorkerDetailsScreen() {
   const insets = useAppInsets();
   const params = useLocalSearchParams();
   const taskId = params.id as string;
+
+  React.useEffect(() => {
+    if (taskId) {
+      usePushNotificationStore.getState().setActiveTicketId(taskId);
+      return () => {
+        usePushNotificationStore.getState().setActiveTicketId(null);
+      };
+    }
+  }, [taskId]);
+
   const isTransitionFinished = useScreenTransition();
 
   const {

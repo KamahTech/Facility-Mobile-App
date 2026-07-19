@@ -11,12 +11,22 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useRequestsStore, useTicketCommentsQuery } from "@/stores/requests-store";
 import { ChatView } from "@/components/chat-view";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
+import { usePushNotificationStore } from "@/stores/push-notification-store";
 
 export default function WorkerTicketMessagesScreen() {
   const { t } = useI18n();
   const insets = useAppInsets();
   const params = useLocalSearchParams();
   const taskId = params.id as string;
+
+  React.useEffect(() => {
+    if (taskId) {
+      usePushNotificationStore.getState().setActiveChatTicketId(taskId);
+      return () => {
+        usePushNotificationStore.getState().setActiveChatTicketId(null);
+      };
+    }
+  }, [taskId]);
 
   const isTransitionFinished = useScreenTransition();
   const { requests, addRequestComment } = useRequestsStore({ enableWorkerTasks: true });

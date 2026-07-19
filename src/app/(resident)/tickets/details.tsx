@@ -13,12 +13,22 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { useRequestsStore, type RequestStatus } from "@/stores/requests-store";
 import { useUnitStore } from "@/stores/unit-store";
+import { usePushNotificationStore } from "@/stores/push-notification-store";
 
 export default function ResidentTicketDetailsScreen() {
   const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const params = useLocalSearchParams();
   const requestId = params.id as string;
+
+  React.useEffect(() => {
+    if (requestId) {
+      usePushNotificationStore.getState().setActiveTicketId(requestId);
+      return () => {
+        usePushNotificationStore.getState().setActiveTicketId(null);
+      };
+    }
+  }, [requestId]);
 
   const { requests, cancelRequest } = useRequestsStore({ enableResidentRequests: true });
   const { units } = useUnitStore();
