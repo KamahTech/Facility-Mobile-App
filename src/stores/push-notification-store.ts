@@ -69,6 +69,16 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
         return;
       }
 
+      // Android requires a channel configuration for notifications to display
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("default", {
+          name: "Default",
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#4F46E5",
+        });
+      }
+
       // 3. Retrieve or generate unique deviceId (persisted UUID in SecureStore)
       let deviceId = await SecureStore.getItemAsync("device_installation_id");
       if (!deviceId) {
