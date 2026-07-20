@@ -49,7 +49,7 @@ export default function SignupScreen() {
     [stepOneSchema, t],
   );
 
-  const { control, handleSubmit, getValues, setError, formState: { errors } } = useForm<SignupFormValues>({
+  const { control, handleSubmit, getValues, resetField, setError, formState: { errors } } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       email: "",
@@ -108,6 +108,7 @@ export default function SignupScreen() {
         phone?.trim() || undefined
       );
       Alert.alert(t("auth.otp"), t("auth.otpSent"));
+      resetField("otp", { defaultValue: "" });
       setStep(2);
     } catch {
       // API error displays in the UI
@@ -189,7 +190,7 @@ export default function SignupScreen() {
 
         <View className="flex-col gap-5">
           {step === 1 ? (
-            <>
+            <React.Fragment key="signup-details-step">
               {/* Name input */}
               <Controller
                 control={control}
@@ -279,9 +280,9 @@ export default function SignupScreen() {
                   />
                 )}
               </View>
-            </>
+            </React.Fragment>
           ) : (
-            <>
+            <React.Fragment key="signup-otp-step">
               {/* Read-only target profile view */}
               <View className="bg-secondary/45 p-4 rounded-xl flex-col gap-2">
                 <View>
@@ -318,6 +319,7 @@ export default function SignupScreen() {
                 name="otp"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <AppInput
+                    key="signup-otp-input"
                     label={t("auth.otp")}
                     placeholder={t("auth.otpPlaceholder")}
                     value={value}
@@ -329,6 +331,9 @@ export default function SignupScreen() {
                     autoCapitalize="none"
                     autoCorrect={false}
                     icon="key"
+                    autoComplete="off"
+                    textContentType="none"
+                    importantForAutofill="noExcludeDescendants"
                   />
                 )}
               />
@@ -346,7 +351,7 @@ export default function SignupScreen() {
                   />
                 )}
               </View>
-            </>
+            </React.Fragment>
           )}
 
           {/* Back to login link */}

@@ -20,6 +20,7 @@ type GenericSelectBottomSheetProps<T> = {
   keyExtractor: (item: T) => string;
   labelExtractor: (item: T) => string;
   subLabelExtractor?: (item: T) => string | undefined;
+  disabledExtractor?: (item: T) => boolean;
   showClearOption?: boolean;
   onClear?: () => void;
   clearLabel?: string;
@@ -35,6 +36,7 @@ export function GenericSelectBottomSheet<T>({
   keyExtractor,
   labelExtractor,
   subLabelExtractor,
+  disabledExtractor,
   showClearOption,
   onClear,
   clearLabel,
@@ -112,16 +114,18 @@ export function GenericSelectBottomSheet<T>({
               const isSelected = selectedId === itemId;
               const label = labelExtractor(item);
               const subLabel = subLabelExtractor ? subLabelExtractor(item) : undefined;
+              const isDisabled = disabledExtractor ? disabledExtractor(item) : false;
               const isLast = index === items.length - 1;
 
               return (
                 <Pressable
                   key={itemId}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
+                  accessibilityState={{ selected: isSelected, disabled: isDisabled }}
+                  disabled={isDisabled}
                   className={`min-h-14 w-full justify-center px-4 py-4 ${
                     isLast ? "" : "border-b border-border/20"
-                  }`}
+                  } ${isDisabled ? "opacity-40" : ""}`}
                   onPress={() => handleSelect(item)}
                 >
                   <AppRow className="w-full items-center justify-between gap-3">

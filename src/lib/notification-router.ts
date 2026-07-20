@@ -129,6 +129,9 @@ export function handleNotificationNavigation(
         } as any);
         return true;
       }
+    } else if (normalizedScreen === "units") {
+      router.push("/(resident)/home/connect-unit" as Href);
+      return true;
     }
   }
 

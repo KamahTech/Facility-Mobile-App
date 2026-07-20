@@ -19,6 +19,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { AppSelectField } from "@/components/app-select-field";
 import { GenericSelectBottomSheet } from "@/components/generic-select-bottom-sheet";
 import { allowsFamilyMembers } from "@/lib/family-member-eligibility";
+import { useToastStore } from "@/stores/toast-store";
 import {
   useUnitStore,
   useProjectsQuery,
@@ -160,7 +161,8 @@ export default function AddUnitScreen() {
         } }]
       );
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.connectUnitFailed"));
+      const errMsg = e instanceof Error ? e.message : t("errors.connectUnitFailed");
+      useToastStore.getState().showToast(errMsg, "error");
     } finally {
       setActionLoading(false);
     }
@@ -420,6 +422,7 @@ export default function AddUnitScreen() {
         keyExtractor={(item) => item.unitId || item.id}
         labelExtractor={(item) => item.name || item.number}
         subLabelExtractor={(item) => item.unitType}
+        disabledExtractor={(item) => !!item.disabled}
       />
 
       <GenericSelectBottomSheet

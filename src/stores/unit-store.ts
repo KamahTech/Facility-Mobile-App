@@ -101,6 +101,7 @@ export type UnitLookupUnit = {
   buildingName?: string;
   floorId?: string;
   floorName?: string;
+  disabled?: boolean;
 };
 
 export function useProjectsQuery() {
@@ -156,7 +157,7 @@ export function useUnitStore(options?: { enableUnits?: boolean; enableSummary?: 
 
   const connectMutation = useMutation({
     mutationFn: (newUnit: ConnectUnitParams) =>
-      apiRequest("/resident/units/connect", newUnit),
+      apiRequest("/resident/units/connect", newUnit, { showErrorToast: false }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["connected-units"] });
       queryClient.invalidateQueries({ queryKey: ["connected-units-summary"] });

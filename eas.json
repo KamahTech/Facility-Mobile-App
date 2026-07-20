@@ -8,19 +8,19 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://kamahtech-t-facility-s1-35121300.dev.odoo.com/facility_mobile_api/v1"
+        "EXPO_PUBLIC_API_BASE_URL": "https://kamahtech-t-facility.odoo.com/facility_mobile_api/v1"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://kamahtech-t-facility-s1-35121300.dev.odoo.com/facility_mobile_api/v1"
+        "EXPO_PUBLIC_API_BASE_URL": "https://kamahtech-t-facility.odoo.com/facility_mobile_api/v1"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://kamahtech-t-facility-s1-35121300.dev.odoo.com/facility_mobile_api/v1"
+        "EXPO_PUBLIC_API_BASE_URL": "https://kamahtech-t-facility.odoo.com/facility_mobile_api/v1"
       }
     }
   },

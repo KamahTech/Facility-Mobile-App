@@ -1,6 +1,6 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, Text } from "react-native";
+import { View, Text, RefreshControl } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { type Href, useNavigation } from "expo-router";
@@ -17,6 +17,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { useUserStore } from "@/stores/user-store";
 import { useUnitStore } from "@/stores/unit-store";
+import { useCommunityStore } from "@/stores/community-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
 import { getProfileImageSource } from "@/lib/image-source";
 
@@ -30,7 +31,25 @@ export default function ResidentHomeScreen() {
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   
   const { profile, logout } = useUserStore();
-  const { unitsCount, isSummaryLoading } = useUnitStore({ enableUnits: false, enableSummary: true });
+  const { unitsCount, isSummaryLoading, fetchUnitsSummary } = useUnitStore({ enableUnits: false, enableSummary: true });
+  const { fetchUpdates } = useCommunityStore({ enableUpdates: true });
+
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const handleRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        fetchUnitsSummary(),
+        fetchUpdates(),
+      ]);
+    } catch (err) {
+      console.error("Failed to refresh home screen data:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchUnitsSummary, fetchUpdates]);
+
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
   const avatarSource = React.useMemo(
     () => getProfileImageSource(profile?.profileImageUrl, undefined),
@@ -106,6 +125,14 @@ export default function ResidentHomeScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#4F46E5"
+            progressViewOffset={insets.top + 76}
+          />
+        }
         contentContainerStyle={{
           paddingTop: insets.top + 76,
           paddingBottom: insets.bottom + 140,

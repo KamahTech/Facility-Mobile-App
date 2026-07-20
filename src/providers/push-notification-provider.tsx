@@ -13,13 +13,13 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
   React.useEffect(() => {
     const subscription = Notifications.setNotificationHandler({
       handleNotification: async (notification) => {
-        const data = notification.request.content.data;
+        const data = notification.request.content.data || {};
         const activeTicketId = usePushNotificationStore.getState().activeTicketId;
         const activeChatTicketId = usePushNotificationStore.getState().activeChatTicketId;
 
         // Suppress notifications if the user is currently on the screen that shows the realtime updates
-        const ticketId = data.ticketId || "";
-        const screen = (data.screen || "").toLowerCase();
+        const ticketId = (data.ticketId as string) || "";
+        const screen = String(data.screen || "").toLowerCase();
 
         const isViewingChat = screen === "ticket_chat" && ticketId && String(ticketId) === String(activeChatTicketId);
         const isViewingDetails = screen === "ticket" && ticketId && String(ticketId) === String(activeTicketId);
@@ -33,14 +33,14 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
             shouldShowAlert: false,
             shouldPlaySound: false,
             shouldSetBadge: false,
-          };
+          } as any;
         }
 
         return {
           shouldShowAlert: true,
           shouldPlaySound: true,
           shouldSetBadge: true,
-        };
+        } as any;
       },
     });
 
