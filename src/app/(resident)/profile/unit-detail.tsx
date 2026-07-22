@@ -10,7 +10,8 @@ import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
 import { useOwnerStore, useTenantsQuery, type OwnerUnit, type OwnerFinancialSummary } from "@/stores/owner-store";
-import { useFamilyMembersQuery } from "@/stores/unit-store";
+import { useFamilyMembersQuery, useUnitStore } from "@/stores/unit-store";
+import { allowsFamilyMembers } from "@/lib/family-member-eligibility";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { UnitTenantsCard } from "@/components/unit-tenants-card";
 import { UnitFamilyMembersCard } from "@/components/unit-family-members-card";
@@ -23,11 +24,17 @@ export default function UnitDetailScreen() {
   const { fetchOwnerUnitDetails, loading, error, clearError } = useOwnerStore();
   const isTransitionFinished = useScreenTransition();
 
+  const { units } = useUnitStore();
+  const connectedUnit = units.find((u) => u.id === unitId || u.unitId === unitId);
+
   const [unitDetails, setUnitDetails] = React.useState<(OwnerUnit & { financialSummary?: OwnerFinancialSummary }) | null>(null);
   const [refreshing, setRefreshing] = React.useState(false);
 
+  const unitType = unitDetails?.unitType || unitDetails?.unit_type || connectedUnit?.unitType;
+  const isFamilyEligible = allowsFamilyMembers(unitType);
+
   const tenantsQuery = useTenantsQuery(unitId);
-  const familyQuery = useFamilyMembersQuery(unitId);
+  const familyQuery = useFamilyMembersQuery(unitId, isFamilyEligible);
 
   const loadDetails = React.useCallback(async () => {
     if (!unitId) return;
@@ -52,7 +59,7 @@ export default function UnitDetailScreen() {
     await Promise.all([
       loadDetails(),
       tenantsQuery.refetch(),
-      familyQuery.refetch(),
+      isFamilyEligible ? familyQuery.refetch() : Promise.resolve(),
     ]);
     setRefreshing(false);
   };
@@ -406,7 +413,7 @@ export default function UnitDetailScreen() {
           <UnitTenantsCard unitId={unitId} />
         )}
 
-        {unitId && (
+        {unitId && isFamilyEligible && (
           <UnitFamilyMembersCard unitId={unitId} />
         )}
       </ScrollView>

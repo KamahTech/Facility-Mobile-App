@@ -49,11 +49,11 @@ export type FamilyMembersResponse = {
   items: MobileUnitLinkItem[];
 };
 
-export function useFamilyMembersQuery(unitId?: string) {
+export function useFamilyMembersQuery(unitId?: string, enabled = true) {
   return useQuery<FamilyMembersResponse>({
     queryKey: ["family-members", unitId],
     queryFn: () => apiRequest<FamilyMembersResponse>(`/resident/units/${unitId}/family-members`, {}),
-    enabled: !!unitId,
+    enabled: enabled && !!unitId,
   });
 }
 

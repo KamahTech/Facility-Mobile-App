@@ -22,6 +22,8 @@ export type OwnerUnit = {
   annualMaintenanceDeposit: number;
   ownerLineIds: string[];
   facilityOwnerIds: string[];
+  unitType?: string;
+  unit_type?: string;
 };
 
 export type OwnerFinancialSummary = {

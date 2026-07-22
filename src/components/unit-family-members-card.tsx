@@ -5,6 +5,7 @@ import { AppIcon } from "@/components/app-icon";
 import { AppInput } from "@/components/app-input";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useI18n } from "@/hooks/use-i18n";
+import { allowsFamilyMembers } from "@/lib/family-member-eligibility";
 import { useFamilyMembersQuery, useUnitStore } from "@/stores/unit-store";
 
 type UnitFamilyMembersCardProps = {
@@ -13,11 +14,19 @@ type UnitFamilyMembersCardProps = {
 
 export function UnitFamilyMembersCard({ unitId }: UnitFamilyMembersCardProps) {
   const { isRTL, t } = useI18n();
-  const { data, isLoading, refetch, error: queryError } = useFamilyMembersQuery(unitId);
-  const { approveFamilyMember, rejectFamilyMember } = useUnitStore();
+  const { units, approveFamilyMember, rejectFamilyMember } = useUnitStore();
+
+  const connectedUnit = units.find((u) => u.id === unitId || u.unitId === unitId);
+  const isFamilyEligible = allowsFamilyMembers(connectedUnit?.unitType);
+
+  const { data, isLoading, refetch, error: queryError } = useFamilyMembersQuery(unitId, isFamilyEligible);
 
   const [rejectingLinkId, setRejectingLinkId] = React.useState<string | null>(null);
   const [rejectReason, setRejectReason] = React.useState("");
+
+  if (!isFamilyEligible) {
+    return null;
+  }
 
   const handleApprove = (unitLinkId: string) => {
     Alert.alert(

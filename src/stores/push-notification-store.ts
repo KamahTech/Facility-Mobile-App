@@ -101,6 +101,7 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
 
       // 6. Register with the backend
       console.log("[PushNotifications] Registering push token with backend...", {
+        expoPushToken,
         deviceId,
         platform: Platform.OS,
         projectId,
