@@ -127,6 +127,75 @@ export function useTenantsQuery(unitId?: string, enabled = true) {
   });
 }
 
+export type PropertyContext = {
+  unitId: string;
+  unitNumber: string;
+  floorNumber: string;
+  buildingNumber: string;
+  phaseName: string;
+  projectName: string;
+  totalArea?: number;
+  operationalArea?: number;
+  constructionState?: string;
+  deliveryState?: string;
+  propertyType?: string;
+  saleContractDate?: string;
+  deliveryDate?: string;
+  location?: string;
+  publicLicensingState?: string;
+  licenseNumber?: string;
+  roomCount?: number;
+  bathroomCount?: number;
+};
+
+export type FacilityOwnerPeriod = {
+  id: string;
+  reference: string;
+  state: string;
+  startDate: string;
+  endDate: string;
+  durationDays?: number;
+  projectName: string;
+  allocatedServiceCosts?: number;
+  residentAllocation?: {
+    totalAllocated: number;
+    paidAmount: number;
+    unpaidAmount: number;
+  };
+};
+
+export function usePropertyDetailsQuery(unitId?: string, enabled = true) {
+  return useQuery<PropertyContext>({
+    queryKey: ["unit-property", unitId],
+    queryFn: () => apiRequest<PropertyContext>(`/resident/units/${unitId}/property`, {}),
+    enabled: enabled && !!unitId,
+  });
+}
+
+export function useWorkerPropertyDetailsQuery(ticketId?: string, enabled = true) {
+  return useQuery<PropertyContext>({
+    queryKey: ["worker-task-property", ticketId],
+    queryFn: () => apiRequest<PropertyContext>(`/worker/tasks/${ticketId}/property`, {}),
+    enabled: enabled && !!ticketId,
+  });
+}
+
+export function useFacilityOwnersQuery(enabled = true) {
+  return useQuery<FacilityOwnerPeriod[]>({
+    queryKey: ["facility-owners"],
+    queryFn: () => apiRequest<FacilityOwnerPeriod[]>("/resident/facility-owners", {}),
+    enabled: enabled,
+  });
+}
+
+export function useFacilityOwnerDetailsQuery(ownerId?: string, enabled = true) {
+  return useQuery<FacilityOwnerPeriod>({
+    queryKey: ["facility-owner-details", ownerId],
+    queryFn: () => apiRequest<FacilityOwnerPeriod>(`/resident/facility-owners/${ownerId}`, {}),
+    enabled: enabled && !!ownerId,
+  });
+}
+
 export function useOwnerClaimDetailsQuery(claimId?: string) {
   return useQuery<OwnerClaim>({
     queryKey: ["owner-claim", claimId],

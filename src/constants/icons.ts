@@ -183,6 +183,18 @@ export const appIcons = {
     ios: "envelope.fill",
     android: "mail",
   },
+  search: {
+    ios: "magnifyingglass",
+    android: "search",
+  },
+  circle: {
+    ios: "circle",
+    android: "circle",
+  },
+  circleCheck: {
+    ios: "checkmark.circle.fill",
+    android: "check_circle",
+  },
 } as const;
 
 export type AppIconName = keyof typeof appIcons;

@@ -11,7 +11,7 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
 
   // Set the notification handler to control whether an alert is shown when the app is in the foreground
   React.useEffect(() => {
-    const subscription = Notifications.setNotificationHandler({
+    Notifications.setNotificationHandler({
       handleNotification: async (notification) => {
         const data = notification.request.content.data || {};
         const activeTicketId = usePushNotificationStore.getState().activeTicketId;

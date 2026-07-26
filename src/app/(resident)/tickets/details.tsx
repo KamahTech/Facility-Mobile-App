@@ -328,7 +328,34 @@ export default function ResidentTicketDetailsScreen() {
         className="w-full bg-card"
         style={{ paddingBottom: Math.max(insets.bottom, 16), paddingTop: 12 }}
       >
-        <View className="w-full max-w-xl self-center px-5">
+        <View className="w-full max-w-xl self-center px-5 flex-col gap-3">
+          {/* Related Documents Button */}
+          <Pressable
+            onPress={() => {
+              router.push({
+                pathname: "/tickets/related-documents",
+                params: { id: request.id },
+              } as any);
+            }}
+            className="w-full min-h-14 rounded-xl bg-background px-5 py-4 active:opacity-80 border border-border/10"
+          >
+            <AppRow className="items-center justify-between">
+              <AppRow className="items-center gap-3">
+                <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
+                  <AppIcon name="invoices" size={16} color="#10B981" />
+                </View>
+                <Text
+                  className="text-base font-bold text-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("tickets.relatedDocuments")}
+                </Text>
+              </AppRow>
+              <AppChevron size={14} color={mutedToken} />
+            </AppRow>
+          </Pressable>
+
+          {/* Comments Button */}
           <Pressable
             onPress={() => {
               router.push({

@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 import type { EncodedImage } from "@/lib/media";
 import { useUnitStore } from "@/stores/unit-store";
@@ -21,6 +21,28 @@ export type PaginatedComments = {
   hasMore: boolean;
 };
 
+export type TaskMaterial = {
+  id: string;
+  productId: string;
+  productName: string;
+  uomId?: string;
+  uomName?: string;
+  quantity: number;
+  issuedQty?: number;
+  facilityQty?: number;
+  mainQty?: number;
+  purchaseShortage?: number;
+  purchaseNeeded?: boolean;
+  selected?: boolean;
+};
+
+export type Product = {
+  id: string;
+  name: string;
+  uomId?: string;
+  uomName?: string;
+};
+
 export function useTicketCommentsQuery(ticketId: string) {
   return useInfiniteQuery<PaginatedComments>({
     queryKey: ["ticket-comments", ticketId],
@@ -31,6 +53,41 @@ export function useTicketCommentsQuery(ticketId: string) {
       }),
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
+  });
+}
+
+export function useMaterialProductsQuery(query: string, limit = 50, enabled = true) {
+  return useQuery<Product[]>({
+    queryKey: ["material-products", query, limit],
+    queryFn: () => apiRequest<Product[]>("/worker/material-products", { query, limit }),
+    enabled: enabled && query.length >= 2,
+  });
+}
+
+export type RelatedDocument = {
+  id: string;
+  name: string;
+  state: string;
+  date?: string;
+  amountTotal?: number;
+  origin?: string;
+};
+
+export type RelatedDocumentsResponse = {
+  pickings?: RelatedDocument[];
+  quotations?: RelatedDocument[];
+  purchaseOrders?: RelatedDocument[];
+};
+
+export function useRelatedDocumentsQuery(ticketId: string, accountType: "resident" | "worker") {
+  const route = accountType === "resident"
+    ? `/resident/tickets/${ticketId}/related-documents`
+    : `/worker/tasks/${ticketId}/related-documents`;
+    
+  return useQuery<RelatedDocumentsResponse>({
+    queryKey: ["related-documents", ticketId, accountType],
+    queryFn: () => apiRequest<RelatedDocumentsResponse>(route, {}),
+    enabled: !!ticketId,
   });
 }
 
@@ -50,6 +107,20 @@ export type MaintenanceRequest = {
   notes?: string | boolean;
   workerPhase?: "accepted" | "inspected" | "working" | "completed" | boolean;
   comments: RequestComment[];
+  materials?: TaskMaterial[];
+  team?: string | boolean;
+  priority?: string;
+  contactEmail?: string | boolean;
+  contactPhone?: string | boolean;
+  warrantyType?: string | boolean;
+  workflowStage?: string | boolean;
+  visitFrom?: string | boolean;
+  visitTo?: string | boolean;
+  maintenanceFrom?: string | boolean;
+  maintenanceTo?: string | boolean;
+  materialRequirement?: string | boolean;
+  relatedDocumentsEndpoint?: string;
+  workerRelatedDocumentsEndpoint?: string;
 };
 
 export type RequestCommentImage = string | false;
@@ -59,6 +130,15 @@ export type InspectTaskParams = {
   materials?: string;
   deadline?: string;
   photos?: EncodedImage[];
+};
+
+export type TaskWorkflowParams = {
+  action: "schedule_visit" | "inspection_done" | "schedule_maintenance" | "start_maintenance" | "done" | "cancel";
+  visitFrom?: string;
+  visitTo?: string;
+  materialRequirement?: "need" | "noneed";
+  maintenanceFrom?: string;
+  maintenanceTo?: string;
 };
 
 export type PaginatedRequests = {
@@ -200,6 +280,79 @@ export function useRequestsStore(options?: {
     }
   });
 
+  const taskWorkflowMutation = useMutation({
+    mutationFn: (params: { ticketId: string; workflowParams: TaskWorkflowParams }) =>
+      apiRequest(`/worker/tasks/${params.ticketId}/workflow`, params.workflowParams),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
+    },
+  });
+
+  const addMaterialMutation = useMutation({
+    mutationFn: (params: { ticketId: string; productId: string; quantity: number; uomId?: string; selected?: boolean }) =>
+      apiRequest(`/worker/tasks/${params.ticketId}/materials`, {
+        productId: parseInt(params.productId, 10),
+        quantity: params.quantity,
+        uomId: params.uomId ? parseInt(params.uomId, 10) : undefined,
+        selected: params.selected,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
+    }
+  });
+
+  const updateMaterialMutation = useMutation({
+    mutationFn: (params: { ticketId: string; lineId: string; quantity: number; selected?: boolean }) =>
+      apiRequest(`/worker/tasks/${params.ticketId}/materials/${params.lineId}/update`, {
+        quantity: params.quantity,
+        selected: params.selected,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
+    }
+  });
+
+  const deleteMaterialMutation = useMutation({
+    mutationFn: (params: { ticketId: string; lineId: string }) =>
+      apiRequest(`/worker/tasks/${params.ticketId}/materials/${params.lineId}/delete`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
+    }
+  });
+
+  const createPickingMutation = useMutation({
+    mutationFn: (params: { ticketId: string; lineIds?: string[] }) =>
+      apiRequest(`/worker/tasks/${params.ticketId}/create-picking`, {
+        lineIds: params.lineIds,
+      }),
+    onSuccess: (_, params) => {
+      queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["related-documents", params.ticketId] });
+    },
+  });
+
+  const createRFQsMutation = useMutation({
+    mutationFn: (ticketId: string) =>
+      apiRequest(`/worker/tasks/${ticketId}/create-rfqs`, {}),
+    onSuccess: (_, ticketId) => {
+      queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["related-documents", ticketId] });
+    },
+  });
+
+  const createQuotationMutation = useMutation({
+    mutationFn: (ticketId: string) =>
+      apiRequest(`/worker/tasks/${ticketId}/create-quotation`, {}),
+    onSuccess: (_, ticketId) => {
+      queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["related-documents", ticketId] });
+    },
+  });
+
   // State mapping (returns whichever has active queries or data)
   const requests = React.useMemo(() => {
     if (enableResidentRequests) {
@@ -222,7 +375,14 @@ export function useRequestsStore(options?: {
     acceptTaskMutation.isPending ||
     inspectTaskMutation.isPending ||
     startTaskMutation.isPending ||
-    completeTaskMutation.isPending;
+    completeTaskMutation.isPending ||
+    taskWorkflowMutation.isPending ||
+    addMaterialMutation.isPending ||
+    updateMaterialMutation.isPending ||
+    deleteMaterialMutation.isPending ||
+    createPickingMutation.isPending ||
+    createRFQsMutation.isPending ||
+    createQuotationMutation.isPending;
 
   const error =
     residentRequestsQuery.error?.message ||
@@ -234,7 +394,15 @@ export function useRequestsStore(options?: {
     inspectTaskMutation.error?.message ||
     startTaskMutation.error?.message ||
     completeTaskMutation.error?.message ||
+    taskWorkflowMutation.error?.message ||
+    addMaterialMutation.error?.message ||
+    updateMaterialMutation.error?.message ||
+    deleteMaterialMutation.error?.message ||
+    createPickingMutation.error?.message ||
+    createRFQsMutation.error?.message ||
+    createQuotationMutation.error?.message ||
     null;
+
   const {
     fetchNextPage: fetchNextResidentRequestsPage,
     hasNextPage: hasNextResidentRequestsPage,
@@ -254,6 +422,13 @@ export function useRequestsStore(options?: {
   const { mutateAsync: inspectTaskMutateAsync, reset: resetInspectTaskMutation } = inspectTaskMutation;
   const { mutateAsync: startTaskMutateAsync, reset: resetStartTaskMutation } = startTaskMutation;
   const { mutateAsync: completeTaskMutateAsync, reset: resetCompleteTaskMutation } = completeTaskMutation;
+  const { mutateAsync: taskWorkflowMutateAsync, reset: resetTaskWorkflowMutation } = taskWorkflowMutation;
+  const { mutateAsync: addMaterialMutateAsync, reset: resetAddMaterialMutation } = addMaterialMutation;
+  const { mutateAsync: updateMaterialMutateAsync, reset: resetUpdateMaterialMutation } = updateMaterialMutation;
+  const { mutateAsync: deleteMaterialMutateAsync, reset: resetDeleteMaterialMutation } = deleteMaterialMutation;
+  const { mutateAsync: createPickingMutateAsync, reset: resetCreatePickingMutation } = createPickingMutation;
+  const { mutateAsync: createRFQsMutateAsync, reset: resetCreateRFQsMutation } = createRFQsMutation;
+  const { mutateAsync: createQuotationMutateAsync, reset: resetCreateQuotationMutation } = createQuotationMutation;
 
   // Actions
   const fetchResidentRequests = React.useCallback(async () => {
@@ -317,6 +492,37 @@ export function useRequestsStore(options?: {
     await completeTaskMutateAsync(id);
   }, [completeTaskMutateAsync]);
 
+  const taskWorkflow = React.useCallback(
+    async (ticketId: string, workflowParams: TaskWorkflowParams) => {
+      return await taskWorkflowMutateAsync({ ticketId, workflowParams });
+    },
+    [taskWorkflowMutateAsync]
+  );
+
+  const addMaterial = React.useCallback(async (ticketId: string, productId: string, quantity: number, uomId?: string, selected?: boolean) => {
+    return await addMaterialMutateAsync({ ticketId, productId, quantity, uomId, selected });
+  }, [addMaterialMutateAsync]);
+
+  const updateMaterial = React.useCallback(async (ticketId: string, lineId: string, quantity: number, selected?: boolean) => {
+    return await updateMaterialMutateAsync({ ticketId, lineId, quantity, selected });
+  }, [updateMaterialMutateAsync]);
+
+  const deleteMaterial = React.useCallback(async (ticketId: string, lineId: string) => {
+    return await deleteMaterialMutateAsync({ ticketId, lineId });
+  }, [deleteMaterialMutateAsync]);
+
+  const createPicking = React.useCallback(async (ticketId: string, lineIds?: string[]) => {
+    return await createPickingMutateAsync({ ticketId, lineIds });
+  }, [createPickingMutateAsync]);
+
+  const createRFQs = React.useCallback(async (ticketId: string) => {
+    return await createRFQsMutateAsync(ticketId);
+  }, [createRFQsMutateAsync]);
+
+  const createQuotation = React.useCallback(async (ticketId: string) => {
+    return await createQuotationMutateAsync(ticketId);
+  }, [createQuotationMutateAsync]);
+
   const clearError = React.useCallback(() => {
     resetCreateRequestMutation();
     resetCancelRequestMutation();
@@ -325,6 +531,13 @@ export function useRequestsStore(options?: {
     resetInspectTaskMutation();
     resetStartTaskMutation();
     resetCompleteTaskMutation();
+    resetTaskWorkflowMutation();
+    resetAddMaterialMutation();
+    resetUpdateMaterialMutation();
+    resetDeleteMaterialMutation();
+    resetCreatePickingMutation();
+    resetCreateRFQsMutation();
+    resetCreateQuotationMutation();
   }, [
     resetCreateRequestMutation,
     resetCancelRequestMutation,
@@ -333,6 +546,13 @@ export function useRequestsStore(options?: {
     resetInspectTaskMutation,
     resetStartTaskMutation,
     resetCompleteTaskMutation,
+    resetTaskWorkflowMutation,
+    resetAddMaterialMutation,
+    resetUpdateMaterialMutation,
+    resetDeleteMaterialMutation,
+    resetCreatePickingMutation,
+    resetCreateRFQsMutation,
+    resetCreateQuotationMutation,
   ]);
 
   return {
@@ -352,6 +572,13 @@ export function useRequestsStore(options?: {
     inspectTask,
     startTask,
     completeTask,
+    taskWorkflow,
+    addMaterial,
+    updateMaterial,
+    deleteMaterial,
+    createPicking,
+    createRFQs,
+    createQuotation,
     clearError,
   };
 }

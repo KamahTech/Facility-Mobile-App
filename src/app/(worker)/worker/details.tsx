@@ -20,7 +20,8 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { useAppImagePicker } from "@/hooks/use-image-picker";
 import { encodeImageUri } from "@/lib/media";
-import { useRequestsStore, type RequestStatus } from "@/stores/requests-store";
+import { useRequestsStore, type RequestStatus, type Product } from "@/stores/requests-store";
+import { useWorkerPropertyDetailsQuery } from "@/stores/owner-store";
 import { useUserStore } from "@/stores/user-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { useToastStore } from "@/stores/toast-store";
@@ -29,6 +30,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { getTodayAtMidnight } from "@/lib/date-time";
 import { usePushNotificationStore } from "@/stores/push-notification-store";
+import { ProductSelectBottomSheet } from "@/components/product-select-bottom-sheet";
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 
 type InspectFormValues = {
   notes: string;
@@ -60,6 +63,12 @@ export default function WorkerDetailsScreen() {
     startTask,
     completeTask,
     addRequestComment,
+    addMaterial,
+    updateMaterial,
+    deleteMaterial,
+    createPicking,
+    createRFQs,
+    createQuotation,
     loading,
   } = useRequestsStore({ enableWorkerTasks: true });
   const { profile } = useUserStore();
@@ -108,6 +117,103 @@ export default function WorkerDetailsScreen() {
   >(null);
   const [isViewerVisible, setIsViewerVisible] = React.useState(false);
   const [actionLoading, setActionLoading] = React.useState(false);
+  const [isProductSheetVisible, setIsProductSheetVisible] = React.useState(false);
+  const [isPropertyDetailsVisible, setIsPropertyDetailsVisible] = React.useState(false);
+  const propertyQuery = useWorkerPropertyDetailsQuery(task?.id, isTransitionFinished && isPropertyDetailsVisible && !!task?.id);
+
+  const handleAddMaterial = async (product: Product) => {
+    if (!task) return;
+    try {
+      await addMaterial(task.id, product.id, 1, product.uomId, true);
+      useToastStore.getState().showToast(t("worker.materialAdded"), "success");
+    } catch (e: unknown) {
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToAddMaterial" as any));
+    }
+  };
+
+  const handleQuantityChange = async (lineId: string, quantity: number, selected?: boolean) => {
+    if (!task) return;
+    if (quantity <= 0) {
+      handleDeleteMaterial(lineId);
+      return;
+    }
+    try {
+      await updateMaterial(task.id, lineId, quantity, selected);
+    } catch (e: unknown) {
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToUpdateMaterial" as any));
+    }
+  };
+
+  const handleToggleSelected = async (lineId: string, quantity: number, selected: boolean) => {
+    if (!task) return;
+    try {
+      await updateMaterial(task.id, lineId, quantity, selected);
+    } catch (e: unknown) {
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToUpdateMaterial" as any));
+    }
+  };
+
+  const handleDeleteMaterial = (lineId: string) => {
+    if (!task) return;
+    Alert.alert(
+      t("worker.deleteMaterialTitle"),
+      t("worker.deleteMaterialConfirm"),
+      [
+        { text: t("actions.cancel"), style: "cancel" },
+        {
+          text: t("actions.confirm"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteMaterial(task.id, lineId);
+              useToastStore.getState().showToast(t("worker.materialRemoved"), "success");
+            } catch (e: unknown) {
+              Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToDeleteMaterial" as any));
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleCreatePicking = async () => {
+    if (!task) return;
+    setActionLoading(true);
+    try {
+      await createPicking(task.id);
+      useToastStore.getState().showToast(t("worker.pickingCreated" as any), "success");
+    } catch (e: unknown) {
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createPickingFailed" as any));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCreateRFQs = async () => {
+    if (!task) return;
+    setActionLoading(true);
+    try {
+      await createRFQs(task.id);
+      useToastStore.getState().showToast(t("worker.rfqsCreated" as any), "success");
+    } catch (e: unknown) {
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createRFQsFailed" as any));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCreateQuotation = async () => {
+    if (!task) return;
+    setActionLoading(true);
+    try {
+      await createQuotation(task.id);
+      useToastStore.getState().showToast(t("worker.quotationCreated" as any), "success");
+    } catch (e: unknown) {
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createQuotationFailed" as any));
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const getCategoryConfig = () => {
     if (!task)
@@ -268,17 +374,21 @@ export default function WorkerDetailsScreen() {
 
       await inspectTask(task.id, {
         notes: data.notes.trim(),
-        materials: (data.materials || "").trim(),
+        materials: "",
         deadline: (data.deadline || "").trim(),
         photos: photosPayload,
       });
+
+      const materialsList = task.materials && task.materials.length > 0
+        ? task.materials.map((m) => `- ${m.productName} (x${m.quantity})`).join("\n")
+        : t("common.none");
 
       await addRequestComment(
         task.id,
         t("worker.inspectionComment")
           .replace(
             "{{materials}}",
-            (data.materials || "").trim() || t("common.none"),
+            materialsList,
           )
           .replace(
             "{{deadline}}",
@@ -455,6 +565,125 @@ export default function WorkerDetailsScreen() {
           </View>
         </View>
 
+        {/* Property Context Card */}
+        {isAssignedToMe && (
+          <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-4">
+            <Pressable
+              onPress={() => setIsPropertyDetailsVisible(!isPropertyDetailsVisible)}
+              className="flex-row items-center justify-between"
+            >
+              <Text
+                className="text-base font-bold text-foreground text-start"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("ownerUnits.propertyDetails")}
+              </Text>
+              <AppIcon
+                name={isPropertyDetailsVisible ? "chevronDown" : "chevronRight" as any}
+                size={16}
+                colorToken="--muted-foreground"
+              />
+            </Pressable>
+
+            {isPropertyDetailsVisible && (
+              <View className="flex-col gap-3 mt-1">
+                {propertyQuery.isLoading ? (
+                  <AppActivityIndicator size="small" />
+                ) : propertyQuery.error ? (
+                  <Text className="text-xs text-destructive text-start">{propertyQuery.error.message}</Text>
+                ) : propertyQuery.data ? (
+                  <View className="flex-col gap-3">
+                    {propertyQuery.data.propertyType && (
+                      <AppRow className="justify-between items-center gap-3">
+                        <Text
+                          className="text-sm text-muted-foreground text-start"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {t("ownerUnits.propertyType")}
+                        </Text>
+                        <Text
+                          className="text-sm font-semibold text-foreground text-end"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {propertyQuery.data.propertyType}
+                        </Text>
+                      </AppRow>
+                    )}
+                    {propertyQuery.data.constructionState && (
+                      <AppRow className="justify-between items-center gap-3">
+                        <Text
+                          className="text-sm text-muted-foreground text-start"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {t("ownerUnits.constructionState")}
+                        </Text>
+                        <View className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/20">
+                          <Text
+                            className="text-[11px] font-bold text-blue-600 dark:text-blue-400 capitalize"
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {propertyQuery.data.constructionState.replace("_", " ")}
+                          </Text>
+                        </View>
+                      </AppRow>
+                    )}
+                    {propertyQuery.data.deliveryState && (
+                      <AppRow className="justify-between items-center gap-3">
+                        <Text
+                          className="text-sm text-muted-foreground text-start"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {t("ownerUnits.deliveryState")}
+                        </Text>
+                        <View className={`px-2.5 py-0.5 rounded-full ${propertyQuery.data.deliveryState === "delivered" ? "bg-green-50 dark:bg-green-950/20" : "bg-amber-50 dark:bg-amber-950/20"}`}>
+                          <Text
+                            className={`text-[11px] font-bold capitalize ${propertyQuery.data.deliveryState === "delivered" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {propertyQuery.data.deliveryState.replace("_", " ")}
+                          </Text>
+                        </View>
+                      </AppRow>
+                    )}
+                    {propertyQuery.data.location && (
+                      <AppRow className="justify-between items-center gap-3">
+                        <Text
+                          className="text-sm text-muted-foreground text-start"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {t("ownerUnits.location")}
+                        </Text>
+                        <Text
+                          className="text-sm font-semibold text-foreground text-end"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {propertyQuery.data.location}
+                        </Text>
+                      </AppRow>
+                    )}
+                    {(propertyQuery.data.roomCount !== undefined || propertyQuery.data.bathroomCount !== undefined) && (
+                      <AppRow className="justify-between items-center gap-3">
+                        <Text
+                          className="text-sm text-muted-foreground text-start"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {t("ownerUnits.rooms")} / {t("ownerUnits.bathrooms")}
+                        </Text>
+                        <Text
+                          className="text-sm font-semibold text-foreground text-end"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {propertyQuery.data.roomCount ?? 0} / {propertyQuery.data.bathroomCount ?? 0}
+                        </Text>
+                      </AppRow>
+                    )}
+                  </View>
+                ) : null}
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Issue Details Section */}
         <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-3">
           <Text
@@ -473,43 +702,309 @@ export default function WorkerDetailsScreen() {
 
         {/* Comments Section Button */}
         {isAssignedToMe && (
-          <Pressable
-            onPress={() => {
-              router.push({
-                pathname: "/worker/messages",
-                params: { id: task.id },
-              } as Href);
-            }}
-            className="w-full bg-card rounded-2xl p-4 shadow-sm mb-6 active:opacity-80 border border-border/10"
-          >
-            <AppRow className="items-center justify-between">
-              <AppRow className="items-center gap-3">
-                <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
-                  <AppIcon name="tickets" size={16} colorToken="--primary" />
-                </View>
-                <Text
-                  className="text-base font-bold text-foreground"
-                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                >
-                  {t("tickets.comments")}
-                </Text>
-              </AppRow>
-
-              <AppRow className="items-center gap-2">
-                {task.comments && task.comments.length > 0 && (
-                  <View className="bg-primary px-2.5 py-0.5 rounded-full">
-                    <Text
-                      className="text-xs font-bold text-primary-foreground"
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {task.comments.length}
-                    </Text>
+          <View className="w-full flex-col gap-4 mb-6">
+            <Pressable
+              onPress={() => {
+                router.push({
+                  pathname: "/worker/messages",
+                  params: { id: task.id },
+                } as Href);
+              }}
+              className="w-full bg-card rounded-2xl p-4 shadow-sm active:opacity-80 border border-border/10"
+            >
+              <AppRow className="items-center justify-between">
+                <AppRow className="items-center gap-3">
+                  <View className="w-8 h-8 rounded-lg bg-primary/10 items-center justify-center">
+                    <AppIcon name="tickets" size={16} colorToken="--primary" />
                   </View>
-                )}
+                  <Text
+                    className="text-base font-bold text-foreground"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
+                    {t("tickets.comments")}
+                  </Text>
+                </AppRow>
+
+                <AppRow className="items-center gap-2">
+                  {task.comments && task.comments.length > 0 && (
+                    <View className="bg-primary px-2.5 py-0.5 rounded-full">
+                      <Text
+                        className="text-xs font-bold text-primary-foreground"
+                        style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                      >
+                        {task.comments.length}
+                      </Text>
+                    </View>
+                  )}
+                  <AppChevron size={14} color={mutedToken} />
+                </AppRow>
+              </AppRow>
+            </Pressable>
+
+            {/* Related Documents Button */}
+            <Pressable
+              onPress={() => {
+                router.push({
+                  pathname: "/worker/related-documents",
+                  params: { id: task.id },
+                } as any);
+              }}
+              className="w-full bg-card rounded-2xl p-4 shadow-sm active:opacity-80 border border-border/10"
+            >
+              <AppRow className="items-center justify-between">
+                <AppRow className="items-center gap-3">
+                  <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
+                    <AppIcon name="invoices" size={16} color="#10B981" />
+                  </View>
+                  <Text
+                    className="text-base font-bold text-foreground"
+                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                  >
+                    {t("tickets.relatedDocuments")}
+                  </Text>
+                </AppRow>
                 <AppChevron size={14} color={mutedToken} />
               </AppRow>
+            </Pressable>
+          </View>
+        )}
+
+        {/* Materials Section */}
+        {isAssignedToMe && (
+          <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-4">
+            <AppRow className="items-center justify-between border-b border-border/10 pb-3">
+              <Text
+                className="text-base font-bold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("worker.materialsLabel")}
+              </Text>
+              {!isCompleted && task.status !== "cancelled" && (
+                <Pressable
+                  onPress={() => setIsProductSheetVisible(true)}
+                  className="flex-row items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-lg active:opacity-75"
+                >
+                  <AppIcon name="add" size={14} colorToken="--primary" />
+                  <Text className="text-xs font-bold text-primary">
+                    {t("common.add" as any) || "Add"}
+                  </Text>
+                </Pressable>
+              )}
             </AppRow>
-          </Pressable>
+
+            {task.materials && task.materials.length > 0 ? (
+              <View className="flex-col gap-3">
+                {task.materials.map((material) => (
+                  <View
+                    key={material.id}
+                    className="flex-col gap-2 bg-secondary/30 p-3.5 rounded-xl border border-border/10"
+                  >
+                    <AppRow className="items-start justify-between gap-3">
+                      <View className="flex-1 text-start">
+                        <Text
+                          className="text-sm font-bold text-foreground text-start"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {material.productName}
+                        </Text>
+                        {material.uomName && (
+                          <Text
+                            className="text-xs text-muted-foreground text-start mt-0.5"
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {t("worker.uomLabel")}: {material.uomName}
+                          </Text>
+                        )}
+                      </View>
+
+                      {!isCompleted && task.status !== "cancelled" && (
+                        <Pressable
+                          onPress={() => handleDeleteMaterial(material.id)}
+                          className="w-7 h-7 rounded-full bg-rose-50 dark:bg-rose-950/20 items-center justify-center active:opacity-75"
+                        >
+                          <AppIcon name="trash" size={14} colorToken="--destructive" />
+                        </Pressable>
+                      )}
+                    </AppRow>
+
+                    <AppRow className="items-center justify-between gap-3 mt-1 flex-wrap">
+                      <View className="flex-col gap-0.5 items-start">
+                        <Text className="text-[11px] text-muted-foreground">
+                          {t("worker.availability")}: {t("worker.stockMain")}: {material.mainQty ?? 0} | {t("worker.stockFacility")}: {material.facilityQty ?? 0}
+                        </Text>
+                        {material.purchaseNeeded && (
+                          <Text className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                            ⚠️ {t("worker.shortageLabel")}: {material.purchaseShortage ?? 0}
+                          </Text>
+                        )}
+                      </View>
+
+                      <AppRow className="items-center gap-3">
+                        {!isCompleted && task.status !== "cancelled" ? (
+                          <Pressable
+                            onPress={() =>
+                              handleToggleSelected(material.id, material.quantity, !material.selected)
+                            }
+                            className="flex-row items-center gap-1.5"
+                          >
+                            <AppIcon
+                              name={material.selected ? "circleCheck" : "circle"}
+                              size={16}
+                              colorToken={material.selected ? "--primary" : "--muted-foreground"}
+                            />
+                            <Text className="text-xs text-muted-foreground">
+                              {t("worker.selectedLabel")}
+                            </Text>
+                          </Pressable>
+                        ) : (
+                          <View className="flex-row items-center gap-1">
+                            <AppIcon
+                              name={material.selected ? "circleCheck" : "circle"}
+                              size={14}
+                              colorToken={material.selected ? "--primary" : "--muted-foreground"}
+                            />
+                            <Text className="text-xs text-muted-foreground">
+                              {material.selected ? t("worker.selectedLabel") : t("worker.notSelectedLabel")}
+                            </Text>
+                          </View>
+                        )}
+
+                        {!isCompleted && task.status !== "cancelled" ? (
+                          <AppRow className="items-center bg-secondary rounded-lg px-1.5 py-0.5 gap-2 border border-border/20">
+                            <Pressable
+                              onPress={() =>
+                                handleQuantityChange(material.id, material.quantity - 1, material.selected)
+                              }
+                              className="w-6 h-6 items-center justify-center rounded bg-card active:opacity-75"
+                            >
+                              <Text className="text-sm font-bold text-foreground">-</Text>
+                            </Pressable>
+                            <Text className="text-sm font-bold text-foreground min-w-[20px] text-center">
+                              {material.quantity}
+                            </Text>
+                            <Pressable
+                              onPress={() =>
+                                handleQuantityChange(material.id, material.quantity + 1, material.selected)
+                              }
+                              className="w-6 h-6 items-center justify-center rounded bg-card active:opacity-75"
+                            >
+                              <Text className="text-sm font-bold text-foreground">+</Text>
+                            </Pressable>
+                          </AppRow>
+                        ) : (
+                          <Text className="text-sm font-bold text-foreground">
+                            {t("worker.qtyLabel")}: {material.quantity}
+                          </Text>
+                        )}
+                      </AppRow>
+                    </AppRow>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View className="py-6 items-center justify-center bg-secondary/10 rounded-xl border border-dashed border-border/30">
+                <AppIcon name="tickets" size={20} colorToken="--muted-foreground" className="opacity-60 mb-1.5" />
+                <Text className="text-xs text-muted-foreground text-center">
+                  {t("worker.noMaterials")}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Procurement Actions Section */}
+        {isAssignedToMe && task.materials && task.materials.length > 0 && !isCompleted && task.status !== "cancelled" && (
+          <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-4">
+            <Text
+              className="text-base font-bold text-foreground text-start"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {t("worker.procurementTitle")}
+            </Text>
+
+            <View className="flex-col gap-3">
+              {/* Create Picking */}
+              <Pressable
+                onPress={handleCreatePicking}
+                className="w-full min-h-12 bg-secondary/80 hover:bg-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-75 border border-border/10"
+              >
+                <AppRow className="items-center gap-3">
+                  <View className="w-8 h-8 rounded-lg bg-blue-500/10 items-center justify-center">
+                    <AppIcon name="invoices" size={16} color="#3B82F6" />
+                  </View>
+                  <View className="flex-col text-start">
+                    <Text
+                      className="text-sm font-bold text-foreground text-start"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
+                      {t("worker.createPickingBtn")}
+                    </Text>
+                    <Text
+                      className="text-[10px] text-muted-foreground mt-0.5 text-start"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
+                      {t("worker.createPickingDesc")}
+                    </Text>
+                  </View>
+                </AppRow>
+                <AppIcon name="arrowUpRight" size={16} colorToken="--muted-foreground" />
+              </Pressable>
+
+              {/* Create RFQs */}
+              <Pressable
+                onPress={handleCreateRFQs}
+                className="w-full min-h-12 bg-secondary/80 hover:bg-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-75 border border-border/10"
+              >
+                <AppRow className="items-center gap-3">
+                  <View className="w-8 h-8 rounded-lg bg-amber-500/10 items-center justify-center">
+                    <AppIcon name="invoices" size={16} color="#F59E0B" />
+                  </View>
+                  <View className="flex-col text-start">
+                    <Text
+                      className="text-sm font-bold text-foreground text-start"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
+                      {t("worker.createRFQsBtn")}
+                    </Text>
+                    <Text
+                      className="text-[10px] text-muted-foreground mt-0.5 text-start"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
+                      {t("worker.createRFQsDesc")}
+                    </Text>
+                  </View>
+                </AppRow>
+                <AppIcon name="arrowUpRight" size={16} colorToken="--muted-foreground" />
+              </Pressable>
+
+              {/* Create Quotation */}
+              <Pressable
+                onPress={handleCreateQuotation}
+                className="w-full min-h-12 bg-secondary/80 hover:bg-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-75 border border-border/10"
+              >
+                <AppRow className="items-center gap-3">
+                  <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
+                    <AppIcon name="invoices" size={16} color="#10B981" />
+                  </View>
+                  <View className="flex-col text-start">
+                    <Text
+                      className="text-sm font-bold text-foreground text-start"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
+                      {t("worker.createQuotationBtn")}
+                    </Text>
+                    <Text
+                      className="text-[10px] text-muted-foreground mt-0.5 text-start"
+                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                    >
+                      {t("worker.createQuotationDesc")}
+                    </Text>
+                  </View>
+                </AppRow>
+                <AppIcon name="arrowUpRight" size={16} colorToken="--muted-foreground" />
+              </Pressable>
+            </View>
+          </View>
         )}
 
         {/* WORKFLOW VIEW CHANGER */}
@@ -549,24 +1044,6 @@ export default function WorkerDetailsScreen() {
                     multiline
                     numberOfLines={3}
                     error={errors.notes?.message}
-                  />
-                )}
-              />
-
-              {/* Materials Needed */}
-              <Controller
-                control={control}
-                name="materials"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <AppInput
-                    label={t("worker.materialsLabel")}
-                    placeholder={t("worker.materialsPlaceholder")}
-                    value={value}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    multiline
-                    numberOfLines={2}
-                    error={errors.materials?.message}
                   />
                 )}
               />
@@ -768,6 +1245,12 @@ export default function WorkerDetailsScreen() {
         visible={isViewerVisible}
         imageUri={selectedViewerImage}
         onClose={() => setIsViewerVisible(false)}
+      />
+
+      <ProductSelectBottomSheet
+        isPresented={isProductSheetVisible}
+        onDismiss={() => setIsProductSheetVisible(false)}
+        onSelect={handleAddMaterial}
       />
     </View>
   );
