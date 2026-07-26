@@ -24,7 +24,7 @@ export function CommunityUpdates({
 }: CommunityUpdatesProps) {
   const { t } = useI18n();
 
-  const { updates, loading } = useCommunityStore({ enableUpdates: true });
+  const { updates, isUpdatesLoading } = useCommunityStore({ enableUpdates: true });
 
   // Fetch the latest updates based on the limit
   const visibleUpdates = React.useMemo(() => {
@@ -51,7 +51,7 @@ export function CommunityUpdates({
       )}
 
       <View className="w-full px-5 sm:px-8 flex-col gap-4">
-        {loading && updates.length === 0 ? (
+        {isUpdatesLoading && updates.length === 0 ? (
           <CommunityUpdatesSkeleton />
         ) : (
           visibleUpdates.map((item) => {

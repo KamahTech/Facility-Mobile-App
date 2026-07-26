@@ -295,21 +295,27 @@ export function useCommunityStore(options?: {
     [notificationsQuery.data],
   );
 
+  const isUpdatesLoading = updatesQuery.isLoading || updatesQuery.isFetchingNextPage;
+  const isVisitorsLoading = visitorsQuery.isLoading || visitorsQuery.isFetchingNextPage;
+  const isFeedbacksLoading = feedbacksQuery.isLoading || feedbacksQuery.isFetchingNextPage;
+  const isNotificationsLoading = notificationsQuery.isLoading || notificationsQuery.isFetchingNextPage;
+
+  const isVoting = votePollMutation.isPending;
+  const isCreatingVisitor = createVisitorMutation.isPending;
+  const isCancellingVisitor = cancelVisitorMutation.isPending;
+  const isSubmittingFeedback = submitFeedbackMutation.isPending;
+  const isMarkingNotificationRead = markNotificationReadMutation.isPending || markAllNotificationsReadMutation.isPending;
+
   const loading =
-    updatesQuery.isLoading ||
-    updatesQuery.isFetchingNextPage ||
-    visitorsQuery.isLoading ||
-    visitorsQuery.isFetchingNextPage ||
-    feedbacksQuery.isLoading ||
-    feedbacksQuery.isFetchingNextPage ||
-    notificationsQuery.isLoading ||
-    notificationsQuery.isFetchingNextPage ||
-    votePollMutation.isPending ||
-    createVisitorMutation.isPending ||
-    cancelVisitorMutation.isPending ||
-    submitFeedbackMutation.isPending ||
-    markNotificationReadMutation.isPending ||
-    markAllNotificationsReadMutation.isPending;
+    isUpdatesLoading ||
+    isVisitorsLoading ||
+    isFeedbacksLoading ||
+    isNotificationsLoading ||
+    isVoting ||
+    isCreatingVisitor ||
+    isCancellingVisitor ||
+    isSubmittingFeedback ||
+    isMarkingNotificationRead;
 
   const error =
     updatesQuery.error?.message ||
@@ -489,6 +495,15 @@ export function useCommunityStore(options?: {
     feedbacks,
     notifications,
     loading,
+    isUpdatesLoading,
+    isVisitorsLoading,
+    isFeedbacksLoading,
+    isNotificationsLoading,
+    isVoting,
+    isCreatingVisitor,
+    isCancellingVisitor,
+    isSubmittingFeedback,
+    isMarkingNotificationRead,
     error,
     fetchUpdates,
     fetchNextUpdates,
