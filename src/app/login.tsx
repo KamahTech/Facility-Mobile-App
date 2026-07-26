@@ -31,7 +31,7 @@ export default function LoginScreen() {
   const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { type } = useLocalSearchParams<{ type: "resident" | "worker" }>();
-  const accountType = type || "resident";
+  const accountType = type === "worker" ? "worker" : "resident";
   const primaryColor = useThemeToken("--primary") as string;
 
   const { login, loading, clearError } = useUserStore();

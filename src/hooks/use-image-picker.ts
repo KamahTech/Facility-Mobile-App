@@ -50,6 +50,8 @@ export function useAppImagePicker() {
                 aspect,
                 mediaTypes: ["images"],
                 quality,
+                preferredAssetRepresentationMode:
+                  ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
               });
 
         if (result.canceled || !result.assets.length) {

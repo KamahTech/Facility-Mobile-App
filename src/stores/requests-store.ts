@@ -3,6 +3,10 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tansta
 import { apiRequest } from "@/lib/api-client";
 import type { EncodedImage } from "@/lib/media";
 import { useUnitStore } from "@/stores/unit-store";
+import {
+  toPositiveIntegerId,
+  toPositiveNumber,
+} from "@/lib/api-identifiers";
 
 export type RequestStatus = "pending" | "in_progress" | "completed" | "cancelled";
 
@@ -11,7 +15,7 @@ export type RequestComment = {
   senderName: string;
   senderRole: "resident" | "admin" | "worker";
   content: string;
-  createdAt: string; // YYYY-MM-DD HH:MM
+  createdAt: string; // YYYY-MM-DD HH:MM:SS
   image?: string | boolean; // raw base64, data URL or false
 };
 
@@ -99,12 +103,12 @@ export type MaintenanceRequest = {
   unitNumber: string;
   buildingNumber: string;
   projectName: string;
-  mobileUnitLinkId: string | false;
   status: RequestStatus;
   createdAt: string; // YYYY-MM-DD
   updatedAt: string; // YYYY-MM-DD
   workerName?: string | boolean;
   notes?: string | boolean;
+  subject?: string;
   workerPhase?: "accepted" | "inspected" | "working" | "completed" | boolean;
   comments: RequestComment[];
   materials?: TaskMaterial[];
@@ -119,6 +123,13 @@ export type MaintenanceRequest = {
   maintenanceFrom?: string | boolean;
   maintenanceTo?: string | boolean;
   materialRequirement?: string | boolean;
+  propertyContext?: Record<string, unknown>;
+  attachments?: {
+    id: string;
+    name: string;
+    mimetype?: string;
+    contentUrl: string;
+  }[];
   relatedDocumentsEndpoint?: string;
   workerRelatedDocumentsEndpoint?: string;
 };
@@ -180,12 +191,10 @@ export function useRequestsStore(options?: {
   // Mutations
   const createRequestMutation = useMutation({
     mutationFn: (params: { category: string; description: string; unitId: string }) => {
-      const unitIdNum = parseInt(params.unitId, 10);
-      
       const payload: Record<string, unknown> = {
         category: params.category,
         description: params.description,
-        unitId: unitIdNum,
+        unitId: toPositiveIntegerId(params.unitId, "unitId"),
       };
       
       return apiRequest("/resident/tickets/create", payload);
@@ -292,9 +301,11 @@ export function useRequestsStore(options?: {
   const addMaterialMutation = useMutation({
     mutationFn: (params: { ticketId: string; productId: string; quantity: number; uomId?: string; selected?: boolean }) =>
       apiRequest(`/worker/tasks/${params.ticketId}/materials`, {
-        productId: parseInt(params.productId, 10),
-        quantity: params.quantity,
-        uomId: params.uomId ? parseInt(params.uomId, 10) : undefined,
+        productId: toPositiveIntegerId(params.productId, "productId"),
+        quantity: toPositiveNumber(params.quantity, "quantity"),
+        uomId: params.uomId
+          ? toPositiveIntegerId(params.uomId, "uomId")
+          : undefined,
         selected: params.selected,
       }),
     onSuccess: () => {
@@ -306,7 +317,7 @@ export function useRequestsStore(options?: {
   const updateMaterialMutation = useMutation({
     mutationFn: (params: { ticketId: string; lineId: string; quantity: number; selected?: boolean }) =>
       apiRequest(`/worker/tasks/${params.ticketId}/materials/${params.lineId}/update`, {
-        quantity: params.quantity,
+        quantity: toPositiveNumber(params.quantity, "quantity"),
         selected: params.selected,
       }),
     onSuccess: () => {
@@ -327,7 +338,9 @@ export function useRequestsStore(options?: {
   const createPickingMutation = useMutation({
     mutationFn: (params: { ticketId: string; lineIds?: string[] }) =>
       apiRequest(`/worker/tasks/${params.ticketId}/create-picking`, {
-        lineIds: params.lineIds,
+        lineIds: params.lineIds?.map((lineId) =>
+          toPositiveIntegerId(lineId, "lineId"),
+        ),
       }),
     onSuccess: (_, params) => {
       queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });

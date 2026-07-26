@@ -36,7 +36,10 @@ export default function SignupScreen() {
       z.object({
         name: z.string().min(1, t("auth.validation.nameMin")),
         email: z.string().min(1, t("validation.required")).email(t("auth.validation.email")),
-        password: z.string().min(10, t("auth.validation.passwordMin")),
+        password: z
+          .string()
+          .min(10, t("auth.validation.passwordMin"))
+          .max(128, t("auth.validation.passwordMax")),
         phone: z.string().optional(),
       }),
     [t],
@@ -44,7 +47,7 @@ export default function SignupScreen() {
   const signupSchema = React.useMemo(
     () =>
       stepOneSchema.extend({
-        otp: z.string().min(6, t("auth.otpError")).max(6, t("auth.otpError")),
+        otp: z.string().regex(/^\d{6}$/, t("auth.otpError")),
       }),
     [stepOneSchema, t],
   );

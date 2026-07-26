@@ -42,7 +42,10 @@ export function UnitFamilyMembersCard({ unitId }: UnitFamilyMembersCardProps) {
               Alert.alert(t("common.success"), t("common.ok"));
               refetch();
             } catch (e: any) {
-              Alert.alert(t("common.error"), e?.message || "Failed to approve request");
+              Alert.alert(
+                t("common.error"),
+                e?.message || t("familyTenant.approveFailed"),
+              );
             }
           },
         },
@@ -64,7 +67,10 @@ export function UnitFamilyMembersCard({ unitId }: UnitFamilyMembersCardProps) {
       setRejectReason("");
       refetch();
     } catch (e: any) {
-      Alert.alert(t("common.error"), e?.message || "Failed to reject request");
+      Alert.alert(
+        t("common.error"),
+        e?.message || t("familyTenant.rejectFailed"),
+      );
     }
   };
 

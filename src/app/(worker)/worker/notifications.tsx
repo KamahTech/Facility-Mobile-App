@@ -91,7 +91,6 @@ export default function WorkerNotificationsScreen() {
         iconName = "notification";
         iconColor = "#2563EB";
         break;
-      case "general":
       default:
         badgeBg = "bg-purple-50 dark:bg-purple-950/40";
         iconName = "notification";

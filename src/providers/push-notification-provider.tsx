@@ -6,7 +6,6 @@ import { handleNotificationNavigation } from "@/lib/notification-router";
 
 export function PushNotificationProvider({ children }: { children: React.ReactNode }) {
   const sessionId = useUserStore((state) => state.sessionId);
-  const accountType = useUserStore((state) => state.accountType);
   const registerDevice = usePushNotificationStore((state) => state.registerDevice);
 
   // Set the notification handler to control whether an alert is shown when the app is in the foreground
@@ -53,12 +52,24 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
   // Register device token with backend when user is logged in
   React.useEffect(() => {
     if (sessionId) {
-      registerDevice(sessionId);
+      void registerDevice();
     }
   }, [sessionId, registerDevice]);
 
+  React.useEffect(() => {
+    if (!sessionId) return;
+
+    const subscription = Notifications.addPushTokenListener(() => {
+      void registerDevice(true);
+    });
+
+    return () => subscription.remove();
+  }, [registerDevice, sessionId]);
+
   // Handle notification tap actions
   React.useEffect(() => {
+    let coldLaunchTimer: ReturnType<typeof setTimeout> | null = null;
+
     // 1. Handle background/foreground notification tap
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data;
@@ -68,22 +79,30 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
     });
 
     // 2. Handle cold launch from notification
-    Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) {
-        const data = response.notification.request.content.data;
-        if (data) {
-          // Delay slightly to allow navigation/Expo Router layout to mount
-          setTimeout(() => {
-            handleNotificationNavigation(data, useUserStore.getState().accountType);
-          }, 1000);
+    void Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (response) {
+          const data = response.notification.request.content.data;
+          if (data) {
+            // Delay slightly to allow navigation/Expo Router layout to mount
+            coldLaunchTimer = setTimeout(() => {
+              handleNotificationNavigation(
+                data,
+                useUserStore.getState().accountType,
+              );
+            }, 1000);
+          }
         }
-      }
-    });
+      })
+      .catch(() => {
+        // The app can continue normally when no native notification response is available.
+      });
 
     return () => {
       subscription.remove();
+      if (coldLaunchTimer) clearTimeout(coldLaunchTimer);
     };
-  }, [accountType]);
+  }, []);
 
   return <>{children}</>;
 }

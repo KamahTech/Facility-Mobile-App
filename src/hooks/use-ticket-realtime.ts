@@ -1,5 +1,5 @@
 import React from "react";
-import { AppState, type AppStateStatus } from "react-native";
+import { AppState, Platform, type AppStateStatus } from "react-native";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 
 import { API_BASE_URL } from "@/constants/api";
@@ -52,6 +52,18 @@ export function useTicketRealtime(ticketId: string, accountType: "resident" | "w
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
+    if (Platform.OS === "web") {
+      const refreshComments = () =>
+        queryClient.invalidateQueries({
+          queryKey: ["ticket-comments", String(ticketId)],
+        });
+      const pollingTimer = setInterval(() => {
+        void refreshComments();
+      }, 15_000);
+
+      return () => clearInterval(pollingTimer);
+    }
+
     let socket: WebSocket | null = null;
     let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
     let reconnectDelay = 1000;

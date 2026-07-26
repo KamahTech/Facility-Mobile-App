@@ -30,7 +30,10 @@ export function UnitTenantsCard({ unitId }: UnitTenantsCardProps) {
               Alert.alert(t("common.success"), t("common.ok"));
               refetch();
             } catch (e: any) {
-              Alert.alert(t("common.error"), e?.message || "Failed to remove tenant");
+              Alert.alert(
+                t("common.error"),
+                e?.message || t("familyTenant.removeFailed"),
+              );
             }
           },
         },

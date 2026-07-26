@@ -7,6 +7,7 @@ import {
 import { apiRequest } from "@/lib/api-client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useUserStore } from "@/stores/user-store";
+import { toPositiveIntegerId } from "@/lib/api-identifiers";
 
 export type CommunityNews = {
   id: string;
@@ -80,8 +81,7 @@ export type NotificationItem = {
     | "visitor"
     | "announcement"
     | "task_assigned"
-    | "inspection"
-    | "general";
+    | "inspection";
   unread: boolean;
   read: boolean;
 };
@@ -195,12 +195,8 @@ export function useCommunityStore(options?: {
   // Mutations
   const votePollMutation = useMutation({
     mutationFn: (params: { pollId: string; optionId: string | number }) => {
-      const optionIdNum =
-        typeof params.optionId === "number"
-          ? params.optionId
-          : parseInt(params.optionId, 10);
       return apiRequest(`/community/polls/${params.pollId}/vote`, {
-        optionId: optionIdNum,
+        optionId: toPositiveIntegerId(params.optionId, "optionId"),
       });
     },
     onSuccess: () => {

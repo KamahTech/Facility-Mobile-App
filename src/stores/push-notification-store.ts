@@ -32,7 +32,8 @@ type PushNotificationState = {
 
   setActiveTicketId: (id: string | null) => void;
   setActiveChatTicketId: (id: string | null) => void;
-  registerDevice: (accessToken: string) => Promise<void>;
+  resetLocalRegistration: () => void;
+  registerDevice: (force?: boolean) => Promise<void>;
   unregisterDevice: () => Promise<void>;
 };
 
@@ -45,9 +46,16 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
 
   setActiveTicketId: (id) => set({ activeTicketId: id }),
   setActiveChatTicketId: (id) => set({ activeChatTicketId: id }),
+  resetLocalRegistration: () =>
+    set({
+      expoPushToken: null,
+      isRegistered: false,
+      activeTicketId: null,
+      activeChatTicketId: null,
+    }),
 
-  registerDevice: async (accessToken: string) => {
-    if (get().isRegistered) return;
+  registerDevice: async (force = false) => {
+    if (get().isRegistered && !force) return;
 
     try {
       // 1. Ensure this is a physical device (push notifications require real devices)
@@ -100,13 +108,6 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
       const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync({ projectId });
 
       // 6. Register with the backend
-      console.log("[PushNotifications] Registering push token with backend...", {
-        expoPushToken,
-        deviceId,
-        platform: Platform.OS,
-        projectId,
-      });
-
       await apiRequest("/notifications/push/register", {
         expoPushToken,
         deviceId,
@@ -129,7 +130,6 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
     if (!isRegistered || !deviceId) return;
 
     try {
-      console.log("[PushNotifications] Unregistering device from backend:", deviceId);
       await apiRequest("/notifications/push/unregister", {
         deviceId,
       });

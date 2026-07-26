@@ -21,6 +21,12 @@ export type ConnectedUnit = {
   facilityOwnerLineIds?: string[];
   facilityOwnerId?: string;
   facilityOwnerLineId?: string;
+  approvalStatus?: "pending" | "approved" | "refused";
+  residentPartnerId?: string;
+  residentName?: string;
+  residentEmail?: string;
+  requestedUserId?: string;
+  requestedUserName?: string;
 };
 
 export type MobileUnitLinkItem = {

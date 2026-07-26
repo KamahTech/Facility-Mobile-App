@@ -11,7 +11,7 @@ import { useToastStore } from "@/stores/toast-store";
 import { getStoredLanguagePreference, getSystemLanguage } from "@/lib/language-storage";
 import { translations } from "@/constants/translations";
 import { usePushNotificationStore } from "@/stores/push-notification-store";
-
+import { clearAuthenticatedQueryCache } from "@/lib/query-client";
 
 export type UserProfile = {
   name: string;
@@ -39,7 +39,7 @@ type UserState = {
     email: string,
     password: string,
     phone?: string,
-  ) => Promise<any>;
+  ) => Promise<SignupOtpResponse>;
   signup: (
     name: string,
     email: string,
@@ -56,14 +56,37 @@ type UserState = {
 };
 
 type AuthResponse = {
+  tokenType: "Bearer";
   accessToken: string;
   expiresIn: number;
+  uid: number;
   profile: UserProfile;
-  accountType?: "resident" | "worker";
+  accountType: "resident" | "worker";
+};
+
+type SignupOtpResponse = {
+  email: string;
+  expiresInSeconds: number;
+  deliveryMethod: "email";
 };
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
+}
+
+function isAccountType(value: string | null): value is "resident" | "worker" {
+  return value === "resident" || value === "worker";
+}
+
+async function clearLocalSession() {
+  await setSessionId(null);
+  await Promise.all([
+    SecureStore.deleteItemAsync("account_type"),
+    SecureStore.deleteItemAsync("profile_data"),
+    SecureStore.setItemAsync("logged_out", "true"),
+  ]);
+  usePushNotificationStore.getState().resetLocalRegistration();
+  clearAuthenticatedQueryCache();
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -78,27 +101,44 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       const storedSession = await initializeSession();
       const accountType = (await SecureStore.getItemAsync("account_type")) as
-        | "resident"
-        | "worker"
+        | string
         | null;
       const profileStr = await SecureStore.getItemAsync("profile_data");
 
-      if (!storedSession) {
-        await SecureStore.deleteItemAsync("account_type");
-        await SecureStore.deleteItemAsync("profile_data");
-        await SecureStore.setItemAsync("logged_out", "true");
-        set({ initialized: true });
+      if (!storedSession || !isAccountType(accountType)) {
+        await clearLocalSession();
+        set({
+          sessionId: null,
+          accountType: null,
+          profile: null,
+          initialized: true,
+        });
         return;
+      }
+
+      let profile: UserProfile | null = null;
+      if (profileStr) {
+        try {
+          profile = JSON.parse(profileStr) as UserProfile;
+        } catch {
+          await SecureStore.deleteItemAsync("profile_data");
+        }
       }
 
       set({
         sessionId: storedSession,
         accountType,
-        profile: profileStr ? JSON.parse(profileStr) : null,
+        profile,
         initialized: true,
       });
     } catch (e: unknown) {
-      set({ initialized: true });
+      await clearLocalSession().catch(() => undefined);
+      set({
+        sessionId: null,
+        accountType: null,
+        profile: null,
+        initialized: true,
+      });
       console.error("Initialization of user session failed:", e);
     }
   },
@@ -113,7 +153,11 @@ export const useUserStore = create<UserState>((set, get) => ({
         password,
       });
       const { accessToken, expiresIn, profile } = response;
+      if (response.accountType !== accountType) {
+        throw new Error("The authenticated account type does not match the selected login.");
+      }
 
+      clearAuthenticatedQueryCache();
       await setSessionId(accessToken, expiresIn);
       await SecureStore.setItemAsync("account_type", accountType);
       await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
@@ -135,7 +179,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   requestOtp: async (name, email, password, phone) => {
     set({ loading: true, error: null });
     try {
-      const response = await apiRequest<{ ok?: boolean }>(
+      const response = await apiRequest<SignupOtpResponse>(
         "/auth/signup/request-otp",
         { name, email, password, phone },
       );
@@ -161,7 +205,11 @@ export const useUserStore = create<UserState>((set, get) => ({
         phone,
       });
       const { accessToken, expiresIn, profile } = response;
+      if (response.accountType !== "resident") {
+        throw new Error("Resident signup returned an invalid account type.");
+      }
 
+      clearAuthenticatedQueryCache();
       await setSessionId(accessToken, expiresIn);
       await SecureStore.setItemAsync("account_type", "resident");
       await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
@@ -191,10 +239,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         e,
       );
     } finally {
-      await setSessionId(null);
-      await SecureStore.deleteItemAsync("account_type");
-      await SecureStore.deleteItemAsync("profile_data");
-      await SecureStore.setItemAsync("logged_out", "true");
+      await clearLocalSession();
       set({
         sessionId: null,
         accountType: null,
@@ -280,10 +325,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       await usePushNotificationStore.getState().unregisterDevice();
       await apiRequest("/me/delete", {});
-      await setSessionId(null);
-      await SecureStore.deleteItemAsync("account_type");
-      await SecureStore.deleteItemAsync("profile_data");
-      await SecureStore.setItemAsync("logged_out", "true");
+      await clearLocalSession();
       set({
         sessionId: null,
         accountType: null,
@@ -304,10 +346,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 // Handle session expiration: clear local data, update store, and redirect to login screen
 setSessionExpiredHandler(async () => {
   try {
-    await setSessionId(null);
-    await SecureStore.deleteItemAsync("account_type");
-    await SecureStore.deleteItemAsync("profile_data");
-    await SecureStore.setItemAsync("logged_out", "true");
+    await clearLocalSession();
   } catch (error) {
     console.error(
       "Failed to clear session storage in session expiration handler:",

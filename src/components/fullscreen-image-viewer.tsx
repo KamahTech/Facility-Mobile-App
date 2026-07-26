@@ -34,12 +34,23 @@ export function FullscreenImageViewer({
       if (Platform.OS === "web") {
         const resolved = getBackendImageSource(imageUri);
         const url = resolved && typeof resolved === "object" && resolved.uri ? resolved.uri : imageUri;
+        const response = await fetch(url, {
+          headers:
+            resolved && typeof resolved === "object"
+              ? resolved.headers
+              : undefined,
+        });
+        if (!response.ok) {
+          throw new Error(`Image download failed (${response.status})`);
+        }
+        const objectUrl = URL.createObjectURL(await response.blob());
         const link = document.createElement("a");
-        link.href = url;
+        link.href = objectUrl;
         link.download = `image_${Date.now()}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(objectUrl);
         return;
       }
 

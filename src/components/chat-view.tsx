@@ -110,7 +110,7 @@ export function ChatView({
   });
 
   const handleSubmitComment = async () => {
-    if (!newComment.trim() && !selectedPhoto) return;
+    if (!newComment.trim()) return;
     
     setSendLoading(true);
     try {
@@ -387,7 +387,7 @@ export function ChatView({
           />
           <Pressable
             onPress={handleSubmitComment}
-            disabled={composerDisabled || sendLoading || (!newComment.trim() && !selectedPhoto)}
+            disabled={composerDisabled || sendLoading || !newComment.trim()}
             accessibilityLabel={t("tickets.send")}
             accessibilityRole="button"
             className="w-11 h-11 rounded-full bg-primary items-center justify-center active:opacity-70 shadow-sm disabled:opacity-40"
