@@ -5,6 +5,7 @@ import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { type Href, useNavigation } from "expo-router";
 import { router } from "@/lib/navigation";
+import { useToastStore } from "@/stores/toast-store";
 
 import { HomeHeader } from "@/components/home-header";
 import { DueBalanceCard } from "@/components/due-balance-card";
@@ -44,7 +45,7 @@ export default function ResidentHomeScreen() {
         fetchUpdates(),
       ]);
     } catch (err) {
-      console.error("Failed to refresh home screen data:", err);
+      useToastStore.getState().showToast("Failed to refresh home screen data", "error");
     } finally {
       setRefreshing(false);
     }
@@ -62,7 +63,7 @@ export default function ResidentHomeScreen() {
       await logout();
       router.replace("/choose-login-method" as Href);
     } catch (err) {
-      console.error("Failed to logout:", err);
+      useToastStore.getState().showToast("Failed to logout", "error");
     }
   };
 

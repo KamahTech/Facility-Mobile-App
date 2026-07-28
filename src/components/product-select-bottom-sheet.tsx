@@ -1,4 +1,4 @@
-import BottomSheet, { BottomSheetScrollView, BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import React from "react";
 import { Pressable, View, Text, ActivityIndicator } from "react-native";
 
@@ -6,11 +6,11 @@ import { AppBottomSheetBackdrop } from "@/components/app-bottom-sheet-backdrop";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppInput } from "@/components/app-input";
-import { bottomSheetContainerStyle } from "@/constants/bottom-sheet";
+import { bottomSheetContainerStyle, defaultBottomSheetSnapPoints } from "@/constants/bottom-sheet";
 import { useBottomSheetLayer } from "@/hooks/use-bottom-sheet-layer";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
-import { useMaterialProductsQuery, type Product } from "@/stores/requests-store";
+import { useMaterialProductsInfiniteQuery, type Product } from "@/stores/requests-store";
 
 type ProductSelectBottomSheetProps = {
   isPresented: boolean;
@@ -45,31 +45,67 @@ export function ProductSelectBottomSheet({
     onDismiss();
   }, [onDismiss]);
 
-  const { data: products = [], isLoading } = useMaterialProductsQuery(
+  const productsQuery = useMaterialProductsInfiniteQuery(
     searchQuery,
-    50,
-    isPresented && searchQuery.length >= 2
+    isPresented
   );
 
-  const handleSelect = (product: Product) => {
-    onSelect(product);
-    handleDismiss();
-  };
+  const products = React.useMemo(() => {
+    if (!productsQuery.data?.pages) return [];
+    return productsQuery.data.pages
+      .flatMap((page) => page?.items || [])
+      .filter((item): item is Product => Boolean(item && item.id));
+  }, [productsQuery.data?.pages]);
 
-  return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      index={-1}
-      snapPoints={["50%", "75%"]}
-      enableDynamicSizing={false}
-      enablePanDownToClose
-      backdropComponent={AppBottomSheetBackdrop}
-      containerStyle={bottomSheetContainerStyle}
-      backgroundStyle={{ backgroundColor }}
-      handleIndicatorStyle={{ backgroundColor: borderColor }}
-      onClose={handleDismiss}
-    >
-      <BottomSheetView style={{ width: "100%", paddingHorizontal: 20, paddingBottom: 24, flex: 1 }}>
+  const handleSelect = React.useCallback(
+    (product: Product) => {
+      onSelect(product);
+      handleDismiss();
+    },
+    [onSelect, handleDismiss]
+  );
+
+  const renderItem = React.useCallback(
+    ({ item: product, index }: { item: Product; index: number }) => {
+      if (!product || !product.id) return null;
+      const isLast = index === products.length - 1;
+      return (
+        <Pressable
+          key={product.id}
+          accessibilityRole="button"
+          className={`min-h-14 w-full justify-center px-4 py-4 ${
+            isLast ? "" : "border-b border-border/20"
+          }`}
+          onPress={() => handleSelect(product)}
+        >
+          <AppRow className="w-full items-center justify-between gap-3">
+            <View className="flex-1 flex-col gap-0.5 text-start">
+              <Text
+                className="text-base font-medium text-secondary-foreground text-start"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {product.name}
+              </Text>
+              {product.uomName && (
+                <Text
+                  className="text-xs text-muted-foreground text-start"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {product.uomName}
+                </Text>
+              )}
+            </View>
+            <AppIcon name="add" size={20} colorToken="--primary" />
+          </AppRow>
+        </Pressable>
+      );
+    },
+    [handleSelect, isRTL, products.length]
+  );
+
+  const renderListHeader = React.useCallback(
+    () => (
+      <View className="w-full">
         <Text
           className="mb-3 text-xl font-semibold text-foreground text-start"
           style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
@@ -86,15 +122,46 @@ export function ProductSelectBottomSheet({
           autoCapitalize="none"
           autoCorrect={false}
         />
+      </View>
+    ),
+    [isRTL, searchQuery, t]
+  );
 
-        <BottomSheetScrollView className="flex-1 w-full" showsVerticalScrollIndicator={false}>
-          {isLoading && (
+  return (
+    <BottomSheet
+      ref={bottomSheetRef}
+      index={-1}
+      snapPoints={defaultBottomSheetSnapPoints}
+      enableDynamicSizing={false}
+      enablePanDownToClose
+      backdropComponent={AppBottomSheetBackdrop}
+      containerStyle={bottomSheetContainerStyle}
+      backgroundStyle={{ backgroundColor }}
+      handleIndicatorStyle={{ backgroundColor: borderColor }}
+      onClose={handleDismiss}
+    >
+      <BottomSheetFlatList
+        data={products}
+        keyExtractor={(item: Product, index: number) => (item?.id ? String(item.id) : `prod-${index}`)}
+        ListHeaderComponent={renderListHeader}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={true}
+        onEndReached={() => {
+          if (productsQuery.hasNextPage && !productsQuery.isFetchingNextPage) {
+            productsQuery.fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 60,
+        }}
+        ListEmptyComponent={
+          productsQuery.isLoading ? (
             <View className="py-8 w-full items-center justify-center">
               <ActivityIndicator size="small" color={primaryColor} />
             </View>
-          )}
-
-          {!isLoading && searchQuery.length >= 2 && products.length === 0 && (
+          ) : (
             <View className="py-8 px-4 items-center justify-center">
               <Text
                 className="text-muted-foreground text-sm text-center"
@@ -103,58 +170,17 @@ export function ProductSelectBottomSheet({
                 {t("common.noData")}
               </Text>
             </View>
-          )}
-
-          {!isLoading && searchQuery.length < 2 && (
-            <View className="py-8 px-4 items-center justify-center">
-              <Text
-                className="text-muted-foreground text-sm text-center"
-                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-              >
-                {t("worker.searchInstructions" as any) || "Type at least 2 characters to search"}
-              </Text>
+          )
+        }
+        ListFooterComponent={
+          productsQuery.isFetchingNextPage ? (
+            <View className="py-4 items-center justify-center">
+              <ActivityIndicator size="small" color={primaryColor} />
             </View>
-          )}
-
-          {!isLoading && products.length > 0 && (
-            <View className="w-full overflow-hidden rounded-xl bg-secondary mb-6">
-              {products.map((product, index) => {
-                const isLast = index === products.length - 1;
-                return (
-                  <Pressable
-                    key={product.id}
-                    accessibilityRole="button"
-                    className={`min-h-14 w-full justify-center px-4 py-4 ${
-                      isLast ? "" : "border-b border-border/20"
-                    }`}
-                    onPress={() => handleSelect(product)}
-                  >
-                    <AppRow className="w-full items-center justify-between gap-3">
-                      <View className="flex-1 flex-col gap-0.5 text-start">
-                        <Text
-                          className="text-base font-medium text-secondary-foreground text-start"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {product.name}
-                        </Text>
-                        {product.uomName && (
-                          <Text
-                            className="text-xs text-muted-foreground text-start"
-                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                          >
-                            {product.uomName}
-                          </Text>
-                        )}
-                      </View>
-                      <AppIcon name="add" size={20} colorToken="--primary" />
-                    </AppRow>
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-        </BottomSheetScrollView>
-      </BottomSheetView>
+          ) : null
+        }
+        style={{ flex: 1 }}
+      />
     </BottomSheet>
   );
 }

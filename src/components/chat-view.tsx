@@ -218,7 +218,7 @@ export function ChatView({
     return (
       <AppRow className="items-start gap-2.5 w-[85%] self-start mb-4">
         {/* Avatar */}
-        <View className="w-8 h-8 rounded-full bg-secondary items-center justify-center shrink-0 mt-4 shadow-3xs border border-border/20">
+        <View className="w-8 h-8 rounded-full bg-secondary items-center justify-center shrink-0 mt-4 shadow-3xs">
           <AppIcon name={item.senderRole === "worker" ? "profile" : "security"} size={16} colorToken="--muted-foreground" />
         </View>
 
@@ -295,7 +295,7 @@ export function ChatView({
             }}
             ListEmptyComponent={
               <View
-                className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 border border-border/30 shadow-3xs"
+                className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 shadow-3xs"
                 style={{ transform: [{ scale: -1 }] }}
               >
                 <View className="w-12 h-12 rounded-full bg-secondary/50 items-center justify-center mb-3">
@@ -324,7 +324,7 @@ export function ChatView({
 
       {/* Sticky Comment Input Box at the bottom */}
       <Animated.View
-        className="w-full bg-card border-t border-border/30"
+        className="w-full bg-card"
         style={[
           {
             paddingBottom: Math.max(insets.bottom, 12),
@@ -335,7 +335,7 @@ export function ChatView({
         {/* Selected Photo Preview */}
         {selectedPhoto && (
           <AppRow className="px-4 pt-3 max-w-xl self-center w-full">
-            <View className="w-20 h-20 rounded-xl bg-muted overflow-hidden relative border border-border/40 shadow-3xs">
+            <View className="w-20 h-20 rounded-xl bg-muted overflow-hidden relative shadow-3xs">
               <Pressable
                 onPress={() => {
                   setSelectedViewerImage(selectedPhoto);
@@ -365,7 +365,7 @@ export function ChatView({
             disabled={composerDisabled}
             accessibilityLabel={t("worker.mediaSourceCamera")}
             accessibilityRole="button"
-            className="w-11 h-11 rounded-full bg-secondary items-center justify-center active:opacity-75 border border-border/20 shadow-3xs disabled:opacity-40"
+            className="w-11 h-11 rounded-full bg-secondary items-center justify-center active:opacity-75 shadow-3xs disabled:opacity-40"
           >
             <AppIcon name="camera" size={20} colorToken="--foreground" />
           </Pressable>
@@ -382,7 +382,7 @@ export function ChatView({
                 textAlignVertical: "top",
               },
             ]}
-            className="flex-1 min-h-[44px] max-h-[100px] bg-background border border-border/40 rounded-2xl px-4 py-2.5 text-base text-foreground shadow-3xs disabled:opacity-40"
+            className="flex-1 min-h-[44px] max-h-[100px] bg-background rounded-2xl px-4 py-2.5 text-base text-foreground shadow-3xs disabled:opacity-40"
             multiline
           />
           <Pressable

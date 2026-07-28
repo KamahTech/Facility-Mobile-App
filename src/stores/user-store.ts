@@ -139,7 +139,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         profile: null,
         initialized: true,
       });
-      console.error("Initialization of user session failed:", e);
+      useToastStore.getState().showToast("Initialization of user session failed", "error");
     }
   },
 
@@ -347,11 +347,8 @@ export const useUserStore = create<UserState>((set, get) => ({
 setSessionExpiredHandler(async () => {
   try {
     await clearLocalSession();
-  } catch (error) {
-    console.error(
-      "Failed to clear session storage in session expiration handler:",
-      error,
-    );
+  } catch {
+    // Ignore error
   }
 
   // Get localized session expiration message
@@ -363,8 +360,8 @@ setSessionExpiredHandler(async () => {
     if (localizedMessage) {
       message = localizedMessage;
     }
-  } catch (err) {
-    console.error("Failed to load localized session expiration message:", err);
+  } catch {
+    // Ignore error
   }
 
   // Show the toast popup

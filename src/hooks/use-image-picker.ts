@@ -4,6 +4,7 @@ import { Alert } from "react-native";
 
 import type { TranslationKey } from "@/constants/translations";
 import { useI18n } from "@/hooks/use-i18n";
+import { useToastStore } from "@/stores/toast-store";
 
 type PickImageSource = "camera" | "library";
 type PickImageOptions = {
@@ -33,7 +34,7 @@ export function useAppImagePicker() {
             source === "camera"
               ? "permissions.cameraRequired"
               : "permissions.photoLibraryRequired";
-          Alert.alert(t("permissions.requiredTitle"), t(messageKey));
+          useToastStore.getState().showToast(t(messageKey), "error");
           return null;
         }
 
@@ -60,13 +61,11 @@ export function useAppImagePicker() {
 
         return result.assets[0].uri;
       } catch (error: any) {
-        console.error(`[ImagePicker Error] source=${source}:`, error);
-        
         // Handle simulator camera lack gracefully
         if (source === "camera" && error?.message?.includes("Camera not available")) {
-          Alert.alert(t("common.error"), "Camera is not available on this device.");
+          useToastStore.getState().showToast("Camera is not available on this device.", "error");
         } else {
-          Alert.alert(t("common.error"), error?.message || "Failed to access image.");
+          useToastStore.getState().showToast(error?.message || "Failed to access image.", "error");
         }
         return null;
       }

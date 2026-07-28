@@ -7,6 +7,7 @@ import {
   toPositiveIntegerId,
   toPositiveNumber,
 } from "@/lib/api-identifiers";
+import { stripHtml } from "@/lib/strip-html";
 
 export type RequestStatus = "pending" | "in_progress" | "completed" | "cancelled";
 
@@ -32,11 +33,11 @@ export type TaskMaterial = {
   uomId?: string;
   uomName?: string;
   quantity: number;
-  issuedQty?: number;
-  facilityQty?: number;
-  mainQty?: number;
-  purchaseShortage?: number;
-  purchaseNeeded?: boolean;
+  alreadyIssued?: number;
+  facilityAvailable?: number;
+  mainAvailable?: number;
+  toPurchase?: number;
+  needsPurchase?: boolean;
   selected?: boolean;
 };
 
@@ -60,11 +61,24 @@ export function useTicketCommentsQuery(ticketId: string) {
   });
 }
 
-export function useMaterialProductsQuery(query: string, limit = 50, enabled = true) {
-  return useQuery<Product[]>({
+export type PaginatedProducts = {
+  items: Product[];
+  nextCursor: string | false;
+  hasMore: boolean;
+};
+
+export function useMaterialProductsInfiniteQuery(query: string, enabled = true, limit = 20) {
+  return useInfiniteQuery<PaginatedProducts>({
     queryKey: ["material-products", query, limit],
-    queryFn: () => apiRequest<Product[]>("/worker/material-products", { query, limit }),
-    enabled: enabled && query.length >= 2,
+    queryFn: ({ pageParam }) =>
+      apiRequest<PaginatedProducts>("/worker/material-products", {
+        query: query.trim(),
+        limit,
+        cursor: pageParam || false,
+      }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
+    enabled,
   });
 }
 
@@ -136,9 +150,16 @@ export type MaintenanceRequest = {
 
 export type RequestCommentImage = string | false;
 
+export type InspectTaskMaterialParam = {
+  productId: string;
+  quantity?: number;
+  uomId?: string;
+  selected?: boolean;
+};
+
 export type InspectTaskParams = {
   notes: string;
-  materials?: string;
+  materials?: InspectTaskMaterialParam[];
   deadline?: string;
   photos?: EncodedImage[];
 };
@@ -174,6 +195,16 @@ export function useRequestsStore(options?: {
     queryKey: ["resident-requests"],
     queryFn: ({ pageParam }) =>
       apiRequest<PaginatedRequests>("/resident/tickets", { limit: 20, cursor: pageParam }),
+    select: (data) => ({
+      ...data,
+      pages: data.pages.map((page) => ({
+        ...page,
+        items: page.items.map((item: any) => ({
+          ...item,
+          description: stripHtml((item.descriptionPlain || item.description_plain || item.description) as string),
+        })),
+      })),
+    }),
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableResidentRequests,
@@ -183,6 +214,16 @@ export function useRequestsStore(options?: {
     queryKey: ["worker-tasks"],
     queryFn: ({ pageParam }) =>
       apiRequest<PaginatedRequests>("/worker/tasks", { limit: 20, cursor: pageParam }),
+    select: (data) => ({
+      ...data,
+      pages: data.pages.map((page) => ({
+        ...page,
+        items: page.items.map((item: any) => ({
+          ...item,
+          description: stripHtml((item.descriptionPlain || item.description_plain || item.description) as string),
+        })),
+      })),
+    }),
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => lastPage?.nextCursor || undefined,
     enabled: enableWorkerTasks,
@@ -262,9 +303,17 @@ export function useRequestsStore(options?: {
           data: hasDataUrlHeader ? photo.data : `data:${photo.mimetype};base64,${photo.data}`,
         };
       });
+
+      const formattedMaterials = params.inspectParams.materials?.map((m) => ({
+        productId: toPositiveIntegerId(m.productId, "productId"),
+        quantity: toPositiveNumber(m.quantity ?? 1, "quantity"),
+        uomId: m.uomId ? toPositiveIntegerId(m.uomId, "uomId") : undefined,
+        selected: m.selected ?? true,
+      }));
       
       const inspectParams = {
         ...params.inspectParams,
+        materials: formattedMaterials,
         photos: mappedPhotos,
       };
       

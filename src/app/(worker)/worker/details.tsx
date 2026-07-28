@@ -28,6 +28,8 @@ import { useToastStore } from "@/stores/toast-store";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { getDirectionalRowStyle } from "@/lib/i18n-layout";
+import { stripHtml } from "@/lib/strip-html";
 import { getTodayAtMidnight } from "@/lib/date-time";
 import { usePushNotificationStore } from "@/stores/push-notification-store";
 import { ProductSelectBottomSheet } from "@/components/product-select-bottom-sheet";
@@ -121,8 +123,47 @@ export default function WorkerDetailsScreen() {
   const [isPropertyDetailsVisible, setIsPropertyDetailsVisible] = React.useState(false);
   const propertyQuery = useWorkerPropertyDetailsQuery(task?.id, isTransitionFinished && isPropertyDetailsVisible && !!task?.id);
 
+  const [draftMaterials, setDraftMaterials] = React.useState<TaskMaterial[]>([]);
+
+  React.useEffect(() => {
+    if (task?.materials) {
+      setDraftMaterials(task.materials);
+    }
+  }, [task?.materials]);
+
+  const isWorking = task?.workerPhase === "working";
+
   const handleAddMaterial = async (product: Product) => {
     if (!task) return;
+    if (!isWorking && !isCompleted && task.status !== "cancelled") {
+      setDraftMaterials((prev) => {
+        const existingIndex = prev.findIndex((m) => String(m.productId) === String(product.id));
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            quantity: updated[existingIndex].quantity + 1,
+            selected: true,
+          };
+          return updated;
+        }
+        return [
+          ...prev,
+          {
+            id: `temp-${Date.now()}-${Math.random()}`,
+            productId: product.id,
+            productName: product.name,
+            uomId: product.uomId,
+            uomName: product.uomName,
+            quantity: 1,
+            selected: true,
+          },
+        ];
+      });
+      useToastStore.getState().showToast(t("worker.materialAdded"), "success");
+      return;
+    }
+
     try {
       await addMaterial(task.id, product.id, 1, product.uomId, true);
       useToastStore.getState().showToast(t("worker.materialAdded"), "success");
@@ -137,6 +178,16 @@ export default function WorkerDetailsScreen() {
       handleDeleteMaterial(lineId);
       return;
     }
+    if (!isWorking && !isCompleted && task.status !== "cancelled") {
+      setDraftMaterials((prev) =>
+        prev.map((m) =>
+          String(m.id) === String(lineId)
+            ? { ...m, quantity, selected: selected ?? m.selected }
+            : m
+        )
+      );
+      return;
+    }
     try {
       await updateMaterial(task.id, lineId, quantity, selected);
     } catch (e: unknown) {
@@ -146,6 +197,14 @@ export default function WorkerDetailsScreen() {
 
   const handleToggleSelected = async (lineId: string, quantity: number, selected: boolean) => {
     if (!task) return;
+    if (!isWorking && !isCompleted && task.status !== "cancelled") {
+      setDraftMaterials((prev) =>
+        prev.map((m) =>
+          String(m.id) === String(lineId) ? { ...m, selected } : m
+        )
+      );
+      return;
+    }
     try {
       await updateMaterial(task.id, lineId, quantity, selected);
     } catch (e: unknown) {
@@ -164,6 +223,11 @@ export default function WorkerDetailsScreen() {
           text: t("actions.confirm"),
           style: "destructive",
           onPress: async () => {
+            if (!isWorking && !isCompleted && task.status !== "cancelled") {
+              setDraftMaterials((prev) => prev.filter((m) => String(m.id) !== String(lineId)));
+              useToastStore.getState().showToast(t("worker.materialRemoved"), "success");
+              return;
+            }
             try {
               await deleteMaterial(task.id, lineId);
               useToastStore.getState().showToast(t("worker.materialRemoved"), "success");
@@ -372,15 +436,22 @@ export default function WorkerDetailsScreen() {
         selectedPhotos.map((photoUri) => encodeImageUri(photoUri)),
       );
 
+      const formattedDraftMaterials = draftMaterials.map((m) => ({
+        productId: m.productId,
+        quantity: m.quantity,
+        uomId: m.uomId,
+        selected: m.selected ?? true,
+      }));
+
       await inspectTask(task.id, {
         notes: data.notes.trim(),
-        materials: "",
+        materials: formattedDraftMaterials,
         deadline: (data.deadline || "").trim(),
         photos: photosPayload,
       });
 
-      const materialsList = task.materials && task.materials.length > 0
-        ? task.materials.map((m) => `- ${m.productName} (x${m.quantity})`).join("\n")
+      const materialsList = draftMaterials && draftMaterials.length > 0
+        ? draftMaterials.map((m) => `- ${m.productName} (x${m.quantity})`).join("\n")
         : t("common.none");
 
       await addRequestComment(
@@ -415,7 +486,14 @@ export default function WorkerDetailsScreen() {
   const handleStartTask = async () => {
     setActionLoading(true);
     try {
-      await startTask(task.id);
+      const materialsPayload = draftMaterials.map((m) => ({
+        productId: m.productId,
+        quantity: m.quantity,
+        uomId: m.uomId,
+        selected: m.selected ?? true,
+      }));
+
+      await startTask(task.id, materialsPayload);
       await addRequestComment(
         task.id,
         t("worker.startedComment").replace("{{name}}", workerName),
@@ -461,6 +539,7 @@ export default function WorkerDetailsScreen() {
   const needsCloseMission = isAssignedToMe && task.workerPhase === "working";
   const isCompleted =
     task.status === "completed" || task.workerPhase === "completed";
+  const canEditMaterials = needsInspection && !isCompleted && task.status !== "cancelled";
 
   return (
     <View
@@ -696,7 +775,7 @@ export default function WorkerDetailsScreen() {
             className="text-base text-foreground leading-6"
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
-            {task.description}
+            {stripHtml(task.description)}
           </Text>
         </View>
 
@@ -710,7 +789,7 @@ export default function WorkerDetailsScreen() {
                   params: { id: task.id },
                 } as Href);
               }}
-              className="w-full bg-card rounded-2xl p-4 shadow-sm active:opacity-80 border border-border/10"
+              className="w-full bg-card rounded-2xl p-4 shadow-sm active:opacity-80"
             >
               <AppRow className="items-center justify-between">
                 <AppRow className="items-center gap-3">
@@ -749,7 +828,7 @@ export default function WorkerDetailsScreen() {
                   params: { id: task.id },
                 } as any);
               }}
-              className="w-full bg-card rounded-2xl p-4 shadow-sm active:opacity-80 border border-border/10"
+              className="w-full bg-card rounded-2xl p-4 shadow-sm active:opacity-80"
             >
               <AppRow className="items-center justify-between">
                 <AppRow className="items-center gap-3">
@@ -772,29 +851,31 @@ export default function WorkerDetailsScreen() {
         {/* Materials Section */}
         {isAssignedToMe && (
           <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-4">
-            <AppRow className="items-center justify-between border-b border-border/10 pb-3">
+            <AppRow className="items-center justify-between">
               <Text
                 className="text-base font-bold text-foreground"
                 style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
                 {t("worker.materialsLabel")}
               </Text>
-              {!isCompleted && task.status !== "cancelled" && (
+              {canEditMaterials && (
                 <Pressable
                   onPress={() => setIsProductSheetVisible(true)}
                   className="flex-row items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-lg active:opacity-75"
                 >
                   <AppIcon name="add" size={14} colorToken="--primary" />
                   <Text className="text-xs font-bold text-primary">
-                    {t("common.add" as any) || "Add"}
+                    {t("common.add")}
                   </Text>
                 </Pressable>
               )}
             </AppRow>
 
-            {task.materials && task.materials.length > 0 ? (
-              <View className="flex-col gap-3">
-                {task.materials.map((material) => (
+            {(() => {
+              const displayMaterials = canEditMaterials ? draftMaterials : (task.materials || []);
+              return displayMaterials && displayMaterials.length > 0 ? (
+                <View className="flex-col gap-3">
+                  {displayMaterials.map((material) => (
                   <View
                     key={material.id}
                     className="flex-col gap-2 bg-secondary/30 p-3.5 rounded-xl border border-border/10"
@@ -817,7 +898,7 @@ export default function WorkerDetailsScreen() {
                         )}
                       </View>
 
-                      {!isCompleted && task.status !== "cancelled" && (
+                      {canEditMaterials && (
                         <Pressable
                           onPress={() => handleDeleteMaterial(material.id)}
                           className="w-7 h-7 rounded-full bg-rose-50 dark:bg-rose-950/20 items-center justify-center active:opacity-75"
@@ -830,17 +911,22 @@ export default function WorkerDetailsScreen() {
                     <AppRow className="items-center justify-between gap-3 mt-1 flex-wrap">
                       <View className="flex-col gap-0.5 items-start">
                         <Text className="text-[11px] text-muted-foreground">
-                          {t("worker.availability")}: {t("worker.stockMain")}: {material.mainQty ?? 0} | {t("worker.stockFacility")}: {material.facilityQty ?? 0}
+                          {t("worker.availability")}: {t("worker.stockMain")}: {material.mainAvailable ?? 0} | {t("worker.stockFacility")}: {material.facilityAvailable ?? 0}
                         </Text>
-                        {material.purchaseNeeded && (
+                        {material.needsPurchase && (
                           <Text className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
-                            ⚠️ {t("worker.shortageLabel")}: {material.purchaseShortage ?? 0}
+                            ⚠️ {t("worker.shortageLabel")}: {material.toPurchase ?? 0}
+                          </Text>
+                        )}
+                        {typeof material.alreadyIssued === "number" && material.alreadyIssued > 0 && (
+                          <Text className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
+                            📦 Issued: {material.alreadyIssued} / {material.quantity}
                           </Text>
                         )}
                       </View>
 
                       <AppRow className="items-center gap-3">
-                        {!isCompleted && task.status !== "cancelled" ? (
+                        {canEditMaterials ? (
                           <Pressable
                             onPress={() =>
                               handleToggleSelected(material.id, material.quantity, !material.selected)
@@ -869,7 +955,7 @@ export default function WorkerDetailsScreen() {
                           </View>
                         )}
 
-                        {!isCompleted && task.status !== "cancelled" ? (
+                        {canEditMaterials ? (
                           <AppRow className="items-center bg-secondary rounded-lg px-1.5 py-0.5 gap-2 border border-border/20">
                             <Pressable
                               onPress={() =>
@@ -908,104 +994,12 @@ export default function WorkerDetailsScreen() {
                   {t("worker.noMaterials")}
                 </Text>
               </View>
-            )}
+            );
+          })()}
           </View>
         )}
 
-        {/* Procurement Actions Section */}
-        {isAssignedToMe && task.materials && task.materials.length > 0 && !isCompleted && task.status !== "cancelled" && (
-          <View className="w-full bg-card rounded-2xl p-5 shadow-sm mb-6 flex-col gap-4">
-            <Text
-              className="text-base font-bold text-foreground text-start"
-              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-            >
-              {t("worker.procurementTitle")}
-            </Text>
 
-            <View className="flex-col gap-3">
-              {/* Create Picking */}
-              <Pressable
-                onPress={handleCreatePicking}
-                className="w-full min-h-12 bg-secondary/80 hover:bg-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-75 border border-border/10"
-              >
-                <AppRow className="items-center gap-3">
-                  <View className="w-8 h-8 rounded-lg bg-blue-500/10 items-center justify-center">
-                    <AppIcon name="invoices" size={16} color="#3B82F6" />
-                  </View>
-                  <View className="flex-col text-start">
-                    <Text
-                      className="text-sm font-bold text-foreground text-start"
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {t("worker.createPickingBtn")}
-                    </Text>
-                    <Text
-                      className="text-[10px] text-muted-foreground mt-0.5 text-start"
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {t("worker.createPickingDesc")}
-                    </Text>
-                  </View>
-                </AppRow>
-                <AppIcon name="arrowUpRight" size={16} colorToken="--muted-foreground" />
-              </Pressable>
-
-              {/* Create RFQs */}
-              <Pressable
-                onPress={handleCreateRFQs}
-                className="w-full min-h-12 bg-secondary/80 hover:bg-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-75 border border-border/10"
-              >
-                <AppRow className="items-center gap-3">
-                  <View className="w-8 h-8 rounded-lg bg-amber-500/10 items-center justify-center">
-                    <AppIcon name="invoices" size={16} color="#F59E0B" />
-                  </View>
-                  <View className="flex-col text-start">
-                    <Text
-                      className="text-sm font-bold text-foreground text-start"
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {t("worker.createRFQsBtn")}
-                    </Text>
-                    <Text
-                      className="text-[10px] text-muted-foreground mt-0.5 text-start"
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {t("worker.createRFQsDesc")}
-                    </Text>
-                  </View>
-                </AppRow>
-                <AppIcon name="arrowUpRight" size={16} colorToken="--muted-foreground" />
-              </Pressable>
-
-              {/* Create Quotation */}
-              <Pressable
-                onPress={handleCreateQuotation}
-                className="w-full min-h-12 bg-secondary/80 hover:bg-secondary rounded-xl px-4 py-3 flex-row items-center justify-between active:opacity-75 border border-border/10"
-              >
-                <AppRow className="items-center gap-3">
-                  <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
-                    <AppIcon name="invoices" size={16} color="#10B981" />
-                  </View>
-                  <View className="flex-col text-start">
-                    <Text
-                      className="text-sm font-bold text-foreground text-start"
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {t("worker.createQuotationBtn")}
-                    </Text>
-                    <Text
-                      className="text-[10px] text-muted-foreground mt-0.5 text-start"
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {t("worker.createQuotationDesc")}
-                    </Text>
-                  </View>
-                </AppRow>
-                <AppIcon name="arrowUpRight" size={16} colorToken="--muted-foreground" />
-              </Pressable>
-            </View>
-          </View>
-        )}
 
         {/* WORKFLOW VIEW CHANGER */}
 

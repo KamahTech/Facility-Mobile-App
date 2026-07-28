@@ -21,6 +21,7 @@ import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 import { HomeHeader } from "@/components/home-header";
 import { getProfileImageSource } from "@/lib/image-source";
+import { useToastStore } from "@/stores/toast-store";
 
 
 export default function WorkerHomeScreen() {
@@ -127,7 +128,7 @@ export default function WorkerHomeScreen() {
       await logout();
       router.replace("/choose-login-method" as Href);
     } catch (err) {
-      console.error("Failed to logout:", err);
+      useToastStore.getState().showToast("Failed to logout", "error");
     }
   };
 

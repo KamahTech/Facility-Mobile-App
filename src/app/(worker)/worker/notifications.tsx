@@ -13,6 +13,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useCommunityStore, type NotificationItem } from "@/stores/community-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { handleNotificationNavigation } from "@/lib/notification-router";
+import { useToastStore } from "@/stores/toast-store";
 
 export default function WorkerNotificationsScreen() {
   const { isRTL, t } = useI18n();
@@ -54,7 +55,7 @@ export default function WorkerNotificationsScreen() {
     async (item: NotificationItem) => {
       if (item.unread) {
         markNotificationRead(item.id).catch((err) => {
-          console.error("Failed to mark notification as read", err);
+          useToastStore.getState().showToast("Failed to mark notification as read", "error");
         });
       }
 

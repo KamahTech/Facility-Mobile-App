@@ -11,6 +11,7 @@ import {
   type LanguagePreference,
 } from "@/lib/language-storage";
 import { setApiLanguage } from "@/lib/api-client";
+import { useToastStore } from "@/stores/toast-store";
 
 type I18nContextValue = {
   direction: (typeof languages)[LanguageCode]["direction"];
@@ -37,7 +38,7 @@ async function reloadAppForDirectionChange() {
   try {
     await Updates.reloadAsync();
   } catch (error) {
-    console.error("Failed to reload app after RTL direction change", error);
+    useToastStore.getState().showToast("Failed to reload app after RTL direction change", "error");
     DevSettings.reload();
   }
 }

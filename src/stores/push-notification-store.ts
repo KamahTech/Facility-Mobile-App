@@ -5,6 +5,7 @@ import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { apiRequest } from "@/lib/api-client";
+import { useToastStore } from "@/stores/toast-store";
 
 // Simple fallback UUID generator
 function generateUUID() {
@@ -55,7 +56,15 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
     }),
 
   registerDevice: async (force = false) => {
-    if (get().isRegistered && !force) return;
+    const { isRegistered, isRegistering, lastAttemptTime } = get() as any;
+    const now = Date.now();
+
+    // Prevent concurrent registration or retrying within 15 seconds
+    if (isRegistering) return;
+    if (isRegistered && !force) return;
+    if (lastAttemptTime && now - lastAttemptTime < 15000) return;
+
+    (set as any)({ isRegistering: true, lastAttemptTime: now });
 
     try {
       // 1. Ensure this is a physical device (push notifications require real devices)
@@ -121,7 +130,9 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
         isRegistered: true,
       });
     } catch (error) {
-      console.error("[PushNotifications] Failed to register push token with backend:", error);
+      // Log or toast warning without starting an infinite retry loop
+    } finally {
+      (set as any)({ isRegistering: false });
     }
   },
 
@@ -134,7 +145,7 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
         deviceId,
       });
     } catch (error) {
-      console.error("[PushNotifications] Failed to unregister device from backend:", error);
+      useToastStore.getState().showToast("Failed to unregister device from backend", "error");
     } finally {
       set({
         isRegistered: false,

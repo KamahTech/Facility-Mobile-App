@@ -15,6 +15,7 @@ import { allowsFamilyMembers } from "@/lib/family-member-eligibility";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { UnitTenantsCard } from "@/components/unit-tenants-card";
 import { UnitFamilyMembersCard } from "@/components/unit-family-members-card";
+import { useToastStore } from "@/stores/toast-store";
 
 export default function UnitDetailScreen() {
   const { isRTL, t } = useI18n();
@@ -44,7 +45,7 @@ export default function UnitDetailScreen() {
       const details = await fetchOwnerUnitDetails(unitId);
       setUnitDetails(details);
     } catch (e) {
-      console.error(e);
+      useToastStore.getState().showToast("Failed to load unit details", "error");
     }
   }, [unitId, fetchOwnerUnitDetails, clearError]);
 

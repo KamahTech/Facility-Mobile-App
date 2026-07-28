@@ -3,6 +3,7 @@ import { Pressable, View, ScrollView, Alert, Text } from "react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useLocalSearchParams, Stack, type Href } from "expo-router";
 import { router } from "@/lib/navigation";
+import { stripHtml } from "@/lib/strip-html";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
 import { ScreenHeader } from "@/components/screen-header";
@@ -267,7 +268,7 @@ export default function ResidentTicketDetailsScreen() {
             className="text-base text-foreground leading-6"
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
-            {request.description}
+            {stripHtml(request.description)}
           </Text>
         </View>
 
@@ -302,12 +303,38 @@ export default function ResidentTicketDetailsScreen() {
           </View>
         )}
 
+        {/* Related Documents Button */}
+        <Pressable
+          onPress={() => {
+            router.push({
+              pathname: "/tickets/related-documents",
+              params: { id: request.id },
+            } as any);
+          }}
+          className="w-full bg-card rounded-2xl p-4 shadow-sm active:opacity-80 mb-4"
+        >
+          <AppRow className="items-center justify-between">
+            <AppRow className="items-center gap-3">
+              <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
+                <AppIcon name="invoices" size={16} color="#10B981" />
+              </View>
+              <Text
+                className="text-base font-bold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("tickets.relatedDocuments")}
+              </Text>
+            </AppRow>
+            <AppChevron size={14} color={mutedToken} />
+          </AppRow>
+        </Pressable>
+
         {/* Cancel Request Button */}
         {request.status !== "completed" && request.status !== "cancelled" && (
           <Pressable
             onPress={handleCancelPress}
             disabled={actionLoading}
-            className="w-full bg-rose-50 dark:bg-rose-950/20 py-4 rounded-2xl justify-center items-center mt-6 active:opacity-90"
+            className="w-full bg-rose-50 dark:bg-rose-950/20 py-4 rounded-2xl justify-center items-center active:opacity-90"
           >
             {actionLoading ? (
               <AppActivityIndicator color="#EF4444" />
@@ -328,32 +355,7 @@ export default function ResidentTicketDetailsScreen() {
         className="w-full bg-card"
         style={{ paddingBottom: Math.max(insets.bottom, 16), paddingTop: 12 }}
       >
-        <View className="w-full max-w-xl self-center px-5 flex-col gap-3">
-          {/* Related Documents Button */}
-          <Pressable
-            onPress={() => {
-              router.push({
-                pathname: "/tickets/related-documents",
-                params: { id: request.id },
-              } as any);
-            }}
-            className="w-full min-h-14 rounded-xl bg-background px-5 py-4 active:opacity-80 border border-border/10"
-          >
-            <AppRow className="items-center justify-between">
-              <AppRow className="items-center gap-3">
-                <View className="w-8 h-8 rounded-lg bg-emerald-500/10 items-center justify-center">
-                  <AppIcon name="invoices" size={16} color="#10B981" />
-                </View>
-                <Text
-                  className="text-base font-bold text-foreground"
-                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                >
-                  {t("tickets.relatedDocuments")}
-                </Text>
-              </AppRow>
-              <AppChevron size={14} color={mutedToken} />
-            </AppRow>
-          </Pressable>
+        <View className="w-full max-w-xl self-center px-5">
 
           {/* Comments Button */}
           <Pressable

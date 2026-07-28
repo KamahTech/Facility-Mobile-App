@@ -40,7 +40,7 @@ export const initializeSession = () => {
       ]);
       return null;
     } catch (error) {
-      console.error("Failed to load tokens from SecureStore", error);
+      useToastStore.getState().showToast("Failed to load tokens from SecureStore", "error");
       return null;
     }
   })();
@@ -278,10 +278,6 @@ export async function apiRequest<T = ApiResponse>(
       useToastStore.getState().showToast(friendly, "error");
     }
 
-    console.error(
-      `[API Error] ${route}:`,
-      error instanceof Error ? error.message : error,
-    );
     throw error;
   }
 }

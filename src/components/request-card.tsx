@@ -11,11 +11,14 @@ import type {
   RequestStatus,
 } from "@/stores/requests-store";
 
+import { stripHtml } from "@/lib/strip-html";
+
 type RequestCardProps = {
   request: MaintenanceRequest;
+  onPress?: () => void;
 };
 
-export function RequestCard({ request }: RequestCardProps) {
+export function RequestCard({ request, onPress }: RequestCardProps) {
   const { isRTL, t } = useI18n();
   const { units } = useUnitStore();
 
@@ -158,7 +161,7 @@ export function RequestCard({ request }: RequestCardProps) {
         numberOfLines={2}
         style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
       >
-        {request.description}
+        {stripHtml(request.description)}
       </Text>
 
       {/* Bottom info: ID and Date */}

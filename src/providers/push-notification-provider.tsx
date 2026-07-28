@@ -59,8 +59,11 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
   React.useEffect(() => {
     if (!sessionId) return;
 
-    const subscription = Notifications.addPushTokenListener(() => {
-      void registerDevice(true);
+    const subscription = Notifications.addPushTokenListener((tokenObj) => {
+      const currentToken = usePushNotificationStore.getState().expoPushToken;
+      if (tokenObj?.data && tokenObj.data !== currentToken) {
+        void registerDevice(true);
+      }
     });
 
     return () => subscription.remove();

@@ -10,6 +10,8 @@ import type {
   RequestStatus,
 } from "@/stores/requests-store";
 
+import { stripHtml } from "@/lib/strip-html";
+
 type WorkerTaskCardProps = {
   task: MaintenanceRequest;
 };
@@ -154,7 +156,7 @@ export function WorkerTaskCard({ task }: WorkerTaskCardProps) {
         numberOfLines={2}
         style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
       >
-        {task.description}
+        {stripHtml(task.description)}
       </Text>
 
       {/* Bottom info: ID and Date */}
