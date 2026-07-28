@@ -24,7 +24,7 @@ export default function OwnerUnitsScreen() {
     statement,
     fetchOwnerUnits,
     fetchStatement,
-    isFetching,
+    loading,
     clearError,
   } = useOwnerStore({ 
     enableOwnerUnits: true, 
@@ -33,6 +33,8 @@ export default function OwnerUnitsScreen() {
   const isTransitionFinished = useScreenTransition();
 
   const [refreshing, setRefreshing] = React.useState(false);
+
+  const isInitialLoading = loading && ownerUnits.length === 0 && !statement;
 
   const loadData = React.useCallback(async () => {
     clearError();
@@ -118,7 +120,7 @@ export default function OwnerUnitsScreen() {
         showBorder={false}
       />
 
-      {isFetching && !refreshing ? (
+      {isInitialLoading && !refreshing ? (
         <View className="flex-1 items-center justify-center">
           {isTransitionFinished && <AppActivityIndicator size="large" />}
         </View>

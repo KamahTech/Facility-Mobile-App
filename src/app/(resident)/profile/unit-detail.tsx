@@ -67,9 +67,9 @@ export default function UnitDetailScreen() {
     setRefreshing(false);
   };
 
-  const isLoadingData = loading || !unitDetails || tenantsQuery.isLoading || familyQuery.isLoading || propertyQuery.isLoading;
+  const isInitialLoading = (!unitDetails && loading) || (!isTransitionFinished && !unitDetails);
 
-  if (isLoadingData) {
+  if (isInitialLoading) {
     return (
       <View
         className="flex-1 bg-background"
@@ -86,7 +86,7 @@ export default function UnitDetailScreen() {
           onBack={() => router.back()}
         />
         <View className="flex-1 items-center justify-center">
-          {isTransitionFinished && <AppActivityIndicator size="large"  />}
+          {isTransitionFinished && <AppActivityIndicator size="large" />}
         </View>
       </View>
     );
