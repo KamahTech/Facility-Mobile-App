@@ -90,17 +90,27 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
 
       {/* Invoice Title and Description */}
       <View className="flex-col gap-1">
+        {invoice.sourceType === "rental" && (
+          <AppRow className="items-center gap-1.5 mb-1">
+            <View className="px-2 py-0.5 rounded-md bg-purple-500/10">
+              <Text className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase">
+                {t("rental.invoiceRentalNotice")}
+                {invoice.chargeType ? ` • ${invoice.chargeType}` : ""}
+              </Text>
+            </View>
+          </AppRow>
+        )}
         <Text
           className="text-base font-bold text-foreground"
           style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         >
-          {t(titleKey)}
+          {titleKey ? t(titleKey) : (invoice.chargeType ? `Rental ${invoice.chargeType}` : "Rental Invoice")}
         </Text>
         <Text
           className="text-xs text-muted-foreground leading-4"
           style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         >
-          {t(descriptionKey)}
+          {descriptionKey ? t(descriptionKey) : invoiceNumber}
         </Text>
       </View>
 
@@ -146,6 +156,21 @@ export function InvoiceCard({ invoice, onPay }: InvoiceCardProps) {
           </Text>
         </View>
       </AppRow>
+
+      {invoice.sourceType === "rental" && invoice.rentalContractId && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            router.push(`/rentals/contract-details?id=${invoice.rentalContractId}&type=${invoice.rentalContractType || "single"}` as Href);
+          }}
+          className="w-full py-1.5 px-3 rounded-xl bg-purple-500/10 items-center justify-center flex-row gap-1.5 active:opacity-85 mt-1"
+        >
+          <AppIcon name="rentals" size={14} color="#8B5CF6" />
+          <Text className="text-xs font-bold text-purple-600 dark:text-purple-400">
+            {t("rental.contractDetailsTitle")}
+          </Text>
+        </Pressable>
+      )}
     </Pressable>
   );
 }

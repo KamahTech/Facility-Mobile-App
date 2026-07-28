@@ -20,7 +20,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { useAppImagePicker } from "@/hooks/use-image-picker";
 import { encodeImageUri } from "@/lib/media";
-import { useRequestsStore, type RequestStatus, type Product } from "@/stores/requests-store";
+import { useRequestsStore, type RequestStatus, type Product, type TaskMaterial } from "@/stores/requests-store";
 import { useWorkerPropertyDetailsQuery } from "@/stores/owner-store";
 import { useUserStore } from "@/stores/user-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
@@ -493,7 +493,7 @@ export default function WorkerDetailsScreen() {
         selected: m.selected ?? true,
       }));
 
-      await startTask(task.id, materialsPayload);
+      await startTask(task.id);
       await addRequestComment(
         task.id,
         t("worker.startedComment").replace("{{name}}", workerName),

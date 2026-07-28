@@ -241,19 +241,52 @@ export function ClaimCard({
   submitInquiry,
 }: ClaimCardProps) {
   const { formatDate } = useFormatters();
+  const { t, isRTL } = useI18n();
 
-  const getStatusColor = (state: string) => {
-    switch (state.toLowerCase()) {
+  const statusStyle = React.useMemo(() => {
+    const rawState = (claim.state || "").toLowerCase().trim();
+    switch (rawState) {
       case "approved":
-        return "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30";
+      case "confirmed":
+      case "done":
+      case "paid":
+        return {
+          bg: "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40",
+          text: "text-emerald-700 dark:text-emerald-300",
+          label: t(("claims.status." + rawState) as any) || t("claims.status.approved"),
+        };
+      case "submitted":
+      case "in_progress":
+      case "under_review":
+      case "review":
+        return {
+          bg: "bg-sky-50 dark:bg-sky-950/40 border border-sky-200/60 dark:border-sky-800/40",
+          text: "text-sky-700 dark:text-sky-300",
+          label: t(("claims.status." + rawState) as any) || t("claims.status.under_review"),
+        };
       case "draft":
-        return "text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30";
+        return {
+          bg: "bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40",
+          text: "text-amber-700 dark:text-amber-300",
+          label: t("claims.status.draft"),
+        };
+      case "rejected":
+      case "cancelled":
+      case "cancel":
+      case "refused":
+        return {
+          bg: "bg-rose-50 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-800/40",
+          text: "text-rose-700 dark:text-rose-300",
+          label: t(("claims.status." + rawState) as any) || t("claims.status.cancelled"),
+        };
       default:
-        return "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30";
+        return {
+          bg: "bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/40",
+          text: "text-slate-700 dark:text-slate-300",
+          label: claim.state.toUpperCase(),
+        };
     }
-  };
-
-  const statusClass = getStatusColor(claim.state);
+  }, [claim.state, t]);
 
   return (
     <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm mb-3">
@@ -271,9 +304,12 @@ export function ClaimCard({
             </View>
           </AppRow>
 
-          <View className={`px-2.5 py-1 rounded-full ${statusClass}`}>
-            <AppText className="text-xs font-semibold text-current">
-              {claim.state.toUpperCase()}
+          <View className={`px-2.5 py-1 rounded-full ${statusStyle.bg}`}>
+            <AppText
+              className={`text-xs font-bold ${statusStyle.text}`}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {statusStyle.label}
             </AppText>
           </View>
         </AppRow>

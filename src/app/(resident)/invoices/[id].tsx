@@ -32,36 +32,14 @@ export default function InvoiceDetailsScreen() {
   const handlePay = React.useCallback(() => {
     if (!invoice) return;
 
-    const localizedAmountStr = formatCurrency(invoice.amount);
-
     Alert.alert(
-      t("invoices.payConfirmTitle"),
-      t("invoices.payConfirmDesc")
-        .replace("{{invoiceNumber}}", invoice.invoiceNumber)
-        .replace("{{amount}}", localizedAmountStr),
+      t("invoices.accountingNoticeTitle"),
+      t("invoices.accountingNoticeDesc"),
       [
-        { text: t("actions.cancel"), style: "cancel" },
-        {
-          text: t("invoices.payNow"),
-          style: "default",
-          onPress: async () => {
-            setLocalLoading(true);
-            try {
-              await payInvoice(invoice.id);
-              Alert.alert(
-                t("invoices.successPayment"),
-                t("invoices.successPaymentDesc").replace("{{invoiceNumber}}", invoice.invoiceNumber)
-              );
-            } catch (e: unknown) {
-              Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.invoicePaymentFailed"));
-            } finally {
-              setLocalLoading(false);
-            }
-          },
-        },
+        { text: t("actions.close"), style: "cancel" },
       ]
     );
-  }, [invoice, formatCurrency, payInvoice, t]);
+  }, [invoice, t]);
 
   const handleComingSoon = React.useCallback(() => {
     Alert.alert(t("invoices.detailsTitle"), t("invoices.comingSoon"));
@@ -259,14 +237,30 @@ export default function InvoiceDetailsScreen() {
           {/* Action Buttons */}
           <View className="flex-col gap-3 mt-4">
             {invoice.status !== "paid" ? (
-              <Pressable
-                onPress={handlePay}
-                className="w-full bg-primary py-4 rounded-2xl justify-center items-center active:opacity-90"
-              >
-                <AppText className="text-primary-foreground font-bold text-base uppercase tracking-wider">
-                  {t("invoices.payNow")}
-                </AppText>
-              </Pressable>
+              <View className="flex-col gap-3">
+                <View className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40 flex-row items-center gap-3">
+                  <View className="w-9 h-9 rounded-xl bg-amber-500/20 items-center justify-center shrink-0">
+                    <AppIcon name="invoices" size={18} color="#F59E0B" />
+                  </View>
+                  <View className="flex-col flex-1">
+                    <AppText className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                      {t("invoices.accountingNoticeTitle")}
+                    </AppText>
+                    <AppText className="text-[11px] font-medium text-amber-700 dark:text-amber-400 mt-0.5 leading-4">
+                      {t("invoices.accountingNoticeDesc")}
+                    </AppText>
+                  </View>
+                </View>
+
+                <Pressable
+                  onPress={handlePay}
+                  className="w-full bg-primary py-4 rounded-2xl justify-center items-center active:opacity-90"
+                >
+                  <AppText className="text-primary-foreground font-bold text-base uppercase tracking-wider">
+                    {t("invoices.paymentInfoNotice")}
+                  </AppText>
+                </Pressable>
+              </View>
             ) : (
               <AppRow className="gap-3">
                 <Pressable

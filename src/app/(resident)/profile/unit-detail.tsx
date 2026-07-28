@@ -107,7 +107,7 @@ export default function UnitDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <ScreenHeader
-        title={unitDetails?.name || t("ownerFinancials.title")}
+        title={t("ownerFinancials.title")}
         onBack={() => router.back()}
       />
 

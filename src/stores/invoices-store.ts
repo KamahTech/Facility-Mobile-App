@@ -15,6 +15,11 @@ export type Invoice = {
   issueDate: string; // YYYY-MM-DD
   dueDate: string;   // YYYY-MM-DD
   paidDate?: string | boolean; // YYYY-MM-DD or false
+  sourceType?: string;
+  rentalContractId?: string;
+  rentalContractType?: "single" | "multi";
+  unitId?: string | false;
+  chargeType?: string;
 };
 
 export type PaginatedInvoices = {

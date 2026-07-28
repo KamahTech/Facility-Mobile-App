@@ -16,9 +16,10 @@ type QuickActionsProps = {
 };
 
 const CARD_COLORS: Record<
-  "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "tickets" | "facility",
+  "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "tickets" | "facility" | "rentals",
   string
 > = {
+  rentals: "#8B5CF6",         // Purple
   linkUnit: "#6366F1",      // Indigo
   invoices: "#10B981",      // Emerald
   requestService: "#F59E0B",  // Amber

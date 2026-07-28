@@ -29,17 +29,19 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
             ticketId,
           });
           return {
-            shouldShowAlert: false,
+            shouldShowBanner: false,
+            shouldShowList: false,
             shouldPlaySound: false,
             shouldSetBadge: false,
-          } as any;
+          };
         }
 
         return {
-          shouldShowAlert: true,
+          shouldShowBanner: true,
+          shouldShowList: true,
           shouldPlaySound: true,
           shouldSetBadge: true,
-        } as any;
+        };
       },
     });
 

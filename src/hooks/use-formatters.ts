@@ -5,15 +5,23 @@ export function useFormatters() {
   const { language, isRTL } = useI18n();
 
   const formatCurrency = React.useCallback(
-    (val?: number | null) => {
+    (val?: number | null, currencyCode?: string | null) => {
       const numericVal = typeof val === "number" && !isNaN(val) ? val : 0;
-      const formatted = new Intl.NumberFormat(language, {
-        notation: "standard",
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 2,
-      }).format(numericVal);
-
-      return isRTL ? `${formatted} $` : `$${formatted}`;
+      const code = currencyCode || "EGP";
+      try {
+        return new Intl.NumberFormat(language, {
+          style: "currency",
+          currency: code,
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 0,
+        }).format(numericVal);
+      } catch {
+        const formatted = new Intl.NumberFormat(language, {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 0,
+        }).format(numericVal);
+        return isRTL ? `${formatted} ${code}` : `${code} ${formatted}`;
+      }
     },
     [language, isRTL],
   );

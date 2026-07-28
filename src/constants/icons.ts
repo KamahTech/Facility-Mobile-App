@@ -15,6 +15,10 @@ export const appIcons = {
     ios: "building.2.fill",
     android: "apartment",
   },
+  rentals: {
+    ios: "key.fill",
+    android: "key",
+  },
   resident: {
     ios: "person.crop.circle.fill",
     android: "person",

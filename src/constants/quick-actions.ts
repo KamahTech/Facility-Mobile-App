@@ -3,7 +3,7 @@ import type { TranslationKey } from "@/constants/translations";
 
 export type QuickActionIconName = Extract<
   AppIconName,
-  "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "facility" | "tickets"
+  "linkUnit" | "invoices" | "requestService" | "inviteVisitor" | "feedback" | "facility" | "tickets" | "rentals"
 >;
 
 export type QuickActionItem = {
@@ -39,6 +39,12 @@ export const quickActions: QuickActionItem[] = [
     descriptionKey: "quickActions.requestServiceDescription",
     icon: "requestService",
     route: "/home/request-service",
+  },
+  {
+    titleKey: "quickActions.rentals",
+    descriptionKey: "quickActions.rentalsDescription",
+    icon: "rentals",
+    route: "/rentals",
   },
   {
     titleKey: "quickActions.inviteVisitor",
