@@ -1,5 +1,11 @@
 import React from "react";
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  type InfiniteData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 import type { EncodedImage } from "@/lib/media";
 import { useUnitStore } from "@/stores/unit-store";
@@ -121,6 +127,7 @@ export type MaintenanceRequest = {
   createdAt: string; // YYYY-MM-DD
   updatedAt: string; // YYYY-MM-DD
   workerName?: string | boolean;
+  assignedToCurrentUser?: boolean;
   notes?: string | boolean;
   subject?: string;
   workerPhase?: "accepted" | "inspected" | "working" | "completed" | boolean;
@@ -179,6 +186,53 @@ export type PaginatedRequests = {
   hasMore: boolean;
 };
 
+function normalizeMaintenanceRequest(item: MaintenanceRequest) {
+  const rawItem = item as MaintenanceRequest & {
+    descriptionPlain?: string;
+    description_plain?: string;
+  };
+
+  return {
+    ...rawItem,
+    description: stripHtml(
+      rawItem.descriptionPlain ||
+        rawItem.description_plain ||
+        rawItem.description,
+    ),
+  };
+}
+
+export function useMaintenanceRequestQuery(
+  requestId: string,
+  accountType: "resident" | "worker",
+) {
+  const queryClient = useQueryClient();
+  const listQueryKey =
+    accountType === "resident" ? ["resident-requests"] : ["worker-tasks"];
+  const detailQueryKey = ["maintenance-request", accountType, requestId];
+
+  return useQuery<MaintenanceRequest>({
+    queryKey: detailQueryKey,
+    queryFn: async () => {
+      const route =
+        accountType === "resident"
+          ? `/resident/tickets/${requestId}`
+          : `/worker/tasks/${requestId}`;
+      const item = await apiRequest<MaintenanceRequest>(route, {});
+      return normalizeMaintenanceRequest(item);
+    },
+    initialData: () => {
+      const cached =
+        queryClient.getQueryData<InfiniteData<PaginatedRequests>>(listQueryKey);
+      const item = cached?.pages
+        .flatMap((page) => page.items)
+        .find((candidate) => String(candidate.id) === String(requestId));
+      return item ? normalizeMaintenanceRequest(item) : undefined;
+    },
+    enabled: Boolean(requestId),
+  });
+}
+
 export function useRequestsStore(options?: {
   enableResidentRequests?: boolean;
   enableWorkerTasks?: boolean;
@@ -199,10 +253,7 @@ export function useRequestsStore(options?: {
       ...data,
       pages: data.pages.map((page) => ({
         ...page,
-        items: page.items.map((item: any) => ({
-          ...item,
-          description: stripHtml((item.descriptionPlain || item.description_plain || item.description) as string),
-        })),
+        items: page.items.map(normalizeMaintenanceRequest),
       })),
     }),
     initialPageParam: undefined,
@@ -218,10 +269,7 @@ export function useRequestsStore(options?: {
       ...data,
       pages: data.pages.map((page) => ({
         ...page,
-        items: page.items.map((item: any) => ({
-          ...item,
-          description: stripHtml((item.descriptionPlain || item.description_plain || item.description) as string),
-        })),
+        items: page.items.map(normalizeMaintenanceRequest),
       })),
     }),
     initialPageParam: undefined,
@@ -240,8 +288,11 @@ export function useRequestsStore(options?: {
       
       return apiRequest("/resident/tickets/create", payload);
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["maintenance-request", "resident", id],
+      });
     }
   });
 
@@ -289,8 +340,11 @@ export function useRequestsStore(options?: {
 
   const acceptTaskMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/worker/tasks/${id}/accept`, {}),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({
+        queryKey: ["maintenance-request", "worker", id],
+      });
     }
   });
 
@@ -319,22 +373,31 @@ export function useRequestsStore(options?: {
       
       return apiRequest(`/worker/tasks/${params.id}/inspect`, inspectParams);
     },
-    onSuccess: () => {
+    onSuccess: (_, params) => {
       queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({
+        queryKey: ["maintenance-request", "worker", params.id],
+      });
     }
   });
 
   const startTaskMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/worker/tasks/${id}/start`, {}),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({
+        queryKey: ["maintenance-request", "worker", id],
+      });
     }
   });
 
   const completeTaskMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/worker/tasks/${id}/complete`, {}),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["worker-tasks"] });
+      queryClient.invalidateQueries({
+        queryKey: ["maintenance-request", "worker", id],
+      });
     }
   });
 

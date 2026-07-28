@@ -44,12 +44,14 @@ export default function ResidentHomeScreen() {
         fetchUnitsSummary(),
         fetchUpdates(),
       ]);
-    } catch (err) {
-      useToastStore.getState().showToast("Failed to refresh home screen data", "error");
+    } catch {
+      useToastStore
+        .getState()
+        .showToast(t("errors.homeRefreshFailed"), "error");
     } finally {
       setRefreshing(false);
     }
-  }, [fetchUnitsSummary, fetchUpdates]);
+  }, [fetchUnitsSummary, fetchUpdates, t]);
 
   const logoutSheet = useBottomSheetPresentation({ dismissKeyboard: false });
   const avatarSource = React.useMemo(
@@ -62,8 +64,8 @@ export default function ResidentHomeScreen() {
     try {
       await logout();
       router.replace("/choose-login-method" as Href);
-    } catch (err) {
-      useToastStore.getState().showToast("Failed to logout", "error");
+    } catch {
+      useToastStore.getState().showToast(t("errors.logoutFailed"), "error");
     }
   };
 

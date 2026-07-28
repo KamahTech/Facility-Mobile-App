@@ -33,7 +33,7 @@ export default function OverduePaymentsScreen() {
     router.back();
   };
 
-  const installments = overdueQuery.data || [];
+  const installments = React.useMemo(() => overdueQuery.data || [], [overdueQuery.data]);
 
   const totalOverduePayable = React.useMemo(() => {
     return installments.reduce((sum, item) => sum + (item.remainingAmount || 0), 0);

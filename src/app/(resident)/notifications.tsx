@@ -54,8 +54,10 @@ export default function NotificationsScreen() {
   const handleNotificationPress = React.useCallback(
     async (item: NotificationItem) => {
       if (item.unread) {
-        markNotificationRead(item.id).catch((err) => {
-          useToastStore.getState().showToast("Failed to mark notification as read", "error");
+        markNotificationRead(item.id).catch(() => {
+          useToastStore
+            .getState()
+            .showToast(t("errors.notificationReadFailed"), "error");
         });
       }
 
@@ -68,7 +70,7 @@ export default function NotificationsScreen() {
         Alert.alert(item.title, item.description);
       }
     },
-    [markNotificationRead]
+    [markNotificationRead, t]
   );
 
   // Compose list card layout

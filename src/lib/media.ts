@@ -1,5 +1,7 @@
 import { File } from "expo-file-system";
 
+export const MAX_IMAGE_UPLOAD_BYTES = 8 * 1024 * 1024;
+
 export type EncodedImage = {
   data: string;
   name: string;
@@ -36,7 +38,7 @@ function getSupportedImageMimeType(file: File): SupportedImageMimeType {
   const inferredType = extension ? typeByExtension[extension] : undefined;
   if (inferredType) return inferredType;
 
-  throw new Error("Only JPEG, PNG, WebP, and GIF images are supported.");
+  throw new Error("IMAGE_TYPE_UNSUPPORTED");
 }
 
 export function getFileNameFromUri(uri: string, fallback = "photo.jpg") {
@@ -46,6 +48,9 @@ export function getFileNameFromUri(uri: string, fallback = "photo.jpg") {
 
 export async function encodeImageUri(uri: string): Promise<EncodedImage> {
   const file = new File(uri);
+  if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+    throw new Error("IMAGE_TOO_LARGE");
+  }
   const mimetype = getSupportedImageMimeType(file);
   const data = await file.base64();
 

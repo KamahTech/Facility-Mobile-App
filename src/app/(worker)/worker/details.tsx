@@ -19,8 +19,14 @@ import { FullScreenLoader } from "@/components/full-screen-loader";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { useAppImagePicker } from "@/hooks/use-image-picker";
-import { encodeImageUri } from "@/lib/media";
-import { useRequestsStore, type RequestStatus, type Product, type TaskMaterial } from "@/stores/requests-store";
+import { encodeImageUri, type EncodedImage } from "@/lib/media";
+import {
+  useMaintenanceRequestQuery,
+  useRequestsStore,
+  type RequestStatus,
+  type Product,
+  type TaskMaterial,
+} from "@/stores/requests-store";
 import { useWorkerPropertyDetailsQuery } from "@/stores/owner-store";
 import { useUserStore } from "@/stores/user-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
@@ -28,12 +34,15 @@ import { useToastStore } from "@/stores/toast-store";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 import { stripHtml } from "@/lib/strip-html";
 import { getTodayAtMidnight } from "@/lib/date-time";
 import { usePushNotificationStore } from "@/stores/push-notification-store";
 import { ProductSelectBottomSheet } from "@/components/product-select-bottom-sheet";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
+import { runWorkflowWithSideEffect } from "@/lib/workflow-side-effect";
+import { getFriendlyErrorMessage } from "@/lib/error-formatter";
+
+const MAX_INSPECTION_PHOTOS = 5;
 
 type InspectFormValues = {
   notes: string;
@@ -59,7 +68,6 @@ export default function WorkerDetailsScreen() {
   const isTransitionFinished = useScreenTransition();
 
   const {
-    requests,
     acceptTask,
     inspectTask,
     startTask,
@@ -72,10 +80,11 @@ export default function WorkerDetailsScreen() {
     createRFQs,
     createQuotation,
     loading,
-  } = useRequestsStore({ enableWorkerTasks: true });
+  } = useRequestsStore();
+  const taskQuery = useMaintenanceRequestQuery(taskId, "worker");
   const { profile } = useUserStore();
 
-  const task = requests.find((r) => r.id === taskId);
+  const task = taskQuery.data;
   const unitLabel = task
     ? [task.buildingNumber, task.unitNumber].filter(Boolean).join(" - ")
     : "";
@@ -124,12 +133,12 @@ export default function WorkerDetailsScreen() {
   const propertyQuery = useWorkerPropertyDetailsQuery(task?.id, isTransitionFinished && isPropertyDetailsVisible && !!task?.id);
 
   const [draftMaterials, setDraftMaterials] = React.useState<TaskMaterial[]>([]);
+  const [prevMaterials, setPrevMaterials] = React.useState(task?.materials);
 
-  React.useEffect(() => {
-    if (task?.materials) {
-      setDraftMaterials(task.materials);
-    }
-  }, [task?.materials]);
+  if (task?.materials !== prevMaterials) {
+    setPrevMaterials(task?.materials);
+    setDraftMaterials(task?.materials || []);
+  }
 
   const isWorking = task?.workerPhase === "working";
 
@@ -168,7 +177,7 @@ export default function WorkerDetailsScreen() {
       await addMaterial(task.id, product.id, 1, product.uomId, true);
       useToastStore.getState().showToast(t("worker.materialAdded"), "success");
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToAddMaterial" as any));
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToAddMaterial"));
     }
   };
 
@@ -191,7 +200,7 @@ export default function WorkerDetailsScreen() {
     try {
       await updateMaterial(task.id, lineId, quantity, selected);
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToUpdateMaterial" as any));
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToUpdateMaterial"));
     }
   };
 
@@ -208,7 +217,7 @@ export default function WorkerDetailsScreen() {
     try {
       await updateMaterial(task.id, lineId, quantity, selected);
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToUpdateMaterial" as any));
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToUpdateMaterial"));
     }
   };
 
@@ -232,7 +241,7 @@ export default function WorkerDetailsScreen() {
               await deleteMaterial(task.id, lineId);
               useToastStore.getState().showToast(t("worker.materialRemoved"), "success");
             } catch (e: unknown) {
-              Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToDeleteMaterial" as any));
+              Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.failedToDeleteMaterial"));
             }
           },
         },
@@ -245,9 +254,9 @@ export default function WorkerDetailsScreen() {
     setActionLoading(true);
     try {
       await createPicking(task.id);
-      useToastStore.getState().showToast(t("worker.pickingCreated" as any), "success");
+      useToastStore.getState().showToast(t("worker.pickingCreated"), "success");
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createPickingFailed" as any));
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createPickingFailed"));
     } finally {
       setActionLoading(false);
     }
@@ -258,9 +267,9 @@ export default function WorkerDetailsScreen() {
     setActionLoading(true);
     try {
       await createRFQs(task.id);
-      useToastStore.getState().showToast(t("worker.rfqsCreated" as any), "success");
+      useToastStore.getState().showToast(t("worker.rfqsCreated"), "success");
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createRFQsFailed" as any));
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createRFQsFailed"));
     } finally {
       setActionLoading(false);
     }
@@ -271,9 +280,9 @@ export default function WorkerDetailsScreen() {
     setActionLoading(true);
     try {
       await createQuotation(task.id);
-      useToastStore.getState().showToast(t("worker.quotationCreated" as any), "success");
+      useToastStore.getState().showToast(t("worker.quotationCreated"), "success");
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createQuotationFailed" as any));
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.createQuotationFailed"));
     } finally {
       setActionLoading(false);
     }
@@ -357,6 +366,18 @@ export default function WorkerDetailsScreen() {
     }
   };
 
+  if (taskQuery.isLoading) {
+    return (
+      <View
+        className="flex-1 items-center justify-center bg-background"
+        style={{ paddingTop: insets.top }}
+      >
+        <Stack.Screen options={{ headerShown: false }} />
+        <AppActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   if (!task) {
     return (
       <View
@@ -390,11 +411,19 @@ export default function WorkerDetailsScreen() {
   const handleAcceptTask = async () => {
     setActionLoading(true);
     try {
-      await acceptTask(task.id);
-      await addRequestComment(
-        task.id,
-        t("worker.acceptedComment").replace("{{name}}", workerName),
+      const result = await runWorkflowWithSideEffect(
+        () => acceptTask(task.id),
+        () =>
+          addRequestComment(
+            task.id,
+            t("worker.acceptedComment").replace("{{name}}", workerName),
+          ),
       );
+      if (result.sideEffectError) {
+        useToastStore
+          .getState()
+          .showToast(t("errors.workflowCommentFailed"), "error");
+      }
       Alert.alert(
         t("worker.status.accepted"),
         t("worker.status.acceptedDesc"),
@@ -416,12 +445,32 @@ export default function WorkerDetailsScreen() {
 
   const handleLaunchCamera = async () => {
     const uri = await pickImage("camera");
-    if (uri) setSelectedPhotos((prev) => [...prev, uri]);
+    if (uri) {
+      setSelectedPhotos((prev) => {
+        if (prev.length >= MAX_INSPECTION_PHOTOS) {
+          useToastStore
+            .getState()
+            .showToast(t("errors.tooManyInspectionPhotos"), "error");
+          return prev;
+        }
+        return [...prev, uri];
+      });
+    }
   };
 
   const handleLaunchLibrary = async () => {
     const uri = await pickImage("library");
-    if (uri) setSelectedPhotos((prev) => [...prev, uri]);
+    if (uri) {
+      setSelectedPhotos((prev) => {
+        if (prev.length >= MAX_INSPECTION_PHOTOS) {
+          useToastStore
+            .getState()
+            .showToast(t("errors.tooManyInspectionPhotos"), "error");
+          return prev;
+        }
+        return [...prev, uri];
+      });
+    }
   };
 
   const handleRemovePhoto = (index: number) => {
@@ -431,10 +480,10 @@ export default function WorkerDetailsScreen() {
   const handleSubmitInspection = async (data: InspectFormValues) => {
     setActionLoading(true);
     try {
-      // Encode photos to base64 payload
-      const photosPayload = await Promise.all(
-        selectedPhotos.map((photoUri) => encodeImageUri(photoUri)),
-      );
+      const photosPayload: EncodedImage[] = [];
+      for (const photoUri of selectedPhotos) {
+        photosPayload.push(await encodeImageUri(photoUri));
+      }
 
       const formattedDraftMaterials = draftMaterials.map((m) => ({
         productId: m.productId,
@@ -443,30 +492,35 @@ export default function WorkerDetailsScreen() {
         selected: m.selected ?? true,
       }));
 
-      await inspectTask(task.id, {
-        notes: data.notes.trim(),
-        materials: formattedDraftMaterials,
-        deadline: (data.deadline || "").trim(),
-        photos: photosPayload,
-      });
-
       const materialsList = draftMaterials && draftMaterials.length > 0
         ? draftMaterials.map((m) => `- ${m.productName} (x${m.quantity})`).join("\n")
         : t("common.none");
 
-      await addRequestComment(
-        task.id,
-        t("worker.inspectionComment")
-          .replace(
-            "{{materials}}",
-            materialsList,
-          )
-          .replace(
-            "{{deadline}}",
-            (data.deadline || "").trim() || t("common.notAvailable"),
-          )
-          .replace("{{notes}}", data.notes.trim()),
+      const result = await runWorkflowWithSideEffect(
+        () =>
+          inspectTask(task.id, {
+            notes: data.notes.trim(),
+            materials: formattedDraftMaterials,
+            deadline: (data.deadline || "").trim(),
+            photos: photosPayload,
+          }),
+        () =>
+          addRequestComment(
+            task.id,
+            t("worker.inspectionComment")
+              .replace("{{materials}}", materialsList)
+              .replace(
+                "{{deadline}}",
+                (data.deadline || "").trim() || t("common.notAvailable"),
+              )
+              .replace("{{notes}}", data.notes.trim()),
+          ),
       );
+      if (result.sideEffectError) {
+        useToastStore
+          .getState()
+          .showToast(t("errors.workflowCommentFailed"), "error");
+      }
 
       Alert.alert(
         t("worker.status.inspected"),
@@ -476,7 +530,7 @@ export default function WorkerDetailsScreen() {
     } catch (e: unknown) {
       Alert.alert(
         t("common.error"),
-        e instanceof Error ? e.message : t("errors.inspectTaskFailed"),
+        getFriendlyErrorMessage(e, t),
       );
     } finally {
       setActionLoading(false);
@@ -486,18 +540,19 @@ export default function WorkerDetailsScreen() {
   const handleStartTask = async () => {
     setActionLoading(true);
     try {
-      const materialsPayload = draftMaterials.map((m) => ({
-        productId: m.productId,
-        quantity: m.quantity,
-        uomId: m.uomId,
-        selected: m.selected ?? true,
-      }));
-
-      await startTask(task.id);
-      await addRequestComment(
-        task.id,
-        t("worker.startedComment").replace("{{name}}", workerName),
+      const result = await runWorkflowWithSideEffect(
+        () => startTask(task.id),
+        () =>
+          addRequestComment(
+            task.id,
+            t("worker.startedComment").replace("{{name}}", workerName),
+          ),
       );
+      if (result.sideEffectError) {
+        useToastStore
+          .getState()
+          .showToast(t("errors.workflowCommentFailed"), "error");
+      }
       Alert.alert(t("worker.status.working"), t("worker.status.workingDesc"), [
         { text: t("common.ok") },
       ]);
@@ -514,8 +569,15 @@ export default function WorkerDetailsScreen() {
   const handleCloseMission = async () => {
     setActionLoading(true);
     try {
-      await completeTask(task.id);
-      await addRequestComment(task.id, t("worker.completedComment"));
+      const result = await runWorkflowWithSideEffect(
+        () => completeTask(task.id),
+        () => addRequestComment(task.id, t("worker.completedComment")),
+      );
+      if (result.sideEffectError) {
+        useToastStore
+          .getState()
+          .showToast(t("errors.workflowCommentFailed"), "error");
+      }
 
       Alert.alert(
         t("worker.status.completed"),
@@ -532,7 +594,8 @@ export default function WorkerDetailsScreen() {
     }
   };
 
-  const isAssignedToMe = task.workerName === workerName;
+  const isAssignedToMe =
+    task.assignedToCurrentUser ?? task.workerName === workerName;
   const needsInspection =
     isAssignedToMe && (!task.workerPhase || task.workerPhase === "accepted");
   const needsStartTask = isAssignedToMe && task.workerPhase === "inspected";
@@ -873,129 +936,183 @@ export default function WorkerDetailsScreen() {
 
             {(() => {
               const displayMaterials = canEditMaterials ? draftMaterials : (task.materials || []);
-              return displayMaterials && displayMaterials.length > 0 ? (
-                <View className="flex-col gap-3">
-                  {displayMaterials.map((material) => (
-                  <View
-                    key={material.id}
-                    className="flex-col gap-2 bg-secondary/30 p-3.5 rounded-xl border border-border/10"
-                  >
-                    <AppRow className="items-start justify-between gap-3">
-                      <View className="flex-1 text-start">
-                        <Text
-                          className="text-sm font-bold text-foreground text-start"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {material.productName}
-                        </Text>
-                        {material.uomName && (
-                          <Text
-                            className="text-xs text-muted-foreground text-start mt-0.5"
-                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                          >
-                            {t("worker.uomLabel")}: {material.uomName}
-                          </Text>
-                        )}
-                      </View>
+              if (!displayMaterials || displayMaterials.length === 0) {
+                return (
+                  <View className="py-6 items-center justify-center bg-secondary/10 rounded-xl border border-dashed border-border/30">
+                    <AppIcon name="tickets" size={20} colorToken="--muted-foreground" className="opacity-60 mb-1.5" />
+                    <Text className="text-xs text-muted-foreground text-center">
+                      {t("worker.noMaterials")}
+                    </Text>
+                  </View>
+                );
+              }
 
-                      {canEditMaterials && (
+              const hasShortages = displayMaterials.some((m) => m.needsPurchase);
+
+              return (
+                <View className="flex-col gap-4">
+                  <View className="flex-col gap-3">
+                    {displayMaterials.map((material) => (
+                      <View
+                        key={material.id}
+                        className="flex-col gap-2 bg-secondary/30 p-3.5 rounded-xl border border-border/10"
+                      >
+                        <AppRow className="items-start justify-between gap-3">
+                          <View className="flex-1 text-start">
+                            <Text
+                              className="text-sm font-bold text-foreground text-start"
+                              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                            >
+                              {material.productName}
+                            </Text>
+                            {material.uomName && (
+                              <Text
+                                className="text-xs text-muted-foreground text-start mt-0.5"
+                                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                              >
+                                {t("worker.uomLabel")}: {material.uomName}
+                              </Text>
+                            )}
+                          </View>
+
+                          {canEditMaterials && (
+                            <Pressable
+                              onPress={() => handleDeleteMaterial(material.id)}
+                              className="w-7 h-7 rounded-full bg-rose-50 dark:bg-rose-950/20 items-center justify-center active:opacity-75"
+                            >
+                              <AppIcon name="trash" size={14} colorToken="--destructive" />
+                            </Pressable>
+                          )}
+                        </AppRow>
+
+                        <AppRow className="items-center justify-between gap-3 mt-1 flex-wrap">
+                          <View className="flex-col gap-0.5 items-start">
+                            <Text className="text-[11px] text-muted-foreground">
+                              {t("worker.availability")}: {t("worker.stockMain")}: {material.mainAvailable ?? 0} | {t("worker.stockFacility")}: {material.facilityAvailable ?? 0}
+                            </Text>
+                            {material.needsPurchase && (
+                              <Text className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                                ⚠️ {t("worker.shortageLabel")}: {material.toPurchase ?? 0}
+                              </Text>
+                            )}
+                            {typeof material.alreadyIssued === "number" && material.alreadyIssued > 0 && (
+                              <Text className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
+                                📦 Issued: {material.alreadyIssued} / {material.quantity}
+                              </Text>
+                            )}
+                          </View>
+
+                          <AppRow className="items-center gap-3">
+                            {canEditMaterials ? (
+                              <Pressable
+                                onPress={() =>
+                                  handleToggleSelected(material.id, material.quantity, !material.selected)
+                                }
+                                className="flex-row items-center gap-1.5"
+                              >
+                                <AppIcon
+                                  name={material.selected ? "circleCheck" : "circle"}
+                                  size={16}
+                                  colorToken={material.selected ? "--primary" : "--muted-foreground"}
+                                />
+                                <Text className="text-xs text-muted-foreground">
+                                  {t("worker.selectedLabel")}
+                                </Text>
+                              </Pressable>
+                            ) : (
+                              <View className="flex-row items-center gap-1">
+                                <AppIcon
+                                  name={material.selected ? "circleCheck" : "circle"}
+                                  size={14}
+                                  colorToken={material.selected ? "--primary" : "--muted-foreground"}
+                                />
+                                <Text className="text-xs text-muted-foreground">
+                                  {material.selected ? t("worker.selectedLabel") : t("worker.notSelectedLabel")}
+                                </Text>
+                              </View>
+                            )}
+
+                            {canEditMaterials ? (
+                              <AppRow className="items-center bg-secondary rounded-lg px-1.5 py-0.5 gap-2 border border-border/20">
+                                <Pressable
+                                  onPress={() =>
+                                    handleQuantityChange(material.id, material.quantity - 1, material.selected)
+                                  }
+                                  className="w-6 h-6 items-center justify-center rounded bg-card active:opacity-75"
+                                >
+                                  <Text className="text-sm font-bold text-foreground">-</Text>
+                                </Pressable>
+                                <Text className="text-sm font-bold text-foreground min-w-[20px] text-center">
+                                  {material.quantity}
+                                </Text>
+                                <Pressable
+                                  onPress={() =>
+                                    handleQuantityChange(material.id, material.quantity + 1, material.selected)
+                                  }
+                                  className="w-6 h-6 items-center justify-center rounded bg-card active:opacity-75"
+                                >
+                                  <Text className="text-sm font-bold text-foreground">+</Text>
+                                </Pressable>
+                              </AppRow>
+                            ) : (
+                              <Text className="text-sm font-bold text-foreground">
+                                {t("worker.qtyLabel")}: {material.quantity}
+                              </Text>
+                            )}
+                          </AppRow>
+                        </AppRow>
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* Material Procurement Action Buttons */}
+                  {canEditMaterials && (
+                    <View className="flex-col gap-2 pt-2 border-t border-border/20">
+                      <Pressable
+                        onPress={handleCreatePicking}
+                        className="w-full py-2.5 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex-row items-center justify-between active:opacity-80"
+                      >
+                        <AppRow className="items-center gap-2">
+                          <AppIcon name="invoices" size={16} color="#10B981" />
+                          <Text className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            {t("worker.createPickingBtn")}
+                          </Text>
+                        </AppRow>
+                        <AppChevron size={14} color="#10B981" />
+                      </Pressable>
+
+                      {hasShortages && (
                         <Pressable
-                          onPress={() => handleDeleteMaterial(material.id)}
-                          className="w-7 h-7 rounded-full bg-rose-50 dark:bg-rose-950/20 items-center justify-center active:opacity-75"
+                          onPress={handleCreateRFQs}
+                          className="w-full py-2.5 px-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex-row items-center justify-between active:opacity-80"
                         >
-                          <AppIcon name="trash" size={14} colorToken="--destructive" />
+                          <AppRow className="items-center gap-2">
+                            <AppIcon name="add" size={16} color="#F59E0B" />
+                            <Text className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                              {t("worker.createRFQsBtn")}
+                            </Text>
+                          </AppRow>
+                          <AppChevron size={14} color="#F59E0B" />
                         </Pressable>
                       )}
-                    </AppRow>
 
-                    <AppRow className="items-center justify-between gap-3 mt-1 flex-wrap">
-                      <View className="flex-col gap-0.5 items-start">
-                        <Text className="text-[11px] text-muted-foreground">
-                          {t("worker.availability")}: {t("worker.stockMain")}: {material.mainAvailable ?? 0} | {t("worker.stockFacility")}: {material.facilityAvailable ?? 0}
-                        </Text>
-                        {material.needsPurchase && (
-                          <Text className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
-                            ⚠️ {t("worker.shortageLabel")}: {material.toPurchase ?? 0}
+                      <Pressable
+                        onPress={handleCreateQuotation}
+                        className="w-full py-2.5 px-4 rounded-xl bg-primary/10 border border-primary/20 flex-row items-center justify-between active:opacity-80"
+                      >
+                        <AppRow className="items-center gap-2">
+                          <AppIcon name="invoices" size={16} colorToken="--primary" />
+                          <Text className="text-xs font-bold text-primary">
+                            {t("worker.createQuotationBtn")}
                           </Text>
-                        )}
-                        {typeof material.alreadyIssued === "number" && material.alreadyIssued > 0 && (
-                          <Text className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
-                            📦 Issued: {material.alreadyIssued} / {material.quantity}
-                          </Text>
-                        )}
-                      </View>
-
-                      <AppRow className="items-center gap-3">
-                        {canEditMaterials ? (
-                          <Pressable
-                            onPress={() =>
-                              handleToggleSelected(material.id, material.quantity, !material.selected)
-                            }
-                            className="flex-row items-center gap-1.5"
-                          >
-                            <AppIcon
-                              name={material.selected ? "circleCheck" : "circle"}
-                              size={16}
-                              colorToken={material.selected ? "--primary" : "--muted-foreground"}
-                            />
-                            <Text className="text-xs text-muted-foreground">
-                              {t("worker.selectedLabel")}
-                            </Text>
-                          </Pressable>
-                        ) : (
-                          <View className="flex-row items-center gap-1">
-                            <AppIcon
-                              name={material.selected ? "circleCheck" : "circle"}
-                              size={14}
-                              colorToken={material.selected ? "--primary" : "--muted-foreground"}
-                            />
-                            <Text className="text-xs text-muted-foreground">
-                              {material.selected ? t("worker.selectedLabel") : t("worker.notSelectedLabel")}
-                            </Text>
-                          </View>
-                        )}
-
-                        {canEditMaterials ? (
-                          <AppRow className="items-center bg-secondary rounded-lg px-1.5 py-0.5 gap-2 border border-border/20">
-                            <Pressable
-                              onPress={() =>
-                                handleQuantityChange(material.id, material.quantity - 1, material.selected)
-                              }
-                              className="w-6 h-6 items-center justify-center rounded bg-card active:opacity-75"
-                            >
-                              <Text className="text-sm font-bold text-foreground">-</Text>
-                            </Pressable>
-                            <Text className="text-sm font-bold text-foreground min-w-[20px] text-center">
-                              {material.quantity}
-                            </Text>
-                            <Pressable
-                              onPress={() =>
-                                handleQuantityChange(material.id, material.quantity + 1, material.selected)
-                              }
-                              className="w-6 h-6 items-center justify-center rounded bg-card active:opacity-75"
-                            >
-                              <Text className="text-sm font-bold text-foreground">+</Text>
-                            </Pressable>
-                          </AppRow>
-                        ) : (
-                          <Text className="text-sm font-bold text-foreground">
-                            {t("worker.qtyLabel")}: {material.quantity}
-                          </Text>
-                        )}
-                      </AppRow>
-                    </AppRow>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <View className="py-6 items-center justify-center bg-secondary/10 rounded-xl border border-dashed border-border/30">
-                <AppIcon name="tickets" size={20} colorToken="--muted-foreground" className="opacity-60 mb-1.5" />
-                <Text className="text-xs text-muted-foreground text-center">
-                  {t("worker.noMaterials")}
-                </Text>
-              </View>
-            );
-          })()}
+                        </AppRow>
+                        <AppChevron size={14} color="#6366F1" />
+                      </Pressable>
+                    </View>
+                  )}
+                </View>
+              );
+            })()}
           </View>
         )}
 

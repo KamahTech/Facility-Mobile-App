@@ -11,19 +11,15 @@ import { FullScreenLoader } from "@/components/full-screen-loader";
 import { ScreenHeader } from "@/components/screen-header";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
-import { useInvoicesStore } from "@/stores/invoices-store";
+import { useInvoiceQuery } from "@/stores/invoices-store";
 
 export default function InvoiceDetailsScreen() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { isRTL, t } = useI18n();
   const { formatDate, formatCurrency } = useFormatters();
   const insets = useAppInsets();
-  const { invoices, payInvoice } = useInvoicesStore();
-  const [localLoading, setLocalLoading] = React.useState(false);
-
-  const invoice = React.useMemo(() => {
-    return invoices.find((inv) => inv.id === id);
-  }, [invoices, id]);
+  const invoiceQuery = useInvoiceQuery(id);
+  const invoice = invoiceQuery.data;
 
   const handleBack = React.useCallback(() => {
     router.back();
@@ -44,6 +40,10 @@ export default function InvoiceDetailsScreen() {
   const handleComingSoon = React.useCallback(() => {
     Alert.alert(t("invoices.detailsTitle"), t("invoices.comingSoon"));
   }, [t]);
+
+  if (invoiceQuery.isLoading) {
+    return <FullScreenLoader visible />;
+  }
 
   if (!invoice) {
     return (
@@ -66,11 +66,6 @@ export default function InvoiceDetailsScreen() {
       </View>
     );
   }
-
-  // Calculate Breakdown values dynamically: Base (80%), VAT (15%), Processing Fee (5%)
-  const baseFee = invoice.amount * 0.8;
-  const vatAmount = invoice.amount * 0.15;
-  const processingFee = invoice.amount * 0.05;
 
   const statusTheme = (() => {
     switch (invoice.status) {
@@ -185,42 +180,26 @@ export default function InvoiceDetailsScreen() {
             </View>
           </View>
 
-          {/* Invoice Breakdown Details */}
+          {invoice.lineItems && invoice.lineItems.length > 0 && (
           <View className="flex-col gap-3">
             <AppText className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
               {t("invoices.lineItems")}
             </AppText>
 
             <View className="bg-card rounded-2xl p-4 flex-col gap-3">
-              {/* Row 1: Base fee */}
-              <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground">
-                  {t("invoices.serviceFee")}
-                </AppText>
-                <AppText className="text-sm font-medium text-foreground">
-                  {formatCurrency(baseFee)}
-                </AppText>
-              </AppRow>
-
-              {/* Row 2: VAT */}
-              <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground">
-                  {t("invoices.vat")}
-                </AppText>
-                <AppText className="text-sm font-medium text-foreground">
-                  {formatCurrency(vatAmount)}
-                </AppText>
-              </AppRow>
-
-              {/* Row 3: Processing Fee */}
-              <AppRow className="justify-between items-center">
-                <AppText className="text-sm text-muted-foreground">
-                  {t("invoices.processingFee")}
-                </AppText>
-                <AppText className="text-sm font-medium text-foreground">
-                  {formatCurrency(processingFee)}
-                </AppText>
-              </AppRow>
+              {invoice.lineItems.map((line) => (
+                <AppRow
+                  key={line.id}
+                  className="justify-between items-center"
+                >
+                  <AppText className="text-sm text-muted-foreground">
+                    {line.label}
+                  </AppText>
+                  <AppText className="text-sm font-medium text-foreground">
+                    {formatCurrency(line.amount, invoice.currencyCode)}
+                  </AppText>
+                </AppRow>
+              ))}
 
               {/* Row 4: Total */}
               <AppRow className="justify-between items-center pt-1">
@@ -233,6 +212,7 @@ export default function InvoiceDetailsScreen() {
               </AppRow>
             </View>
           </View>
+          )}
 
           {/* Action Buttons */}
           <View className="flex-col gap-3 mt-4">
@@ -292,7 +272,6 @@ export default function InvoiceDetailsScreen() {
 
         </View>
       </ScrollView>
-      <FullScreenLoader visible={localLoading} />
     </View>
   );
 }

@@ -12,6 +12,10 @@ import {
 } from "@/lib/language-storage";
 import { setApiLanguage } from "@/lib/api-client";
 import { useToastStore } from "@/stores/toast-store";
+import {
+  setRuntimeLanguage,
+  translateRuntime,
+} from "@/lib/i18n-runtime";
 
 type I18nContextValue = {
   direction: (typeof languages)[LanguageCode]["direction"];
@@ -37,8 +41,10 @@ async function reloadAppForDirectionChange() {
 
   try {
     await Updates.reloadAsync();
-  } catch (error) {
-    useToastStore.getState().showToast("Failed to reload app after RTL direction change", "error");
+  } catch {
+    useToastStore
+      .getState()
+      .showToast(translateRuntime("errors.directionReloadFailed"), "error");
     DevSettings.reload();
   }
 }
@@ -66,6 +72,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
 
   useEffect(() => {
     setApiLanguage(resolvedLanguage);
+    setRuntimeLanguage(resolvedLanguage);
   }, [resolvedLanguage]);
 
   // Synchronize dynamic language changes with the React Native native I18nManager

@@ -5,7 +5,6 @@ import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { LegendList } from "@legendapp/list/react-native";
 import { ScreenHeader } from "@/components/screen-header";
-import { AppRow } from "@/components/app-row";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { RentalInstallmentCard } from "@/components/rental-installment-card";
 import { useI18n } from "@/hooks/use-i18n";

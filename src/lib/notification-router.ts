@@ -16,7 +16,6 @@ export function handleNotificationNavigation(
   accountType: "resident" | "worker" | null
 ) {
   let ticketId = payload.ticketId;
-  let visitorId = payload.visitorId;
   let updateId = payload.updateId;
   let invoiceId = payload.invoiceId;
   let screen = payload.screen;
@@ -36,9 +35,11 @@ export function handleNotificationNavigation(
   if (parsedId) {
     if (parsedType === "ticket") {
       ticketId = ticketId || parsedId;
-    } else if (parsedType === "visitor") {
-      visitorId = visitorId || parsedId;
-    } else if (parsedType === "update" || parsedType === "news" || parsedType === "poll") {
+    } else if (
+      parsedType === "update" ||
+      parsedType === "news" ||
+      parsedType === "poll"
+    ) {
       updateId = updateId || parsedId;
     } else if (parsedType === "invoice") {
       invoiceId = invoiceId || parsedId;
@@ -62,15 +63,6 @@ export function handleNotificationNavigation(
   }
 
   const normalizedScreen = (screen || "").toLowerCase();
-
-  console.log("[NotificationRouter] Resolving notification route:", {
-    normalizedScreen,
-    ticketId,
-    visitorId,
-    updateId,
-    invoiceId,
-    accountType,
-  });
 
   if (accountType === "worker") {
     // Worker routes

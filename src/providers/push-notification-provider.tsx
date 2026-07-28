@@ -6,7 +6,27 @@ import { handleNotificationNavigation } from "@/lib/notification-router";
 
 export function PushNotificationProvider({ children }: { children: React.ReactNode }) {
   const sessionId = useUserStore((state) => state.sessionId);
+  const initialized = useUserStore((state) => state.initialized);
+  const accountType = useUserStore((state) => state.accountType);
   const registerDevice = usePushNotificationStore((state) => state.registerDevice);
+  const pendingNavigationRef = React.useRef<Notifications.NotificationContentInput["data"] | null>(
+    null,
+  );
+
+  const navigateFromNotification = React.useCallback(
+    async (data: Notifications.NotificationContentInput["data"]) => {
+      if (!initialized || !sessionId || !accountType) {
+        pendingNavigationRef.current = data;
+        return false;
+      }
+
+      pendingNavigationRef.current = null;
+      const handled = handleNotificationNavigation(data || {}, accountType);
+      await Notifications.clearLastNotificationResponseAsync().catch(() => undefined);
+      return handled;
+    },
+    [accountType, initialized, sessionId],
+  );
 
   // Set the notification handler to control whether an alert is shown when the app is in the foreground
   React.useEffect(() => {
@@ -24,10 +44,6 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
         const isViewingDetails = screen === "ticket" && ticketId && String(ticketId) === String(activeTicketId);
 
         if (isViewingChat || isViewingDetails) {
-          console.log("[PushNotificationProvider] Suppressing push notification because user is viewing target screen", {
-            screen,
-            ticketId,
-          });
           return {
             shouldShowBanner: false,
             shouldShowList: false,
@@ -71,43 +87,46 @@ export function PushNotificationProvider({ children }: { children: React.ReactNo
     return () => subscription.remove();
   }, [registerDevice, sessionId]);
 
-  // Handle notification tap actions
   React.useEffect(() => {
-    let coldLaunchTimer: ReturnType<typeof setTimeout> | null = null;
+    if (
+      initialized &&
+      sessionId &&
+      accountType &&
+      pendingNavigationRef.current
+    ) {
+      void navigateFromNotification(pendingNavigationRef.current);
+    }
+  }, [accountType, initialized, navigateFromNotification, sessionId]);
 
-    // 1. Handle background/foreground notification tap
+  // Handle notification tap actions only after authentication has been restored.
+  React.useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data;
       if (data) {
-        handleNotificationNavigation(data, useUserStore.getState().accountType);
+        void navigateFromNotification(data);
       }
     });
 
-    // 2. Handle cold launch from notification
-    void Notifications.getLastNotificationResponseAsync()
-      .then((response) => {
-        if (response) {
-          const data = response.notification.request.content.data;
+    if (initialized && sessionId && accountType) {
+      void Notifications.getLastNotificationResponseAsync()
+        .then((response) => {
+          const data = response?.notification.request.content.data;
           if (data) {
-            // Delay slightly to allow navigation/Expo Router layout to mount
-            coldLaunchTimer = setTimeout(() => {
-              handleNotificationNavigation(
-                data,
-                useUserStore.getState().accountType,
-              );
-            }, 1000);
+            return navigateFromNotification(data);
           }
-        }
-      })
-      .catch(() => {
-        // The app can continue normally when no native notification response is available.
-      });
+        })
+        .catch(() => undefined);
+    }
 
     return () => {
       subscription.remove();
-      if (coldLaunchTimer) clearTimeout(coldLaunchTimer);
     };
-  }, []);
+  }, [
+    accountType,
+    initialized,
+    navigateFromNotification,
+    sessionId,
+  ]);
 
   return <>{children}</>;
 }

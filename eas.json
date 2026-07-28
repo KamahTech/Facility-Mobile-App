@@ -19,9 +19,7 @@
     },
     "production": {
       "autoIncrement": true,
-      "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://kamahtech-t-facility.odoo.com/facility_mobile_api/v1"
-      }
+      "environment": "production"
     }
   },
   "submit": {

@@ -127,8 +127,8 @@ export default function WorkerHomeScreen() {
     try {
       await logout();
       router.replace("/choose-login-method" as Href);
-    } catch (err) {
-      useToastStore.getState().showToast("Failed to logout", "error");
+    } catch {
+      useToastStore.getState().showToast(t("errors.logoutFailed"), "error");
     }
   };
 

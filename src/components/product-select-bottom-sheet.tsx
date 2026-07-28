@@ -55,7 +55,7 @@ export function ProductSelectBottomSheet({
     return productsQuery.data.pages
       .flatMap((page) => page?.items || [])
       .filter((item): item is Product => Boolean(item && item.id));
-  }, [productsQuery.data?.pages]);
+  }, [productsQuery.data]);
 
   const handleSelect = React.useCallback(
     (product: Product) => {

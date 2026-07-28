@@ -44,10 +44,12 @@ export default function UnitDetailScreen() {
     try {
       const details = await fetchOwnerUnitDetails(unitId);
       setUnitDetails(details);
-    } catch (e) {
-      useToastStore.getState().showToast("Failed to load unit details", "error");
+    } catch {
+      useToastStore
+        .getState()
+        .showToast(t("errors.unitDetailsLoadFailed"), "error");
     }
-  }, [unitId, fetchOwnerUnitDetails, clearError]);
+  }, [unitId, fetchOwnerUnitDetails, clearError, t]);
 
   React.useEffect(() => {
     const timer = setTimeout(() => {

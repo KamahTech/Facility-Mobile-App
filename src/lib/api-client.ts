@@ -3,6 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { API_BASE_URL } from "@/constants/api";
 import { useToastStore } from "@/stores/toast-store";
 import { getFriendlyErrorMessage } from "@/lib/error-formatter";
+import { translateRuntime } from "@/lib/i18n-runtime";
 
 let currentAccessToken: string | null = null;
 let currentAccessTokenExpiresAt: number | null = null;
@@ -39,8 +40,10 @@ export const initializeSession = () => {
         SecureStore.deleteItemAsync("access_token_expires_at"),
       ]);
       return null;
-    } catch (error) {
-      useToastStore.getState().showToast("Failed to load tokens from SecureStore", "error");
+    } catch {
+      useToastStore
+        .getState()
+        .showToast(translateRuntime("errors.secureStorageLoadFailed"), "error");
       return null;
     }
   })();
@@ -130,7 +133,24 @@ const PUBLIC_API_ROUTES = new Set([
   "/auth/signup/request-otp",
 ]);
 
-function isAccessTokenAuthenticationError(message: unknown): boolean {
+function isAccessTokenAuthenticationError(
+  code: unknown,
+  message: unknown,
+  httpStatus?: number,
+): boolean {
+  if (httpStatus === 401) return true;
+  const normalizedCode = String(code || "").toLowerCase();
+  if (
+    [
+      "invalid_access_token",
+      "missing_access_token",
+      "token_expired",
+      "session_expired",
+      "unauthorized",
+    ].includes(normalizedCode)
+  ) {
+    return true;
+  }
   const normalizedMessage = String(message || "").toLowerCase();
   return (
     normalizedMessage.includes("authentication required") ||
@@ -217,7 +237,10 @@ export async function apiRequest<T = ApiResponse>(
     if (result.error) {
       const errMsg = result.error.message || JSON.stringify(result.error);
 
-      const isAuthError = isAccessTokenAuthenticationError(errMsg);
+      const isAuthError = isAccessTokenAuthenticationError(
+        result.error.code,
+        errMsg,
+      );
 
       if (!isPublicRoute && isAuthError) {
         await handleSessionExpired();
@@ -235,7 +258,7 @@ export async function apiRequest<T = ApiResponse>(
       const err = data.error || {};
       const errMsg = err.message || "API request failed";
 
-      const isAuthError = isAccessTokenAuthenticationError(errMsg);
+      const isAuthError = isAccessTokenAuthenticationError(err.code, errMsg);
 
       if (!isPublicRoute && isAuthError) {
         await handleSessionExpired();
@@ -262,7 +285,11 @@ export async function apiRequest<T = ApiResponse>(
     const responseError = responseData?.error || responseData?.result?.error;
     const errMsg = responseError?.message || "";
 
-    const isAuthError = isAccessTokenAuthenticationError(errMsg);
+    const isAuthError = isAccessTokenAuthenticationError(
+      responseError?.code,
+      errMsg,
+      axiosError?.response?.status,
+    );
 
     if (!isPublicRoute && isAuthError) {
       await handleSessionExpired();
@@ -274,7 +301,7 @@ export async function apiRequest<T = ApiResponse>(
     }
 
     if (options.showErrorToast !== false) {
-      const friendly = getFriendlyErrorMessage(error);
+      const friendly = getFriendlyErrorMessage(error, translateRuntime);
       useToastStore.getState().showToast(friendly, "error");
     }
 

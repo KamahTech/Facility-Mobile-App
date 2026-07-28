@@ -14,6 +14,7 @@ import { useAppImagePicker } from "@/hooks/use-image-picker";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { encodeImageUriAsDataUrl } from "@/lib/media";
+import { getFriendlyErrorMessage } from "@/lib/error-formatter";
 import { getProfileImageSource } from "@/lib/image-source";
 import { useUserStore } from "@/stores/user-store";
 import { useScrollAnimation } from "@/providers/scroll-animation-provider";
@@ -78,7 +79,7 @@ export default function ResidentProfileScreen() {
       } catch (error) {
         Alert.alert(
           t("common.error"),
-          error instanceof Error ? error.message : t("errors.profileAvatarUpdateFailed"),
+          getFriendlyErrorMessage(error, t),
         );
       }
     },

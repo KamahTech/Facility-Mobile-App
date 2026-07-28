@@ -1,5 +1,11 @@
 import React from "react";
-import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  type InfiniteData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api-client";
 import type { TranslationKey } from "@/constants/translations";
 
@@ -20,6 +26,14 @@ export type Invoice = {
   rentalContractType?: "single" | "multi";
   unitId?: string | false;
   chargeType?: string;
+  currencyCode?: string;
+  lineItems?: InvoiceLineItem[];
+};
+
+export type InvoiceLineItem = {
+  id: string;
+  label: string;
+  amount: number;
 };
 
 export type PaginatedInvoices = {
@@ -27,6 +41,22 @@ export type PaginatedInvoices = {
   nextCursor: string | false;
   hasMore: boolean;
 };
+
+export function useInvoiceQuery(invoiceId: string) {
+  const queryClient = useQueryClient();
+
+  return useQuery<Invoice>({
+    queryKey: ["invoice", invoiceId],
+    queryFn: () =>
+      apiRequest<Invoice>(`/resident/invoices/${invoiceId}`, {}),
+    initialData: () =>
+      queryClient
+        .getQueryData<InfiniteData<PaginatedInvoices>>(["invoices"])
+        ?.pages.flatMap((page) => page.items)
+        .find((invoice) => String(invoice.id) === String(invoiceId)),
+    enabled: Boolean(invoiceId),
+  });
+}
 
 export function useInvoicesStore() {
   const queryClient = useQueryClient();
@@ -44,6 +74,7 @@ export function useInvoicesStore() {
       apiRequest(`/resident/invoices/${params.id}/pay`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["invoice"] });
       queryClient.invalidateQueries({ queryKey: ["owner-statement"] });
       queryClient.invalidateQueries({ queryKey: ["owner-units"] });
       queryClient.invalidateQueries({ queryKey: ["connected-units-summary"] });

@@ -8,7 +8,11 @@ import { useAppInsets } from "@/hooks/use-app-insets";
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
-import { useRequestsStore, useTicketCommentsQuery } from "@/stores/requests-store";
+import {
+  useMaintenanceRequestQuery,
+  useRequestsStore,
+  useTicketCommentsQuery,
+} from "@/stores/requests-store";
 import { ChatView } from "@/components/chat-view";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { usePushNotificationStore } from "@/stores/push-notification-store";
@@ -29,16 +33,18 @@ export default function ResidentTicketMessagesScreen() {
   }, [requestId]);
 
   const isTransitionFinished = useScreenTransition();
-  const { requests, addRequestComment } = useRequestsStore({ enableResidentRequests: true });
+  const { addRequestComment } = useRequestsStore();
+  const requestQuery = useMaintenanceRequestQuery(requestId, "resident");
   const commentsQuery = useTicketCommentsQuery(requestId);
 
-  const request = requests.find((r) => r.id === requestId);
+  const request = requestQuery.data;
 
   const comments = React.useMemo(() => {
     return commentsQuery.data?.pages.flatMap((page) => [...page.items].reverse()) || [];
   }, [commentsQuery.data?.pages]);
 
-  const showLoading = !isTransitionFinished || commentsQuery.isLoading;
+  const showLoading =
+    !isTransitionFinished || commentsQuery.isLoading || requestQuery.isLoading;
 
   if (showLoading) {
     return (

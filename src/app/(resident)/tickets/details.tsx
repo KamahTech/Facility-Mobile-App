@@ -12,7 +12,11 @@ import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
-import { useRequestsStore, type RequestStatus } from "@/stores/requests-store";
+import {
+  useMaintenanceRequestQuery,
+  useRequestsStore,
+  type RequestStatus,
+} from "@/stores/requests-store";
 import { useUnitStore } from "@/stores/unit-store";
 import { usePushNotificationStore } from "@/stores/push-notification-store";
 
@@ -31,11 +35,12 @@ export default function ResidentTicketDetailsScreen() {
     }
   }, [requestId]);
 
-  const { requests, cancelRequest } = useRequestsStore({ enableResidentRequests: true });
+  const { cancelRequest } = useRequestsStore();
+  const requestQuery = useMaintenanceRequestQuery(requestId, "resident");
   const { units } = useUnitStore();
   const [actionLoading, setActionLoading] = React.useState(false);
 
-  const request = requests.find((r) => r.id === requestId);
+  const request = requestQuery.data;
   const unit = request ? units.find((u) => u.id === request.unitId) : undefined;
   const unitLabel = unit ? `${unit.buildingNumber} - ${unit.unitNumber}` : "";
 
@@ -139,6 +144,17 @@ export default function ResidentTicketDetailsScreen() {
         };
     }
   };
+
+  if (requestQuery.isLoading) {
+    return (
+      <View
+        className="flex-1 items-center justify-center bg-background"
+        style={{ paddingTop: insets.top }}
+      >
+        <AppActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   if (!request) {
     return (

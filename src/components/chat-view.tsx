@@ -16,6 +16,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { useAppImagePicker } from "@/hooks/use-image-picker";
 import { encodeImageUriAsDataUrl } from "@/lib/media";
+import { getFriendlyErrorMessage } from "@/lib/error-formatter";
 import { type RequestComment } from "@/stores/requests-store";
 import { getBackendImageSource } from "@/lib/image-source";
 import { getDirectionalTextStyle } from "@/lib/i18n-layout";
@@ -109,71 +110,54 @@ export function ChatView({
     };
   });
 
-  const handleSubmitComment = async () => {
-    if (!newComment.trim()) return;
-    
+  const handleLaunchCamera = async () => {
+    setIsMediaSheetVisible(false);
+    const result = await pickImage("camera", { quality: 0.8 });
+    if (result) {
+      setSelectedPhoto(result);
+    }
+  };
+
+  const handleLaunchLibrary = async () => {
+    setIsMediaSheetVisible(false);
+    const result = await pickImage("library", { quality: 0.8 });
+    if (result) {
+      setSelectedPhoto(result);
+    }
+  };
+
+  const handleSend = async () => {
+    if ((!newComment || !newComment.trim()) && !selectedPhoto) return;
     setSendLoading(true);
     try {
       let imageBase64: string | false = false;
       let imageName: string | false = false;
-
       if (selectedPhoto) {
         const encoded = await encodeImageUriAsDataUrl(selectedPhoto);
         imageBase64 = encoded.dataUrl;
         imageName = encoded.name;
       }
-
       await onSendComment(newComment.trim(), imageBase64, imageName);
       setNewComment("");
       setSelectedPhoto(null);
-      requestAnimationFrame(() => {
-        listRef.current?.scrollToOffset({ offset: 0, animated: true });
-      });
     } catch (e: unknown) {
-      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("errors.commentSubmitFailed"));
+      Alert.alert(t("common.error"), getFriendlyErrorMessage(e, t));
     } finally {
       setSendLoading(false);
     }
   };
 
-  const handlePickImage = () => {
-    setIsMediaSheetVisible(true);
-  };
-
-  const handleLaunchCamera = async () => {
-    const uri = await pickImage("camera");
-    if (uri) setSelectedPhoto(uri);
-  };
-
-  const handleLaunchLibrary = async () => {
-    const uri = await pickImage("library");
-    if (uri) setSelectedPhoto(uri);
-  };
-
-  const getRoleBadgeStyle = (role: "resident" | "admin" | "worker") => {
-    switch (role) {
-      case "resident":
-        return {
-          bg: "bg-purple-100 dark:bg-purple-950/30",
-          text: "text-purple-600 dark:text-purple-400",
-        };
-      case "admin":
-        return {
-          bg: "bg-indigo-100 dark:bg-indigo-950/30",
-          text: "text-indigo-600 dark:text-indigo-400",
-        };
-      case "worker":
-        return {
-          bg: "bg-orange-100 dark:bg-orange-950/30",
-          text: "text-orange-600 dark:text-orange-400",
-        };
-    }
-  };
-
   const renderCommentItem = ({ item }: { item: RequestComment }) => {
-    // Aligns messages sent by the current active account to the end (right in LTR)
     const isSelf = item.senderRole === accountType;
-    const roleStyle = getRoleBadgeStyle(item.senderRole);
+    const isRTL = direction === "rtl";
+
+    const roleStyle =
+      item.senderRole === "resident"
+        ? { bg: "bg-emerald-100 dark:bg-emerald-950/40", text: "text-emerald-700 dark:text-emerald-400" }
+        : item.senderRole === "worker"
+        ? { bg: "bg-blue-100 dark:bg-blue-950/40", text: "text-blue-700 dark:text-blue-400" }
+        : { bg: "bg-purple-100 dark:bg-purple-950/40", text: "text-purple-700 dark:text-purple-400" };
+
     const roleLabel =
       item.senderRole === "resident"
         ? t("auth.residentTitle")
@@ -185,7 +169,7 @@ export function ChatView({
       return (
         <View className="flex-col gap-1 w-[80%] self-end items-end mb-4">
           {/* Chat Bubble Body */}
-          <View className="px-4 py-2.5 bg-primary rounded-2xl rounded-tr-none shadow-2xs">
+          <View className={`px-4 py-2.5 bg-primary rounded-2xl shadow-2xs ${isRTL ? "rounded-tl-none" : "rounded-tr-none"}`}>
             {/* Render attachment image if present */}
             {typeof item.image === "string" && (
               <Pressable
@@ -236,7 +220,7 @@ export function ChatView({
           </AppRow>
 
           {/* Chat Bubble Body */}
-          <View className="px-4 py-2.5 bg-card rounded-2xl rounded-tl-none w-full shadow-2xs">
+          <View className={`px-4 py-2.5 bg-card rounded-2xl w-full shadow-2xs ${isRTL ? "rounded-tr-none" : "rounded-tl-none"}`}>
             {/* Render attachment image if present */}
             {typeof item.image === "string" && (
               <Pressable
@@ -252,7 +236,7 @@ export function ChatView({
               </Pressable>
             )}
             {item.content ? (
-              <AppText className="text-sm text-foreground leading-5 text-start px-0.5 py-0.5">
+              <AppText className="text-sm text-card-foreground leading-5 text-start px-0.5 py-0.5 font-medium">
                 {item.content}
               </AppText>
             ) : null}
@@ -285,6 +269,7 @@ export function ChatView({
             ref={listRef}
             data={comments}
             keyExtractor={(item) => item.id}
+            renderItem={renderCommentItem}
             inverted={true}
             onEndReached={onLoadMore}
             onEndReachedThreshold={0.2}
@@ -296,12 +281,10 @@ export function ChatView({
             ListEmptyComponent={
               <View
                 className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 shadow-3xs"
-                style={{ transform: [{ scale: -1 }] }}
+                style={{ transform: [{ scaleY: -1 }] }}
               >
-                <View className="w-12 h-12 rounded-full bg-secondary/50 items-center justify-center mb-3">
-                  <AppIcon name="tickets" size={22} colorToken="--muted-foreground" />
-                </View>
-                <AppText className="text-sm text-muted-foreground text-center">
+                <AppIcon name="tickets" size={32} colorToken="--muted-foreground" className="opacity-40 mb-3" />
+                <AppText className="text-sm font-semibold text-muted-foreground text-center">
                   {t("tickets.noComments")}
                 </AppText>
               </View>
@@ -316,7 +299,6 @@ export function ChatView({
                 </View>
               ) : null
             }
-            renderItem={renderCommentItem}
             className="flex-1 w-full"
           />
         </Animated.View>
@@ -361,7 +343,7 @@ export function ChatView({
 
         <AppRow className="w-full max-w-xl self-center px-4 py-3 items-center gap-3">
           <Pressable
-            onPress={handlePickImage}
+            onPress={() => setIsMediaSheetVisible(true)}
             disabled={composerDisabled}
             accessibilityLabel={t("worker.mediaSourceCamera")}
             accessibilityRole="button"
@@ -386,8 +368,8 @@ export function ChatView({
             multiline
           />
           <Pressable
-            onPress={handleSubmitComment}
-            disabled={composerDisabled || sendLoading || !newComment.trim()}
+            onPress={handleSend}
+            disabled={composerDisabled || sendLoading || (!newComment.trim() && !selectedPhoto)}
             accessibilityLabel={t("tickets.send")}
             accessibilityRole="button"
             className="w-11 h-11 rounded-full bg-primary items-center justify-center active:opacity-70 shadow-sm disabled:opacity-40"

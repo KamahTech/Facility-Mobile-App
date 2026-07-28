@@ -6,6 +6,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { apiRequest } from "@/lib/api-client";
 import { useToastStore } from "@/stores/toast-store";
+import { translateRuntime } from "@/lib/i18n-runtime";
 
 // Simple fallback UUID generator
 function generateUUID() {
@@ -129,8 +130,10 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
         deviceId,
         isRegistered: true,
       });
-    } catch (error) {
-      // Log or toast warning without starting an infinite retry loop
+    } catch {
+      useToastStore
+        .getState()
+        .showToast(translateRuntime("errors.pushRegisterFailed"), "error");
     } finally {
       (set as any)({ isRegistering: false });
     }
@@ -144,8 +147,10 @@ export const usePushNotificationStore = create<PushNotificationState>((set, get)
       await apiRequest("/notifications/push/unregister", {
         deviceId,
       });
-    } catch (error) {
-      useToastStore.getState().showToast("Failed to unregister device from backend", "error");
+    } catch {
+      useToastStore
+        .getState()
+        .showToast(translateRuntime("errors.pushUnregisterFailed"), "error");
     } finally {
       set({
         isRegistered: false,

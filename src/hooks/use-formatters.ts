@@ -1,5 +1,6 @@
 import React from "react";
 import { useI18n } from "@/hooks/use-i18n";
+import { parseDateTimeValue } from "@/lib/date-time";
 
 export function useFormatters() {
   const { language, isRTL } = useI18n();
@@ -30,7 +31,10 @@ export function useFormatters() {
     (dateString?: string) => {
       if (!dateString) return "";
       try {
-        const date = new Date(dateString);
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(dateString)
+          ? parseDateTimeValue(dateString, "date")
+          : new Date(dateString);
+        if (Number.isNaN(date.getTime())) return dateString;
         return date.toLocaleDateString(language, {
           year: "numeric",
           month: "long",

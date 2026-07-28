@@ -8,7 +8,11 @@ import { useAppInsets } from "@/hooks/use-app-insets";
 import { ScreenHeader } from "@/components/screen-header";
 import { AppText } from "@/components/app-text";
 import { useI18n } from "@/hooks/use-i18n";
-import { useRequestsStore, useTicketCommentsQuery } from "@/stores/requests-store";
+import {
+  useMaintenanceRequestQuery,
+  useRequestsStore,
+  useTicketCommentsQuery,
+} from "@/stores/requests-store";
 import { ChatView } from "@/components/chat-view";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { usePushNotificationStore } from "@/stores/push-notification-store";
@@ -29,16 +33,18 @@ export default function WorkerTicketMessagesScreen() {
   }, [taskId]);
 
   const isTransitionFinished = useScreenTransition();
-  const { requests, addRequestComment } = useRequestsStore({ enableWorkerTasks: true });
+  const { addRequestComment } = useRequestsStore();
+  const taskQuery = useMaintenanceRequestQuery(taskId, "worker");
   const commentsQuery = useTicketCommentsQuery(taskId);
 
-  const task = requests.find((r) => r.id === taskId);
+  const task = taskQuery.data;
 
   const comments = React.useMemo(() => {
     return commentsQuery.data?.pages.flatMap((page) => [...page.items].reverse()) || [];
   }, [commentsQuery.data?.pages]);
 
-  const showLoading = !isTransitionFinished || commentsQuery.isLoading;
+  const showLoading =
+    !isTransitionFinished || commentsQuery.isLoading || taskQuery.isLoading;
 
   if (showLoading) {
     return (

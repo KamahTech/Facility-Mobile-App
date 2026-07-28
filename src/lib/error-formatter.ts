@@ -5,6 +5,16 @@ export function getFriendlyErrorMessage(error: unknown, t?: (key: any) => string
 
   const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
 
+  if (message === "image_too_large") {
+    return t ? t("errors.imageTooLarge") : "The selected image is too large.";
+  }
+
+  if (message === "image_type_unsupported") {
+    return t
+      ? t("errors.imageTypeUnsupported")
+      : "The selected image type is not supported.";
+  }
+
   // Network / Connection errors
   if (
     message.includes("network request failed") ||

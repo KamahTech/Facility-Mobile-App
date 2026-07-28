@@ -1,5 +1,6 @@
 import React from "react";
-import { View, ScrollView, RefreshControl } from "react-native";
+import { View, RefreshControl } from "react-native";
+import { LegendList } from "@legendapp/list/react-native";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { Stack } from "expo-router";
 import { router } from "@/lib/navigation";
@@ -28,11 +29,13 @@ export default function DepositsScreen() {
   const loadDeposits = React.useCallback(async () => {
     clearError();
     await fetchDeposits();
-  }, [fetchDeposits, clearError]);
+  }, [clearError, fetchDeposits]);
 
   React.useEffect(() => {
-    clearError();
-  }, [clearError]);
+    if (isTransitionFinished) {
+      loadDeposits();
+    }
+  }, [isTransitionFinished, loadDeposits]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -40,112 +43,99 @@ export default function DepositsScreen() {
     setRefreshing(false);
   };
 
-  const getStatusConfig = (status: string) => {
+  const getStatusStyle = (status: string) => {
     const norm = status.toLowerCase();
-    if (norm.includes("collect")) {
+    if (norm.includes("collect") || norm.includes("held")) {
       return {
-        bg: "bg-emerald-50 dark:bg-emerald-950/30",
-        text: "text-emerald-700 dark:text-emerald-400",
+        bg: "bg-amber-100 dark:bg-amber-950/30",
+        text: "text-amber-700 dark:text-amber-400",
+        label: status,
       };
-    } else if (norm.includes("return")) {
+    } else if (norm.includes("return") || norm.includes("refund")) {
       return {
-        bg: "bg-blue-50 dark:bg-blue-950/30",
-        text: "text-blue-700 dark:text-blue-400",
+        bg: "bg-emerald-100 dark:bg-emerald-950/30",
+        text: "text-emerald-700 dark:text-emerald-400",
+        label: status,
       };
     } else {
       return {
-        bg: "bg-amber-50 dark:bg-amber-950/30",
-        text: "text-amber-700 dark:text-amber-400",
+        bg: "bg-secondary",
+        text: "text-muted-foreground",
+        label: status,
       };
     }
   };
 
-  const renderDepositCard = (item: MaintenanceDeposit) => {
-    const statusConfig = getStatusConfig(item.status);
-    const localizedPeriod =
-      item.periodic === "annual"
-        ? t("connectUnit.annual")
-        : item.periodic === "semi_annual"
-        ? t("connectUnit.semiAnnual")
-        : item.periodic === "quarterly"
-        ? t("connectUnit.quarterly")
-        : t("connectUnit.monthly");
+  const renderDepositCard = ({ item: deposit }: { item: MaintenanceDeposit }) => {
+    const statusInfo = getStatusStyle(deposit.status);
+    const unitTitle = deposit.buildingNumber
+      ? `${deposit.buildingNumber} - ${deposit.unitNumber}`
+      : deposit.unitNumber;
 
     return (
       <View
-        key={item.id}
-        className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm mb-4"
+        key={deposit.id}
+        className="w-full bg-card rounded-2xl p-5 mb-4 shadow-sm border border-border/20 flex-col gap-4"
       >
-        <AppRow className="items-center justify-between gap-3">
-          <AppRow className="items-center gap-3.5 flex-1 min-w-0">
-            <View className="w-11 h-11 rounded-xl items-center justify-center bg-primary/10">
-              <AppIcon name="linkUnit" size={22} colorToken="--primary" />
+        <AppRow className="items-center justify-between">
+          <AppRow className="items-center gap-3">
+            <View className="w-10 h-10 rounded-xl bg-primary/10 items-center justify-center">
+              <AppIcon name="linkUnit" size={20} colorToken="--primary" />
             </View>
-            <View className="flex-1 min-w-0 text-start">
-              <AppText className="text-base font-bold text-foreground text-start" numberOfLines={1}>
-                {item.buildingNumber ? `${item.buildingNumber} - ${item.unitNumber}` : item.unitNumber}
+            <View className="flex-col">
+              <AppText className="text-base font-bold text-foreground">
+                {unitTitle}
               </AppText>
-              <AppText className="text-xs text-muted-foreground mt-0.5 text-start">
-                {t("deposits.unit")} #{item.id}
+              <AppText className="text-xs text-muted-foreground mt-0.5">
+                Ref: #{deposit.id}
               </AppText>
             </View>
           </AppRow>
 
-          <View className={`px-2.5 py-0.5 rounded-full ${statusConfig.bg}`}>
-            <AppText className={`text-[10px] font-bold uppercase tracking-wider ${statusConfig.text}`}>
-              {item.status}
+          <View className={`px-2.5 py-1 rounded-full ${statusInfo.bg}`}>
+            <AppText className={`text-xs font-bold ${statusInfo.text}`}>
+              {statusInfo.label}
             </AppText>
           </View>
         </AppRow>
 
-        <View className="flex-col gap-2.5">
-          <AppRow className="justify-between items-center">
-            <AppText className="text-sm text-muted-foreground text-start">
+        <View className="bg-secondary/40 rounded-xl p-3.5 flex-col gap-2.5">
+          <AppRow className="items-center justify-between">
+            <AppText className="text-xs text-muted-foreground">
               {t("deposits.amount")}
             </AppText>
-            <AppText className="text-sm font-extrabold text-foreground text-end">
-              {formatCurrency(item.amount)}
+            <AppText className="text-sm font-bold text-foreground">
+              {formatCurrency(deposit.amount)}
             </AppText>
           </AppRow>
 
-          <AppRow className="justify-between items-center">
-            <AppText className="text-sm text-muted-foreground text-start">
-              {t("deposits.period")}
-            </AppText>
-            <AppText className="text-sm font-semibold text-foreground text-end">
-              {localizedPeriod}
-            </AppText>
-          </AppRow>
-
-          <AppRow className="justify-between items-center">
-            <AppText className="text-sm text-muted-foreground text-start">
+          <AppRow className="items-center justify-between">
+            <AppText className="text-xs text-muted-foreground">
               {t("deposits.rate")}
             </AppText>
-            <AppText className="text-sm font-semibold text-foreground text-end">
-              {item.rate}%
+            <AppText className="text-xs font-medium text-foreground">
+              {deposit.rate}%
             </AppText>
           </AppRow>
 
-          <AppRow className="justify-between items-center">
-            <AppText className="text-sm text-muted-foreground text-start">
+          <AppRow className="items-center justify-between">
+            <AppText className="text-xs text-muted-foreground">
               {t("deposits.returnValue")}
             </AppText>
-            <AppText className="text-sm font-bold text-emerald-600 dark:text-emerald-400 text-end">
-              +{formatCurrency(item.returnValue)}
+            <AppText className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              +{formatCurrency(deposit.returnValue)}
             </AppText>
           </AppRow>
 
-          {typeof item.expirationDate === "string" && (
-            <>
-              <AppRow className="justify-between items-center">
-                <AppText className="text-xs text-muted-foreground text-start">
-                  {t("deposits.expiration")}
-                </AppText>
-                <AppText className="text-xs text-muted-foreground text-end">
-                  {formatDate(item.expirationDate)}
-                </AppText>
-              </AppRow>
-            </>
+          {typeof deposit.expirationDate === "string" && (
+            <AppRow className="items-center justify-between">
+              <AppText className="text-xs text-muted-foreground">
+                {t("deposits.expiration")}
+              </AppText>
+              <AppText className="text-xs font-medium text-foreground">
+                {formatDate(deposit.expirationDate)}
+              </AppText>
+            </AppRow>
           )}
         </View>
       </View>
@@ -154,7 +144,7 @@ export default function DepositsScreen() {
 
   return (
     <View
-      className="flex-1 bg-background"
+      className="flex-1"
       style={{
         paddingTop: insets.top,
         paddingStart: insets.left,
@@ -168,14 +158,16 @@ export default function DepositsScreen() {
         onBack={() => router.back()}
       />
 
-      <View className="flex-1 w-full max-w-xl self-center px-5">
+      <View className="flex-1 px-5 w-full max-w-xl self-center pt-2">
         {loading && deposits.length === 0 ? (
-          <View className="flex-1 items-center justify-center py-12">
-            {isTransitionFinished && <AppActivityIndicator size="large"  />}
+          <View className="flex-1 items-center justify-center">
+            <AppActivityIndicator size="large" colorToken="--primary" />
           </View>
         ) : (
-          <ScrollView
-            showsVerticalScrollIndicator={false}
+          <LegendList
+            data={deposits}
+            keyExtractor={(item) => item.id}
+            renderItem={renderDepositCard}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -188,16 +180,16 @@ export default function DepositsScreen() {
               paddingBottom: insets.bottom + 40,
             }}
             className="flex-1 w-full"
-          >
-            {error && (
-              <View className="bg-destructive/10 p-3 rounded-xl mb-4">
-                <AppText className="text-sm font-semibold text-destructive text-start">
-                  {error}
-                </AppText>
-              </View>
-            )}
-
-            {deposits.length === 0 ? (
+            ListHeaderComponent={
+              error ? (
+                <View className="bg-destructive/10 p-3 rounded-xl mb-4">
+                  <AppText className="text-sm font-semibold text-destructive text-start">
+                    {error}
+                  </AppText>
+                </View>
+              ) : null
+            }
+            ListEmptyComponent={
               <View className="items-center justify-center py-16 px-6">
                 <View className="w-16 h-16 rounded-full bg-secondary/50 items-center justify-center mb-4">
                   <AppIcon name="linkUnit" size={28} color={mutedForeground} />
@@ -206,10 +198,8 @@ export default function DepositsScreen() {
                   {t("deposits.noDeposits")}
                 </AppText>
               </View>
-            ) : (
-              deposits.map(renderDepositCard)
-            )}
-          </ScrollView>
+            }
+          />
         )}
       </View>
     </View>

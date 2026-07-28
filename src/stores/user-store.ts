@@ -12,6 +12,7 @@ import { getStoredLanguagePreference, getSystemLanguage } from "@/lib/language-s
 import { translations } from "@/constants/translations";
 import { usePushNotificationStore } from "@/stores/push-notification-store";
 import { clearAuthenticatedQueryCache } from "@/lib/query-client";
+import { translateRuntime } from "@/lib/i18n-runtime";
 
 export type UserProfile = {
   name: string;
@@ -131,7 +132,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         profile,
         initialized: true,
       });
-    } catch (e: unknown) {
+    } catch {
       await clearLocalSession().catch(() => undefined);
       set({
         sessionId: null,
@@ -139,7 +140,9 @@ export const useUserStore = create<UserState>((set, get) => ({
         profile: null,
         initialized: true,
       });
-      useToastStore.getState().showToast("Initialization of user session failed", "error");
+      useToastStore
+        .getState()
+        .showToast(translateRuntime("errors.sessionInitializationFailed"), "error");
     }
   },
 
@@ -154,7 +157,9 @@ export const useUserStore = create<UserState>((set, get) => ({
       });
       const { accessToken, expiresIn, profile } = response;
       if (response.accountType !== accountType) {
-        throw new Error("The authenticated account type does not match the selected login.");
+        throw new Error(
+          translateRuntime("errors.accountTypeMismatch"),
+        );
       }
 
       clearAuthenticatedQueryCache();
@@ -206,7 +211,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       });
       const { accessToken, expiresIn, profile } = response;
       if (response.accountType !== "resident") {
-        throw new Error("Resident signup returned an invalid account type.");
+        throw new Error(translateRuntime("errors.accountTypeMismatch"));
       }
 
       clearAuthenticatedQueryCache();
