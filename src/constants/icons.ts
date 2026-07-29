@@ -55,6 +55,14 @@ export const appIcons = {
     ios: "arrow.up.left",
     android: "north_west",
   },
+  arrowRight: {
+    ios: "arrow.right",
+    android: "arrow_forward",
+  },
+  arrowLeft: {
+    ios: "arrow.left",
+    android: "arrow_back",
+  },
   linkUnit: {
     ios: "link",
     android: "link",

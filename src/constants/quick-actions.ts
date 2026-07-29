@@ -79,4 +79,11 @@ export const quickActions: QuickActionItem[] = [
     route: "/profile/services",
     ownerOnly: true,
   },
+  {
+    titleKey: "quickActions.ownerAllocations",
+    descriptionKey: "quickActions.ownerAllocationsDescription",
+    icon: "facility",
+    route: "/profile/facility-owners",
+    ownerOnly: true,
+  },
 ];

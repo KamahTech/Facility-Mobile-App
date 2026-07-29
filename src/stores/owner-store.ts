@@ -5,6 +5,7 @@ import {
   normalizeOwnerDetails,
   normalizeOwnerStatementResponse,
   normalizeTotalInvoiced,
+  normalizeFacilityOwnerPeriod,
 } from "@/lib/owner-normalization";
 import { type MobileUnitLinkItem } from "@/stores/unit-store";
 
@@ -183,7 +184,11 @@ export function useWorkerPropertyDetailsQuery(ticketId?: string, enabled = true)
 export function useFacilityOwnersQuery(enabled = true) {
   return useQuery<FacilityOwnerPeriod[]>({
     queryKey: ["facility-owners"],
-    queryFn: () => apiRequest<FacilityOwnerPeriod[]>("/resident/facility-owners", {}),
+    queryFn: async () => {
+      const data = await apiRequest<unknown>("/resident/facility-owners", {});
+      const list = Array.isArray(data) ? data : [];
+      return list.map((item) => normalizeFacilityOwnerPeriod(item && typeof item === "object" ? (item as Record<string, unknown>) : {})) as FacilityOwnerPeriod[];
+    },
     enabled: enabled,
   });
 }
@@ -191,7 +196,10 @@ export function useFacilityOwnersQuery(enabled = true) {
 export function useFacilityOwnerDetailsQuery(ownerId?: string, enabled = true) {
   return useQuery<FacilityOwnerPeriod>({
     queryKey: ["facility-owner-details", ownerId],
-    queryFn: () => apiRequest<FacilityOwnerPeriod>(`/resident/facility-owners/${ownerId}`, {}),
+    queryFn: async () => {
+      const data = await apiRequest<Record<string, unknown>>(`/resident/facility-owners/${ownerId}`, {});
+      return normalizeFacilityOwnerPeriod(data || {}) as FacilityOwnerPeriod;
+    },
     enabled: enabled && !!ownerId,
   });
 }

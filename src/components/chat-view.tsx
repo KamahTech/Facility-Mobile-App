@@ -280,10 +280,10 @@ export function ChatView({
             }}
             ListEmptyComponent={
               <View
-                className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 shadow-3xs"
-                style={{ transform: [{ scaleY: -1 }] }}
+                className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 shadow-3xs flex-col gap-3"
+                style={{ transform: [{ scaleY: -1 }, { scaleX: -1 }] }}
               >
-                <AppIcon name="tickets" size={32} colorToken="--muted-foreground" className="opacity-40 mb-3" />
+                <AppIcon name="tickets" size={32} colorToken="--muted-foreground" className="opacity-40" />
                 <AppText className="text-sm font-semibold text-muted-foreground text-center">
                   {t("tickets.noComments")}
                 </AppText>

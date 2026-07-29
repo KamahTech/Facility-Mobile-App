@@ -24,7 +24,7 @@ function AppIconComponent({
   ...props
 }: AppIconProps) {
   const tokenColor = useThemeToken(colorToken);
-  const icon = appIcons[name];
+  const icon = (name && appIcons[name]) ? appIcons[name] : (appIcons.facility ?? { ios: "questionmark", android: "help_outline" });
 
   return (
     <SymbolView

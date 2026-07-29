@@ -214,12 +214,36 @@ export function useMaintenanceRequestQuery(
   return useQuery<MaintenanceRequest>({
     queryKey: detailQueryKey,
     queryFn: async () => {
-      const route =
-        accountType === "resident"
-          ? `/resident/tickets/${requestId}`
-          : `/worker/tasks/${requestId}`;
-      const item = await apiRequest<MaintenanceRequest>(route, {});
-      return normalizeMaintenanceRequest(item);
+      // 1. Try to find in cached list query data first
+      const cachedList =
+        queryClient.getQueryData<InfiniteData<PaginatedRequests>>(listQueryKey);
+      const cachedItem = cachedList?.pages
+        .flatMap((page) => page.items)
+        .find((candidate) => String(candidate.id) === String(requestId));
+
+      if (cachedItem) {
+        return normalizeMaintenanceRequest(cachedItem);
+      }
+
+      // 2. Fetch list from backend and locate matching ticket
+      const listRoute =
+        accountType === "resident" ? "/resident/tickets" : "/worker/tasks";
+      const response = await apiRequest<PaginatedRequests | MaintenanceRequest[]>(
+        listRoute,
+        { limit: 100 },
+      );
+      const items = Array.isArray(response)
+        ? response
+        : response?.items || [];
+      const found = items.find(
+        (candidate) => String(candidate.id) === String(requestId),
+      );
+
+      if (found) {
+        return normalizeMaintenanceRequest(found);
+      }
+
+      throw new Error("Ticket not found");
     },
     initialData: () => {
       const cached =

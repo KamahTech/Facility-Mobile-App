@@ -59,3 +59,63 @@ export function normalizeOwnerDetails<T extends Record<string, unknown>>(data: T
     services,
   };
 }
+
+export function normalizeFacilityOwnerPeriod<T extends Record<string, unknown>>(data: T) {
+  const rawStartDate =
+    data.startDate ??
+    data.start_date ??
+    data.dateStart ??
+    data.date_start ??
+    data.dateFrom ??
+    data.date_from ??
+    data.from_date ??
+    data.fromDate;
+
+  const rawEndDate =
+    data.endDate ??
+    data.end_date ??
+    data.dateEnd ??
+    data.date_end ??
+    data.dateTo ??
+    data.date_to ??
+    data.to_date ??
+    data.toDate;
+
+  const startDate = typeof rawStartDate === "string" ? rawStartDate : "";
+  const endDate = typeof rawEndDate === "string" ? rawEndDate : "";
+
+  const durationDays =
+    typeof data.durationDays === "number"
+      ? data.durationDays
+      : typeof data.duration_days === "number"
+      ? data.duration_days
+      : typeof data.duration === "number"
+      ? data.duration
+      : undefined;
+
+  const rawAllocation = asRecord(data.residentAllocation || data.resident_allocation || data.allocation);
+  const totalAllocated = asNumber(rawAllocation.totalAllocated ?? rawAllocation.total_allocated ?? rawAllocation.allocated ?? data.allocatedServiceCosts ?? data.allocated_service_costs);
+  const paidAmount = asNumber(rawAllocation.paidAmount ?? rawAllocation.paid_amount ?? rawAllocation.paid);
+  const unpaidAmount = asNumber(rawAllocation.unpaidAmount ?? rawAllocation.unpaid_amount ?? rawAllocation.unpaid ?? Math.max(0, totalAllocated - paidAmount));
+
+  const residentAllocation = (totalAllocated > 0 || paidAmount > 0 || unpaidAmount > 0)
+    ? {
+        totalAllocated,
+        paidAmount,
+        unpaidAmount,
+      }
+    : undefined;
+
+  return {
+    ...data,
+    id: String(data.id || data.name || data.reference || Math.random()),
+    reference: String(data.reference || data.name || data.code || ""),
+    state: String(data.state || data.status || ""),
+    projectName: String(data.projectName || data.project_name || data.project || ""),
+    startDate,
+    endDate,
+    durationDays,
+    allocatedServiceCosts: typeof data.allocatedServiceCosts === "number" ? data.allocatedServiceCosts : typeof data.allocated_service_costs === "number" ? data.allocated_service_costs : undefined,
+    residentAllocation: residentAllocation || (data.residentAllocation as any),
+  };
+}
