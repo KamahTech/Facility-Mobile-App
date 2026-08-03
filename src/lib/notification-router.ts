@@ -15,6 +15,8 @@ export function handleNotificationNavigation(
   payload: NavigationPayload,
   accountType: "resident" | "worker" | null
 ) {
+  let assetId = (payload as any).assetId;
+  let inspectionId = (payload as any).inspectionId;
   let ticketId = payload.ticketId;
   let updateId = payload.updateId;
   let invoiceId = payload.invoiceId;
@@ -35,6 +37,10 @@ export function handleNotificationNavigation(
   if (parsedId) {
     if (parsedType === "ticket") {
       ticketId = ticketId || parsedId;
+    } else if (parsedType === "asset") {
+      assetId = assetId || parsedId;
+    } else if (parsedType === "inspection") {
+      inspectionId = inspectionId || parsedId;
     } else if (
       parsedType === "update" ||
       parsedType === "news" ||
@@ -49,7 +55,11 @@ export function handleNotificationNavigation(
   // Determine screen from type or parsed values if not explicitly provided
   if (!screen) {
     const checkType = (type || parsedType || "").toLowerCase();
-    if (checkType === "maintenance" || checkType === "task_assigned" || checkType === "inspection") {
+    if (checkType === "asset") {
+      screen = "asset";
+    } else if (checkType === "inspection" || checkType === "inspection_scheduled") {
+      screen = "inspection";
+    } else if (checkType === "maintenance" || checkType === "task_assigned") {
       screen = "ticket";
     } else if (checkType === "ticket_chat" || checkType === "comment") {
       screen = "ticket_chat";
@@ -66,7 +76,19 @@ export function handleNotificationNavigation(
 
   if (accountType === "worker") {
     // Worker routes
-    if (normalizedScreen === "ticket") {
+    if (normalizedScreen === "asset" && assetId) {
+      router.push({
+        pathname: "/(worker)/assets/details",
+        params: { id: assetId },
+      } as any);
+      return true;
+    } else if (normalizedScreen === "inspection" && inspectionId) {
+      router.push({
+        pathname: "/(worker)/assets/inspection-detail",
+        params: { id: inspectionId },
+      } as any);
+      return true;
+    } else if (normalizedScreen === "ticket") {
       if (ticketId) {
         router.push({
           pathname: "/(worker)/worker/details",

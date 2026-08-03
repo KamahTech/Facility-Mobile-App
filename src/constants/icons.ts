@@ -207,6 +207,58 @@ export const appIcons = {
     ios: "checkmark.circle.fill",
     android: "check_circle",
   },
+  inspection: {
+    ios: "checkmark.shield.fill",
+    android: "fact_check",
+  },
+  asset: {
+    ios: "cube.box.fill",
+    android: "inventory_2",
+  },
+  qrCode: {
+    ios: "qrcode.viewfinder",
+    android: "qr_code_scanner",
+  },
+  history: {
+    ios: "clock.arrow.circlepath",
+    android: "history",
+  },
+  document: {
+    ios: "doc.text.fill",
+    android: "description",
+  },
+  part: {
+    ios: "wrench.adjustable.fill",
+    android: "build",
+  },
+  fail: {
+    ios: "xmark.circle.fill",
+    android: "cancel",
+  },
+  warning: {
+    ios: "exclamationmark.triangle.fill",
+    android: "warning",
+  },
+  info: {
+    ios: "info.circle.fill",
+    android: "info",
+  },
+  notes: {
+    ios: "note.text",
+    android: "sticky_note_2",
+  },
+  flashOn: {
+    ios: "bolt.fill",
+    android: "flash_on",
+  },
+  flashOff: {
+    ios: "bolt.slash.fill",
+    android: "flash_off",
+  },
+  cameraFlip: {
+    ios: "camera.rotate.fill",
+    android: "flip_camera_ios",
+  },
 } as const;
 
 export type AppIconName = keyof typeof appIcons;

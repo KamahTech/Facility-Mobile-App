@@ -1,0 +1,1 @@
+/home/moxas3d/0xMyDirs/public/work/kamahtech/github-repos/erp-systems/odoo-19/odoo/custom_addons/facilities/facilities_modules/asset_inspection/README.md
