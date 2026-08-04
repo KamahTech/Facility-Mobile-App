@@ -733,94 +733,117 @@ export default function WorkerDetailsScreen() {
                   <AppActivityIndicator size="small" />
                 ) : propertyQuery.error ? (
                   <Text className="text-xs text-destructive text-start">{propertyQuery.error.message}</Text>
-                ) : propertyQuery.data ? (
-                  <View className="flex-col gap-3">
-                    {propertyQuery.data.propertyType && (
-                      <AppRow className="justify-between items-center gap-3">
-                        <Text
-                          className="text-sm text-muted-foreground text-start"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {t("ownerUnits.propertyType")}
-                        </Text>
-                        <Text
-                          className="text-sm font-semibold text-foreground text-end"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {propertyQuery.data.propertyType}
-                        </Text>
-                      </AppRow>
-                    )}
-                    {propertyQuery.data.constructionState && (
-                      <AppRow className="justify-between items-center gap-3">
-                        <Text
-                          className="text-sm text-muted-foreground text-start"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {t("ownerUnits.constructionState")}
-                        </Text>
-                        <View className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/20">
+                ) : (() => {
+                  const data = propertyQuery.data;
+                  const hasDetails =
+                    data &&
+                    (Boolean(data.propertyType) ||
+                      Boolean(data.constructionState) ||
+                      Boolean(data.deliveryState) ||
+                      Boolean(data.location) ||
+                      data.roomCount !== undefined ||
+                      data.bathroomCount !== undefined);
+
+                  if (!hasDetails) {
+                    return (
+                      <Text
+                        className="text-xs text-muted-foreground py-2 text-center"
+                        style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                      >
+                        {t("ownerUnits.noPropertyDetails" as any)}
+                      </Text>
+                    );
+                  }
+
+                  return (
+                    <View className="flex-col gap-3">
+                      {data.propertyType && (
+                        <AppRow className="justify-between items-center gap-3">
                           <Text
-                            className="text-[11px] font-bold text-blue-600 dark:text-blue-400 capitalize"
+                            className="text-sm text-muted-foreground text-start"
                             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
                           >
-                            {propertyQuery.data.constructionState.replace("_", " ")}
+                            {t("ownerUnits.propertyType")}
                           </Text>
-                        </View>
-                      </AppRow>
-                    )}
-                    {propertyQuery.data.deliveryState && (
-                      <AppRow className="justify-between items-center gap-3">
-                        <Text
-                          className="text-sm text-muted-foreground text-start"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {t("ownerUnits.deliveryState")}
-                        </Text>
-                        <View className={`px-2.5 py-0.5 rounded-full ${propertyQuery.data.deliveryState === "delivered" ? "bg-green-50 dark:bg-green-950/20" : "bg-amber-50 dark:bg-amber-950/20"}`}>
                           <Text
-                            className={`text-[11px] font-bold capitalize ${propertyQuery.data.deliveryState === "delivered" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+                            className="text-sm font-semibold text-foreground text-end"
                             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
                           >
-                            {propertyQuery.data.deliveryState.replace("_", " ")}
+                            {data.propertyType}
                           </Text>
-                        </View>
-                      </AppRow>
-                    )}
-                    {propertyQuery.data.location && (
-                      <AppRow className="justify-between items-center gap-3">
-                        <Text
-                          className="text-sm text-muted-foreground text-start"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {t("ownerUnits.location")}
-                        </Text>
-                        <Text
-                          className="text-sm font-semibold text-foreground text-end"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {propertyQuery.data.location}
-                        </Text>
-                      </AppRow>
-                    )}
-                    {(propertyQuery.data.roomCount !== undefined || propertyQuery.data.bathroomCount !== undefined) && (
-                      <AppRow className="justify-between items-center gap-3">
-                        <Text
-                          className="text-sm text-muted-foreground text-start"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {t("ownerUnits.rooms")} / {t("ownerUnits.bathrooms")}
-                        </Text>
-                        <Text
-                          className="text-sm font-semibold text-foreground text-end"
-                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {propertyQuery.data.roomCount ?? 0} / {propertyQuery.data.bathroomCount ?? 0}
-                        </Text>
-                      </AppRow>
-                    )}
-                  </View>
-                ) : null}
+                        </AppRow>
+                      )}
+                      {data.constructionState && (
+                        <AppRow className="justify-between items-center gap-3">
+                          <Text
+                            className="text-sm text-muted-foreground text-start"
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {t("ownerUnits.constructionState")}
+                          </Text>
+                          <View className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/20">
+                            <Text
+                              className="text-[11px] font-bold text-blue-600 dark:text-blue-400 capitalize"
+                              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                            >
+                              {data.constructionState.replace("_", " ")}
+                            </Text>
+                          </View>
+                        </AppRow>
+                      )}
+                      {data.deliveryState && (
+                        <AppRow className="justify-between items-center gap-3">
+                          <Text
+                            className="text-sm text-muted-foreground text-start"
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {t("ownerUnits.deliveryState")}
+                          </Text>
+                          <View className={`px-2.5 py-0.5 rounded-full ${data.deliveryState === "delivered" ? "bg-green-50 dark:bg-green-950/20" : "bg-amber-50 dark:bg-amber-950/20"}`}>
+                            <Text
+                              className={`text-[11px] font-bold capitalize ${data.deliveryState === "delivered" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+                              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                            >
+                              {data.deliveryState.replace("_", " ")}
+                            </Text>
+                          </View>
+                        </AppRow>
+                      )}
+                      {data.location && (
+                        <AppRow className="justify-between items-center gap-3">
+                          <Text
+                            className="text-sm text-muted-foreground text-start"
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {t("ownerUnits.location")}
+                          </Text>
+                          <Text
+                            className="text-sm font-semibold text-foreground text-end"
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {data.location}
+                          </Text>
+                        </AppRow>
+                      )}
+                      {(data.roomCount !== undefined || data.bathroomCount !== undefined) && (
+                        <AppRow className="justify-between items-center gap-3">
+                          <Text
+                            className="text-sm text-muted-foreground text-start"
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {t("ownerUnits.rooms")} / {t("ownerUnits.bathrooms")}
+                          </Text>
+                          <Text
+                            className="text-sm font-semibold text-foreground text-end"
+                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {data.roomCount ?? 0} / {data.bathroomCount ?? 0}
+                          </Text>
+                        </AppRow>
+                      )}
+                    </View>
+                  );
+                })()}
               </View>
             )}
           </View>

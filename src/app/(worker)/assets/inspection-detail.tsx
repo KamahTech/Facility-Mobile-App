@@ -15,6 +15,7 @@ import { useInspectionDetailQuery } from "@/hooks/use-asset-inspection";
 import { ChecklistItemCard } from "@/components/assets/checklist-item-card";
 import { InspectionPhotoPicker } from "@/components/assets/inspection-photo-picker";
 import { InspectionStateBadge } from "@/components/assets/inspection-state-badge";
+import { ScreenHeader } from "@/components/screen-header";
 import type { LocalPhotoItem } from "@/stores/asset-inspection-store";
 
 export default function ReadOnlyInspectionDetailScreen() {
@@ -62,26 +63,8 @@ export default function ReadOnlyInspectionDetailScreen() {
     >
       <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
 
-      {/* Header */}
-      <View className="px-5 py-3 flex-row items-center justify-between border-b border-border bg-card">
-        <Pressable onPress={() => router.back()} className="p-1 active:opacity-70">
-          <AppIcon name={isRTL ? "arrowRight" : "arrowLeft"} size={24} color={mutedForeground} />
-        </Pressable>
-        <View className="flex-1 items-center mx-2">
-          <Text
-            className="text-base font-bold text-foreground text-center"
-            numberOfLines={1}
-            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-          >
-            {t("inspection.detailsTitle")}
-          </Text>
-          <Text className="text-xs text-muted-foreground">{inspection?.name}</Text>
-        </View>
-        <InspectionStateBadge
-          state={inspection?.state || "submitted"}
-          result={inspection?.result}
-        />
-      </View>
+      {/* Reusable Screen Header */}
+      <ScreenHeader title={t("inspection.detailsTitle")} onBack={() => router.back()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -91,32 +74,30 @@ export default function ReadOnlyInspectionDetailScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 16 }}
         className="flex-1"
       >
-        {/* Corrective Maintenance Ticket Created Banner */}
-        {Boolean(ticketId) && String(ticketId) !== "false" ? (
+        {/* Urgent/Failed Banner Action */}
+        {ticketId ? (
           <View className="bg-destructive/10 border border-destructive/20 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
-            <View className="flex-1 me-3 flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-xl bg-destructive/15 items-center justify-center">
-                <AppIcon name="warning" size={20} color="#EF4444" />
-              </View>
-              <View className="flex-1">
-                <Text
-                  className="text-sm font-bold text-destructive"
-                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                >
-                  {t("inspection.ticketCreated")}
-                </Text>
-                <Text className="text-xs font-medium text-destructive/90 mt-0.5">
-                  {t("inspection.ticketId").replace("{{id}}", String(ticketId))}
-                </Text>
-              </View>
+            <View className="flex-1 me-3">
+              <Text
+                className="text-xs font-semibold text-destructive uppercase tracking-wider mb-0.5"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("inspection.itemResult.fail")}
+              </Text>
+              <Text
+                className="text-xs text-muted-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                Maintenance request generated
+              </Text>
             </View>
 
             <Pressable
               onPress={() =>
                 router.push({
                   pathname: "/(worker)/worker/details",
-                  params: { id: String(ticketId) },
-                } as Href)
+                  params: { id: ticketId },
+                } as any)
               }
               className="px-3.5 py-2 rounded-xl bg-destructive active:opacity-90"
             >
@@ -132,14 +113,21 @@ export default function ReadOnlyInspectionDetailScreen() {
 
         {/* Asset Header Info */}
         <View className="bg-card border border-border rounded-2xl p-4 mb-4 shadow-sm">
+          <View className="flex-row items-center justify-between mb-1">
+            <Text
+              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1 me-2"
+              numberOfLines={1}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {inspection?.name || t("assets.detailsTitle")}
+            </Text>
+            <InspectionStateBadge
+              state={inspection?.state || "submitted"}
+              result={inspection?.result}
+            />
+          </View>
           <Text
-            className="text-xs font-semibold text-muted-foreground uppercase"
-            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-          >
-            {t("assets.detailsTitle")}
-          </Text>
-          <Text
-            className="text-lg font-bold text-foreground mt-0.5 mb-2"
+            className="text-lg font-bold text-foreground mb-2"
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
             {inspection?.assetName}

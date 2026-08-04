@@ -16,7 +16,7 @@ export function MaintenanceHistoryCard({ item }: MaintenanceHistoryCardProps) {
   const isCorrective = item.type === "corrective";
 
   return (
-    <View className="bg-card border border-border rounded-xl p-3 mb-2">
+    <View className="bg-card border border-border rounded-2xl p-4 mb-3 shadow-sm">
       <View className="flex-row items-center justify-between mb-1">
         <View className="flex-row items-center gap-1.5 flex-1 me-2">
           <AppIcon

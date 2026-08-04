@@ -254,7 +254,7 @@ export default function WorkerHomeScreen() {
           ListHeaderComponent={renderListHeader}
           ListEmptyComponent={renderEmptyOrLoading}
           renderItem={({ item }: { item: any }) => <WorkerTaskCard task={item} />}
-          estimatedItemSize={140}
+          estimatedItemSize={90}
           recycleItems={true}
           showsVerticalScrollIndicator={false}
           onScroll={scrollHandler}

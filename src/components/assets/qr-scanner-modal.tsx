@@ -93,14 +93,14 @@ export function QrScannerModal({ isPresented, onDismiss }: QrScannerModalProps) 
             <View className="w-full mb-4">
               <LiveQrScannerView onScannedAsset={handleNavigateToAsset} onClose={onDismiss} />
 
-              <View className="flex-row gap-2 mt-3">
+              <View className="flex-row gap-2.5 mt-3">
                 <Pressable
                   onPress={handlePickFromLibrary}
-                  className="flex-1 bg-secondary border border-border rounded-xl p-3 flex-row items-center justify-center gap-2 active:opacity-80"
+                  className="flex-1 bg-secondary border border-border rounded-xl py-3.5 px-4 flex-row items-center justify-center gap-2 active:opacity-80"
                 >
-                  <AppIcon name="gallery" size={18} color={primaryColor} />
+                  <AppIcon name="gallery" size={20} color={primaryColor} />
                   <Text
-                    className="text-xs font-semibold text-foreground"
+                    className="text-sm font-semibold text-foreground"
                     style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
                   >
                     {t("worker.mediaSourceLibrary")}
@@ -109,11 +109,11 @@ export function QrScannerModal({ isPresented, onDismiss }: QrScannerModalProps) 
 
                 <Pressable
                   onPress={() => setScanMode("manual")}
-                  className="flex-1 bg-secondary border border-border rounded-xl p-3 flex-row items-center justify-center gap-2 active:opacity-80"
+                  className="flex-1 bg-secondary border border-border rounded-xl py-3.5 px-4 flex-row items-center justify-center gap-2 active:opacity-80"
                 >
-                  <AppIcon name="notes" size={18} color={primaryColor} />
+                  <AppIcon name="notes" size={20} color={primaryColor} />
                   <Text
-                    className="text-xs font-semibold text-foreground"
+                    className="text-sm font-semibold text-foreground"
                     style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
                   >
                     {t("assets.code")}
@@ -135,7 +135,7 @@ export function QrScannerModal({ isPresented, onDismiss }: QrScannerModalProps) 
                   onChangeText={setInputCode}
                   placeholder="e.g. 18 or https://.../asset_inspection/asset/18"
                   placeholderTextColor={mutedForeground}
-                  className="bg-background border border-border rounded-xl px-3 py-3 text-sm text-foreground"
+                  className="bg-background border border-border rounded-xl px-4 h-[52px] text-base text-foreground"
                   style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -145,11 +145,11 @@ export function QrScannerModal({ isPresented, onDismiss }: QrScannerModalProps) 
 
               <Pressable
                 onPress={() => setScanMode("live")}
-                className="bg-secondary border border-border rounded-xl p-3 flex-row items-center justify-center gap-2 mb-3 active:opacity-80"
+                className="bg-secondary border border-border rounded-xl py-3.5 px-4 flex-row items-center justify-center gap-2 mb-3 active:opacity-80"
               >
-                <AppIcon name="camera" size={18} color={primaryColor} />
+                <AppIcon name="camera" size={20} color={primaryColor} />
                 <Text
-                  className="text-xs font-semibold text-foreground"
+                  className="text-sm font-semibold text-foreground"
                   style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
                 >
                   {t("assets.liveScanner")}
@@ -162,10 +162,10 @@ export function QrScannerModal({ isPresented, onDismiss }: QrScannerModalProps) 
           <View className="flex-row gap-3">
             <Pressable
               onPress={onDismiss}
-              className="flex-1 py-3 rounded-xl bg-secondary items-center justify-center active:opacity-80"
+              className="flex-1 py-3.5 rounded-xl bg-secondary items-center justify-center active:opacity-80"
             >
               <Text
-                className="text-sm font-semibold text-foreground"
+                className="text-sm font-bold text-foreground"
                 style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
                 {t("actions.close")}
@@ -175,7 +175,7 @@ export function QrScannerModal({ isPresented, onDismiss }: QrScannerModalProps) 
               <Pressable
                 onPress={handleSubmitInput}
                 disabled={!inputCode.trim()}
-                className={`flex-1 py-3 rounded-xl bg-primary items-center justify-center ${
+                className={`flex-1 py-3.5 rounded-xl bg-primary items-center justify-center ${
                   !inputCode.trim() ? "opacity-50" : "active:opacity-90"
                 }`}
               >

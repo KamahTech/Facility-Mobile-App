@@ -7,6 +7,7 @@ import {
   ScrollView,
   RefreshControl,
   Modal,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { router } from "@/lib/navigation";
@@ -29,6 +30,8 @@ import { AssetDocumentCard } from "@/components/assets/asset-document-card";
 import { MaintenanceHistoryCard } from "@/components/assets/maintenance-history-card";
 import { SparePartCard } from "@/components/assets/spare-part-card";
 import type { ChecklistTemplateSummary, CompactInspection } from "@/lib/api/asset-inspection";
+
+import { ScreenHeader } from "@/components/screen-header";
 
 export default function AssetDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -63,7 +66,7 @@ export default function AssetDetailScreen() {
       error?.message?.toLowerCase().includes("denied") ||
       error?.message?.toLowerCase().includes("unassigned"));
 
-  const handleStartInspection = async (templateId?: string) => {
+  const performStartInspection = async (templateId?: string) => {
     if (!assetId || startMutation.isPending) return;
 
     try {
@@ -82,6 +85,23 @@ export default function AssetDetailScreen() {
     } catch {
       // Error handled by apiRequest / query toast
     }
+  };
+
+  const handleStartInspection = (templateId?: string) => {
+    if (!assetId || startMutation.isPending) return;
+
+    Alert.alert(
+      t("assets.confirmStartTitle" as any),
+      t("assets.confirmStartMessage" as any),
+      [
+        { text: t("actions.cancel"), style: "cancel" },
+        {
+          text: t("assets.startInspection" as any),
+          style: "default",
+          onPress: () => performStartInspection(templateId),
+        },
+      ]
+    );
   };
 
   const handleStartPress = () => {
@@ -128,17 +148,47 @@ export default function AssetDetailScreen() {
                 params: { id: item.id },
               } as any)
             }
-            className="bg-card border border-border rounded-xl p-3 mb-2 flex-row items-center justify-between active:opacity-80"
+            className="bg-card border border-border rounded-2xl p-4 mb-3 active:opacity-90 shadow-sm"
           >
-            <View className="flex-1 me-2">
-              <Text className="text-xs font-semibold text-muted-foreground mb-0.5">
+            {/* Top Row: Name & Badge */}
+            <View className="flex-row items-center justify-between mb-1.5">
+              <Text
+                className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1 me-2"
+                numberOfLines={1}
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
                 {item.name}
               </Text>
-              <Text className="text-xs text-muted-foreground">
-                {item.inspectionDate ? String(item.inspectionDate).split(" ")[0] : ""}
-              </Text>
+              <InspectionStateBadge state={item.state} result={item.result} />
             </View>
-            <InspectionStateBadge state={item.state} result={item.result} />
+
+            {/* Main Asset Title */}
+            <Text
+              className="text-base font-bold text-foreground mb-2"
+              numberOfLines={1}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {item.assetName || asset?.name || ""}
+            </Text>
+
+            {/* Footer Row: Date & Arrow */}
+            <View className="flex-row items-center justify-between pt-1">
+              <View className="flex-row items-center gap-1.5">
+                <AppIcon name="history" size={14} color={mutedForeground} />
+                <Text
+                  className="text-xs text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {item.inspectionDate ? String(item.inspectionDate).split(" ")[0] : "--"}
+                </Text>
+              </View>
+
+              <AppIcon
+                name={isRTL ? "chevronLeft" : "chevronRight"}
+                size={16}
+                color={mutedForeground}
+              />
+            </View>
           </Pressable>
         ));
 
@@ -203,11 +253,11 @@ export default function AssetDetailScreen() {
             key={tpl.id}
             onPress={() => handleStartInspection(tpl.id)}
             disabled={startMutation.isPending}
-            className="bg-card border border-border rounded-xl p-3.5 mb-2 flex-row items-center justify-between active:opacity-80"
+            className="bg-card border border-border rounded-2xl p-4 mb-3 flex-row items-center justify-between active:opacity-90 shadow-sm"
           >
-            <View className="flex-1 me-2">
+            <View className="flex-1 me-3">
               <Text
-                className="text-sm font-bold text-foreground"
+                className="text-base font-bold text-foreground"
                 style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
                 {tpl.name}
@@ -277,19 +327,7 @@ export default function AssetDetailScreen() {
       <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
 
       {/* Top Header Navigation */}
-      <View className="px-5 py-3 flex-row items-center justify-between border-b border-border">
-        <Pressable onPress={() => router.back()} className="p-1 active:opacity-70">
-          <AppIcon name={isRTL ? "arrowRight" : "arrowLeft"} size={24} color={mutedForeground} />
-        </Pressable>
-        <Text
-          className="text-base font-bold text-foreground flex-1 text-center mx-2"
-          numberOfLines={1}
-          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-        >
-          {t("assets.detailsTitle")}
-        </Text>
-        <View className="w-6" />
-      </View>
+      <ScreenHeader title={t("assets.detailsTitle")} onBack={() => router.back()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -324,35 +362,85 @@ export default function AssetDetailScreen() {
             </Text>
           ) : null}
 
-          {/* Details Grid */}
-          <View className="bg-secondary/40 rounded-xl p-3 flex-col gap-2">
-            <View className="flex-row justify-between">
-              <Text className="text-xs text-muted-foreground">{t("assets.type")}:</Text>
-              <Text className="text-xs font-semibold text-foreground">{asset.typeName || "--"}</Text>
+          {/* Details List */}
+          <View className="pt-1 flex-col gap-2.5">
+            <View className="flex-row items-center justify-between">
+              <Text
+                className="text-xs text-muted-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("assets.type")}
+              </Text>
+              <Text
+                className="text-xs font-semibold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {asset.typeName || "--"}
+              </Text>
             </View>
-            <View className="flex-row justify-between">
-              <Text className="text-xs text-muted-foreground">{t("assets.manufacturer")}:</Text>
-              <Text className="text-xs font-semibold text-foreground">{asset.manufacturer || "--"}</Text>
+            <View className="flex-row items-center justify-between">
+              <Text
+                className="text-xs text-muted-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("assets.manufacturer")}
+              </Text>
+              <Text
+                className="text-xs font-semibold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {asset.manufacturer || "--"}
+              </Text>
             </View>
-            <View className="flex-row justify-between">
-              <Text className="text-xs text-muted-foreground">{t("assets.model")}:</Text>
-              <Text className="text-xs font-semibold text-foreground">{asset.model || "--"}</Text>
+            <View className="flex-row items-center justify-between">
+              <Text
+                className="text-xs text-muted-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("assets.model")}
+              </Text>
+              <Text
+                className="text-xs font-semibold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {asset.model || "--"}
+              </Text>
             </View>
-            <View className="flex-row justify-between">
-              <Text className="text-xs text-muted-foreground">{t("assets.serialNumber")}:</Text>
-              <Text className="text-xs font-semibold text-foreground">{asset.serialNumber || "--"}</Text>
+            <View className="flex-row items-center justify-between">
+              <Text
+                className="text-xs text-muted-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {t("assets.serialNumber")}
+              </Text>
+              <Text
+                className="text-xs font-semibold text-foreground"
+                style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+              >
+                {asset.serialNumber || "--"}
+              </Text>
             </View>
             {asset.failureRate ? (
-              <View className="flex-row justify-between">
-                <Text className="text-xs text-muted-foreground">{t("assets.failureRate")}:</Text>
-                <Text className="text-xs font-bold text-destructive">{asset.failureRate}%</Text>
+              <View className="flex-row items-center justify-between">
+                <Text
+                  className="text-xs text-muted-foreground"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {t("assets.failureRate")}
+                </Text>
+                <Text
+                  className="text-xs font-bold text-destructive"
+                  style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                >
+                  {asset.failureRate}%
+                </Text>
               </View>
             ) : null}
           </View>
         </View>
 
         {/* Start Inspection Action Banner */}
-        <View className="bg-primary/10 border border-primary/20 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
+        <View className="bg-card border border-border rounded-2xl p-4 mb-4 flex-row items-center justify-between shadow-sm">
           <View className="flex-1 me-3">
             <Text
               className="text-sm font-bold text-foreground mb-0.5"
@@ -373,7 +461,7 @@ export default function AssetDetailScreen() {
           <Pressable
             onPress={handleStartPress}
             disabled={startMutation.isPending}
-            className={`px-4 py-2.5 rounded-xl bg-primary flex-row items-center gap-1.5 ${
+            className={`px-4 py-3 rounded-xl bg-primary flex-row items-center gap-2 ${
               startMutation.isPending ? "opacity-60" : "active:opacity-90"
             }`}
           >
@@ -381,9 +469,9 @@ export default function AssetDetailScreen() {
               <AppActivityIndicator size="small" />
             ) : (
               <>
-                <AppIcon name="add" size={16} color="#FFFFFF" />
+                <AppIcon name="add" size={18} colorToken="--primary-foreground" />
                 <Text
-                  className="text-xs font-bold text-primary-foreground"
+                  className="text-sm font-bold text-primary-foreground"
                   style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
                 >
                   {t("assets.startInspection")}
@@ -397,8 +485,8 @@ export default function AssetDetailScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="mb-3"
-          contentContainerStyle={{ gap: 8 }}
+          className="mb-3 -mx-5"
+          contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
         >
           {(
             [
@@ -414,7 +502,7 @@ export default function AssetDetailScreen() {
               <Pressable
                 key={tab.key}
                 onPress={() => setActiveHistoryTab(tab.key)}
-                className={`px-3 py-2 rounded-xl border flex-row items-center gap-1.5 ${
+                className={`px-4 py-2.5 rounded-full border flex-row items-center gap-2 ${
                   isSelected ? "bg-primary border-primary" : "bg-card border-border"
                 }`}
               >
@@ -426,21 +514,25 @@ export default function AssetDetailScreen() {
                 >
                   {t(tab.labelKey as any)}
                 </Text>
-                {tab.count > 0 && (
-                  <View
-                    className={`px-1.5 py-0.2 rounded-full ${
-                      isSelected ? "bg-white/20" : "bg-secondary"
+                <View
+                  className={isSelected ? "bg-primary-foreground" : "bg-primary/10"}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Text
+                    className={`text-[11px] font-bold ${
+                      isSelected ? "text-primary" : "text-primary"
                     }`}
                   >
-                    <Text
-                      className={`text-[10px] font-bold ${
-                        isSelected ? "text-primary-foreground" : "text-muted-foreground"
-                      }`}
-                    >
-                      {tab.count}
-                    </Text>
-                  </View>
-                )}
+                    {tab.count}
+                  </Text>
+                </View>
               </Pressable>
             );
           })}

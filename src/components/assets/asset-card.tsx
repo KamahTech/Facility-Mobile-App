@@ -74,7 +74,7 @@ export function AssetCard({ asset }: AssetCardProps) {
       </View>
 
       {/* Footer Info: Last Inspection & Failure Rate */}
-      <View className="pt-2 border-t border-border/60 flex-row items-center justify-between">
+      <View className="pt-2 flex-row items-center justify-between">
         <View className="flex-row items-center gap-1">
           <AppIcon name="history" size={14} color={mutedForeground} />
           <Text

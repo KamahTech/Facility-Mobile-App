@@ -30,6 +30,7 @@ import { useAssetInspectionStore } from "@/stores/asset-inspection-store";
 import { ChecklistItemCard } from "@/components/assets/checklist-item-card";
 import { InspectionPhotoPicker } from "@/components/assets/inspection-photo-picker";
 import { InspectionStateBadge } from "@/components/assets/inspection-state-badge";
+import { ScreenHeader } from "@/components/screen-header";
 import type { ChecklistItemResult, FinalInspectionResult } from "@/lib/api/asset-inspection";
 
 export default function InspectionEditorScreen() {
@@ -171,23 +172,8 @@ export default function InspectionEditorScreen() {
     >
       <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
 
-      {/* Top Header */}
-      <View className="px-5 py-3 flex-row items-center justify-between border-b border-border bg-card">
-        <Pressable onPress={() => router.back()} className="p-1 active:opacity-70">
-          <AppIcon name={isRTL ? "arrowRight" : "arrowLeft"} size={24} color={mutedForeground} />
-        </Pressable>
-        <View className="flex-1 items-center mx-2">
-          <Text
-            className="text-base font-bold text-foreground text-center"
-            numberOfLines={1}
-            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-          >
-            {t("inspection.editorTitle")}
-          </Text>
-          <Text className="text-xs text-muted-foreground">{inspection?.name}</Text>
-        </View>
-        <InspectionStateBadge state={inspection?.state || "in_progress"} />
-      </View>
+      {/* Reusable Screen Header */}
+      <ScreenHeader title={t("inspection.editorTitle")} onBack={() => router.back()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -197,14 +183,18 @@ export default function InspectionEditorScreen() {
       >
         {/* Asset Header Info */}
         <View className="bg-card border border-border rounded-2xl p-4 mb-4 shadow-sm">
+          <View className="flex-row items-center justify-between mb-1">
+            <Text
+              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1 me-2"
+              numberOfLines={1}
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {inspection?.name || t("assets.detailsTitle")}
+            </Text>
+            <InspectionStateBadge state={inspection?.state || "in_progress"} result={inspection?.result} />
+          </View>
           <Text
-            className="text-xs font-semibold text-muted-foreground uppercase"
-            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-          >
-            {t("assets.detailsTitle")}
-          </Text>
-          <Text
-            className="text-lg font-bold text-foreground mt-0.5"
+            className="text-lg font-bold text-foreground"
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
             {inspection?.assetName}
@@ -265,13 +255,15 @@ export default function InspectionEditorScreen() {
             placeholder={t("inspection.overallNotesPlaceholder")}
             placeholderTextColor={mutedForeground}
             multiline
+            numberOfLines={4}
             maxLength={10000}
             style={{
               writingDirection: isRTL ? "rtl" : "ltr",
               color: foreground,
               borderColor: border,
+              textAlignVertical: "top",
             }}
-            className="bg-background border rounded-xl p-3 text-sm min-h-[90px]"
+            className="bg-background border rounded-xl p-3.5 text-sm min-h-[110px]"
           />
         </View>
 

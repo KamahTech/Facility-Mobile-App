@@ -120,7 +120,7 @@ export function ChecklistItemCard({
             >
               <AppIcon name="notes" size={14} color={mutedForeground} />
               <Text className="text-xs font-semibold text-primary">
-                + {t("inspection.lineNotesPlaceholder")}
+                {t("inspection.lineNotesPlaceholder")}
               </Text>
             </Pressable>
           ) : (
@@ -130,13 +130,15 @@ export function ChecklistItemCard({
               placeholder={t("inspection.lineNotesPlaceholder")}
               placeholderTextColor={mutedForeground}
               multiline
+              numberOfLines={2}
               maxLength={1000}
               style={{
                 writingDirection: isRTL ? "rtl" : "ltr",
                 color: foreground,
                 borderColor: border,
+                textAlignVertical: "top",
               }}
-              className="bg-background border rounded-xl p-2.5 text-xs mt-1 min-h-[44px]"
+              className="bg-background border rounded-xl p-2.5 text-xs mt-1 min-h-[56px]"
             />
           )}
         </View>

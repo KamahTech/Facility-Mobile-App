@@ -114,7 +114,7 @@ export function LiveQrScannerView({ onScannedAsset, onClose }: LiveQrScannerView
   const cornerStyle = { borderColor: String(primaryColor) };
 
   return (
-    <View className="relative w-full h-[280px] rounded-2xl overflow-hidden bg-black">
+    <View className="relative w-full h-[320px] rounded-2xl overflow-hidden bg-black">
       <CameraView
         style={StyleSheet.absoluteFill}
         className="w-full h-full absolute inset-0"
@@ -155,13 +155,13 @@ export function LiveQrScannerView({ onScannedAsset, onClose }: LiveQrScannerView
         {/* Torch Toggle */}
         <Pressable
           onPress={() => setTorch((prev) => !prev)}
-          className={`w-9 h-9 rounded-full items-center justify-center border ${
+          className={`w-11 h-11 rounded-full items-center justify-center border ${
             torch ? "bg-primary border-primary" : "bg-black/60 border-white/20"
           } active:opacity-80`}
         >
           <AppIcon
             name={torch ? "flashOn" : "flashOff"}
-            size={18}
+            size={20}
             color="#ffffff"
           />
         </Pressable>
@@ -169,9 +169,9 @@ export function LiveQrScannerView({ onScannedAsset, onClose }: LiveQrScannerView
         {/* Camera Flip */}
         <Pressable
           onPress={() => setFacing((prev) => (prev === "back" ? "front" : "back"))}
-          className="w-9 h-9 rounded-full bg-black/60 border border-white/20 items-center justify-center active:opacity-80"
+          className="w-11 h-11 rounded-full bg-black/60 border border-white/20 items-center justify-center active:opacity-80"
         >
-          <AppIcon name="cameraFlip" size={18} color="#ffffff" />
+          <AppIcon name="cameraFlip" size={20} color="#ffffff" />
         </Pressable>
       </View>
     </View>

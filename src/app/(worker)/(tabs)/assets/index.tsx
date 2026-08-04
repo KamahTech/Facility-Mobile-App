@@ -182,7 +182,7 @@ export default function WorkerAssetsScreen() {
         {item.assetName}
       </Text>
 
-      <View className="flex-row items-center justify-between text-xs mt-2 pt-2 border-t border-border/60">
+      <View className="flex-row items-center justify-between text-xs mt-2 pt-2">
         <Text className="text-xs text-muted-foreground">
           {item.inspectionDate ? String(item.inspectionDate).split(" ")[0] : ""}
         </Text>
@@ -219,11 +219,11 @@ export default function WorkerAssetsScreen() {
 
         <Pressable
           onPress={() => setShowQrModal(true)}
-          className="flex-row items-center gap-1.5 bg-primary/10 border border-primary/20 px-3 py-2 rounded-xl active:opacity-80"
+          className="flex-row items-center gap-1.5 bg-primary/10 border border-primary/20 px-4 py-2.5 rounded-xl active:opacity-80"
         >
           <AppIcon name="qrCode" size={18} color={primaryColor} />
           <Text
-            className="text-xs font-bold text-primary"
+            className="text-sm font-bold text-primary"
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
             {t("assets.scanQr")}
@@ -235,17 +235,17 @@ export default function WorkerAssetsScreen() {
       <View className="flex-row gap-2 mb-3">
         <Pressable
           onPress={() => setActiveTab("assigned_assets")}
-          className={`flex-1 py-2.5 rounded-full items-center justify-center border ${
+          className={`flex-1 py-3 px-4 rounded-full items-center justify-center border ${
             activeTab === "assigned_assets"
               ? "bg-primary border-primary"
               : "bg-card border-border"
           }`}
         >
           <Text
-            className={`text-xs font-semibold ${
+            className={`text-sm ${
               activeTab === "assigned_assets"
                 ? "text-primary-foreground font-bold"
-                : "text-muted-foreground"
+                : "text-muted-foreground font-semibold"
             }`}
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
@@ -255,17 +255,17 @@ export default function WorkerAssetsScreen() {
 
         <Pressable
           onPress={() => setActiveTab("my_inspections")}
-          className={`flex-1 py-2.5 rounded-full items-center justify-center border ${
+          className={`flex-1 py-3 px-4 rounded-full items-center justify-center border ${
             activeTab === "my_inspections"
               ? "bg-primary border-primary"
               : "bg-card border-border"
           }`}
         >
           <Text
-            className={`text-xs font-semibold ${
+            className={`text-sm ${
               activeTab === "my_inspections"
                 ? "text-primary-foreground font-bold"
-                : "text-muted-foreground"
+                : "text-muted-foreground font-semibold"
             }`}
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
@@ -275,19 +275,19 @@ export default function WorkerAssetsScreen() {
       </View>
 
       {/* Search Input */}
-      <View className="bg-card border border-border rounded-xl px-3 py-2 flex-row items-center gap-2 mb-3">
-        <AppIcon name="search" size={16} color={mutedColor} />
+      <View className="bg-card border border-border rounded-2xl h-[52px] px-4 flex-row items-center gap-2.5 mb-3">
+        <AppIcon name="search" size={20} color={mutedColor} />
         <TextInput
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholder={t("assets.searchPlaceholder")}
           placeholderTextColor={mutedColor}
-          className="flex-1 text-xs text-foreground py-0.5"
+          className="flex-1 text-base text-foreground h-full py-0"
           style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
         />
         {searchQuery ? (
-          <Pressable onPress={() => setSearchQuery("")}>
-            <AppIcon name="close" size={16} color={mutedColor} />
+          <Pressable onPress={() => setSearchQuery("")} className="p-1 active:opacity-70">
+            <AppIcon name="close" size={18} color={mutedColor} />
           </Pressable>
         ) : null}
       </View>
@@ -356,7 +356,7 @@ export default function WorkerAssetsScreen() {
               ? ({ item }: { item: any }) => <AssetCard asset={item} />
               : renderInspectionCard
           }
-          estimatedItemSize={140}
+          estimatedItemSize={90}
           recycleItems={true}
           showsVerticalScrollIndicator={false}
           onScroll={scrollHandler}
