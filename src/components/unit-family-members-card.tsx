@@ -148,90 +148,90 @@ export function UnitFamilyMembersCard({ unitId }: UnitFamilyMembersCardProps) {
           {t("familyTenant.noFamily")}
         </Text>
       ) : (
-        <View className="flex-col gap-4">
-          {familyMembers.map((member) => {
+        <View className="flex-col">
+          {familyMembers.map((member, index) => {
             const status = getStatusStyle(member.approvalStatus);
             return (
-              <View
-                key={member.id}
-                className="w-full bg-muted/20 dark:bg-zinc-900/30 border border-border/10 rounded-2xl p-4 flex-col gap-3 shadow-2xs"
-              >
-                <AppRow className="justify-between items-start">
-                  <AppRow className="items-center gap-3 flex-1 min-w-0">
-                    {/* Avatar Circle with Name Initial */}
-                    <View className="w-11 h-11 rounded-full bg-primary/10 items-center justify-center border border-primary/20">
-                      <Text className="text-base font-extrabold text-primary uppercase">
-                        {member.residentName.trim().charAt(0) || "?"}
-                      </Text>
-                    </View>
+              <React.Fragment key={member.id}>
+                {index > 0 && <View className="h-[1px] bg-border/30 w-full my-3" />}
+                <View className="w-full flex-col gap-3 py-1">
+                  <AppRow className="justify-between items-start">
+                    <AppRow className="items-center gap-3 flex-1 min-w-0">
+                      {/* Avatar Circle with Name Initial */}
+                      <View className="w-11 h-11 rounded-full bg-primary/10 items-center justify-center border border-primary/20">
+                        <Text className="text-base font-extrabold text-primary uppercase">
+                          {member.residentName.trim().charAt(0) || "?"}
+                        </Text>
+                      </View>
 
-                    <View className="flex-col flex-1 min-w-0">
+                      <View className="flex-col flex-1 min-w-0">
+                        <Text
+                          className="text-sm font-bold text-foreground"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {member.residentName}
+                        </Text>
+                        <Text
+                          className="text-xs text-muted-foreground mt-0.5"
+                          style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {member.residentEmail}
+                        </Text>
+                        {member.contactNumber ? (
+                          <AppRow className="items-center gap-1 mt-1">
+                            <AppIcon name="phone" size={12} colorToken="--muted-foreground" />
+                            <Text
+                              className="text-xs text-muted-foreground"
+                              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+                            >
+                              {member.contactNumber}
+                            </Text>
+                          </AppRow>
+                        ) : null}
+                      </View>
+                    </AppRow>
+
+                    <View className={`px-2.5 py-0.5 rounded-full ${status.bg}`}>
                       <Text
-                        className="text-sm font-bold text-foreground"
+                        className={`text-[10px] font-bold uppercase ${status.text}`}
                         style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
                       >
-                        {member.residentName}
+                        {t(`connectUnit.${member.approvalStatus.toLowerCase()}` as any) === `connectUnit.${member.approvalStatus.toLowerCase()}` 
+                          ? member.approvalStatus.toUpperCase() 
+                          : t(`connectUnit.${member.approvalStatus.toLowerCase()}` as any)}
                       </Text>
-                      <Text
-                        className="text-xs text-muted-foreground mt-0.5"
-                        style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                      >
-                        {member.residentEmail}
-                      </Text>
-                      {member.contactNumber ? (
-                        <AppRow className="items-center gap-1 mt-1">
-                          <AppIcon name="phone" size={12} colorToken="--muted-foreground" />
-                          <Text
-                            className="text-xs text-muted-foreground"
-                            style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                          >
-                            {member.contactNumber}
-                          </Text>
-                        </AppRow>
-                      ) : null}
                     </View>
                   </AppRow>
 
-                  <View className={`px-2.5 py-0.5 rounded-full ${status.bg}`}>
-                    <Text
-                      className={`text-[10px] font-bold uppercase ${status.text}`}
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {t(`connectUnit.${member.approvalStatus.toLowerCase()}` as any) === `connectUnit.${member.approvalStatus.toLowerCase()}` 
-                        ? member.approvalStatus.toUpperCase() 
-                        : t(`connectUnit.${member.approvalStatus.toLowerCase()}` as any)}
-                    </Text>
-                  </View>
-                </AppRow>
+                  {member.approvalStatus === "pending" && (
+                    <AppRow className="gap-2.5 mt-2 justify-end w-full">
+                      <Pressable
+                        onPress={() => setRejectingLinkId(member.id)}
+                        accessibilityLabel={t("familyTenant.reject")}
+                        accessibilityRole="button"
+                        className="px-3.5 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/5 active:bg-rose-500/10 active:opacity-90 flex-row items-center gap-1.5"
+                      >
+                        <AppIcon name="close" size={14} colorToken="--destructive" />
+                        <Text className="text-xs font-bold text-destructive">
+                          {t("familyTenant.reject")}
+                        </Text>
+                      </Pressable>
 
-                {member.approvalStatus === "pending" && (
-                  <AppRow className="gap-2.5 mt-2 justify-end w-full">
-                    <Pressable
-                      onPress={() => setRejectingLinkId(member.id)}
-                      accessibilityLabel={t("familyTenant.reject")}
-                      accessibilityRole="button"
-                      className="px-3.5 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/5 active:bg-rose-500/10 active:opacity-90 flex-row items-center gap-1.5"
-                    >
-                      <AppIcon name="close" size={14} colorToken="--destructive" />
-                      <Text className="text-xs font-bold text-destructive">
-                        {t("familyTenant.reject")}
-                      </Text>
-                    </Pressable>
-
-                    <Pressable
-                      onPress={() => handleApprove(member.id)}
-                      accessibilityLabel={t("familyTenant.approve")}
-                      accessibilityRole="button"
-                      className="px-3.5 py-1.5 rounded-xl bg-emerald-600 active:opacity-90 flex-row items-center gap-1.5 shadow-sm"
-                    >
-                      <AppIcon name="check" size={14} color="#FFFFFF" />
-                      <Text className="text-xs font-bold text-white">
-                        {t("familyTenant.approve")}
-                      </Text>
-                    </Pressable>
-                  </AppRow>
-                )}
-              </View>
+                      <Pressable
+                        onPress={() => handleApprove(member.id)}
+                        accessibilityLabel={t("familyTenant.approve")}
+                        accessibilityRole="button"
+                        className="px-3.5 py-1.5 rounded-xl bg-emerald-600 active:opacity-90 flex-row items-center gap-1.5 shadow-sm"
+                      >
+                        <AppIcon name="check" size={14} color="#FFFFFF" />
+                        <Text className="text-xs font-bold text-white">
+                          {t("familyTenant.approve")}
+                        </Text>
+                      </Pressable>
+                    </AppRow>
+                  )}
+                </View>
+              </React.Fragment>
             );
           })}
         </View>

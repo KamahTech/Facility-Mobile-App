@@ -312,7 +312,8 @@ export default function WorkerHomeScreen() {
         onConfirm={handleLogout}
         userName={workerName}
         userRole={t("auth.workerTitle")}
-        hostName="worker-root"
+        avatarSource={avatarSource}
+        hostName="worker-tabs-root"
       />
     </View>
   );

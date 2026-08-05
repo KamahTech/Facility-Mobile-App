@@ -21,6 +21,7 @@ export default function ClaimsScreen() {
     fetchClaims,
     fetchNextClaims,
     hasNextClaims,
+    isFetchingNextClaimsPage,
     submitInquiry,
     claimsLoading,
     claimsError,
@@ -44,6 +45,30 @@ export default function ClaimsScreen() {
     setSelectedClaimId((currentId) => currentId === claimId ? null : claimId);
   };
 
+  const renderItem = React.useCallback(({ item }: { item: any }) => {
+    return (
+      <ClaimCard
+        claim={item}
+        isExpanded={selectedClaimId === item.id}
+        onPress={() => handleClaimPress(item.id)}
+        currentClaimDetails={claimDetailsQuery.data ?? null}
+        detailsError={claimDetailsQuery.error?.message ?? null}
+        detailsLoading={claimDetailsQuery.isLoading}
+        onRetryDetails={() => claimDetailsQuery.refetch()}
+        submitInquiry={submitInquiry}
+      />
+    );
+  }, [selectedClaimId, claimDetailsQuery.data, claimDetailsQuery.error, claimDetailsQuery.isLoading, claimDetailsQuery.refetch, submitInquiry]);
+
+  const renderFooter = React.useCallback(() => {
+    if (!isFetchingNextClaimsPage) return null;
+    return (
+      <View className="py-4 items-center justify-center">
+        <AppActivityIndicator size="small" />
+      </View>
+    );
+  }, [isFetchingNextClaimsPage]);
+
   return (
     <View
       className="flex-1 bg-background"
@@ -63,7 +88,7 @@ export default function ClaimsScreen() {
 
       {claimsLoading && claims.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          {isTransitionFinished && <AppActivityIndicator size="large"  />}
+          {isTransitionFinished && <AppActivityIndicator size="large" />}
         </View>
       ) : (
         <View className="flex-1 mt-2">
@@ -77,25 +102,15 @@ export default function ClaimsScreen() {
             data={claims}
             recycleItems={true}
             estimatedItemSize={120}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <ClaimCard
-                claim={item}
-                isExpanded={selectedClaimId === item.id}
-                onPress={() => handleClaimPress(item.id)}
-                currentClaimDetails={claimDetailsQuery.data ?? null}
-                detailsError={claimDetailsQuery.error?.message ?? null}
-                detailsLoading={claimDetailsQuery.isLoading}
-                onRetryDetails={() => claimDetailsQuery.refetch()}
-                submitInquiry={submitInquiry}
-              />
-            )}
+            keyExtractor={(item, index) => item.id ? String(item.id) : `claim_${index}`}
+            renderItem={renderItem}
+            ListFooterComponent={renderFooter}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#4F46E5" />
             }
             onEndReached={() => {
-              if (hasNextClaims) {
+              if (hasNextClaims && !isFetchingNextClaimsPage) {
                 fetchNextClaims();
               }
             }}

@@ -6,8 +6,8 @@ import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
-import { calculateDaysOverdue } from "@/hooks/use-rental";
-import type { RentalInstallment, InstallmentState, InstallmentType } from "@/lib/rental-types";
+import { calculateDaysOverdue, getInstallmentEffectiveState } from "@/hooks/use-rental";
+import type { RentalInstallment, InstallmentType } from "@/lib/rental-types";
 
 type RentalInstallmentCardProps = {
   installment: RentalInstallment;
@@ -19,14 +19,15 @@ export function RentalInstallmentCard({ installment }: RentalInstallmentCardProp
 
   const currencyCode = installment.currency?.code || "EGP";
   const formattedAmount = formatCurrency(installment.amount, currencyCode);
+  const formattedPaid = formatCurrency(installment.paidAmount || 0, currencyCode);
   const formattedRemaining = formatCurrency(installment.remainingAmount, currencyCode);
 
+  const effectiveState = getInstallmentEffectiveState(installment);
   const daysOverdue = calculateDaysOverdue(installment.dueDate);
-  const isOverdueState = installment.state === "overdue" || (installment.remainingAmount > 0 && daysOverdue > 0);
+  const isOverdueState = effectiveState === "overdue";
 
   const stateStyle = React.useMemo(() => {
-    const state = (isOverdueState ? "overdue" : installment.state) as InstallmentState;
-    switch (state) {
+    switch (effectiveState) {
       case "paid":
         return {
           bg: "bg-emerald-50 dark:bg-emerald-950/40",
@@ -59,7 +60,7 @@ export function RentalInstallmentCard({ installment }: RentalInstallmentCardProp
           label: t("rental.installment.state.due"),
         };
     }
-  }, [installment.state, isOverdueState, t]);
+  }, [effectiveState, t]);
 
   const typeLabel = React.useMemo(() => {
     const type = installment.type as InstallmentType;
@@ -147,6 +148,23 @@ export function RentalInstallmentCard({ installment }: RentalInstallmentCardProp
           </Text>
         </View>
 
+        {installment.paidAmount > 0 && installment.remainingAmount > 0 && (
+          <View className="flex-col items-center">
+            <Text
+              className="text-[10px] font-semibold text-muted-foreground"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {t("rental.paidAmount")}
+            </Text>
+            <Text
+              className="text-sm font-bold text-emerald-600 dark:text-emerald-400"
+              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
+            >
+              {formattedPaid}
+            </Text>
+          </View>
+        )}
+
         <View className="flex-col items-end">
           <Text
             className="text-[10px] font-semibold text-muted-foreground"
@@ -155,7 +173,13 @@ export function RentalInstallmentCard({ installment }: RentalInstallmentCardProp
             {t("rental.remainingAmount")}
           </Text>
           <Text
-            className={`text-base font-extrabold ${isOverdueState ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}
+            className={`text-base font-extrabold ${
+              effectiveState === "paid"
+                ? "text-emerald-600 dark:text-emerald-400"
+                : isOverdueState
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-amber-600 dark:text-amber-400"
+            }`}
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
             {formattedRemaining}

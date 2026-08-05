@@ -5,6 +5,7 @@ import {
   normalizeOwnerDetails,
   normalizeOwnerStatementResponse,
   normalizeTotalInvoiced,
+  normalizeFinancialSummaryRecord,
   normalizeFacilityOwnerPeriod,
 } from "@/lib/owner-normalization";
 import { type MobileUnitLinkItem } from "@/stores/unit-store";
@@ -209,7 +210,7 @@ export function useOwnerClaimDetailsQuery(claimId?: string) {
     queryKey: ["owner-claim", claimId],
     queryFn: async () => {
       const details = await apiRequest<Record<string, unknown>>(`/resident/claims/${claimId}`, {});
-      return normalizeOwnerDetails(details) as OwnerClaim;
+      return (normalizeOwnerDetails(details) as unknown) as OwnerClaim;
     },
     enabled: !!claimId,
   });
@@ -240,7 +241,7 @@ export function useOwnerStore(options?: {
     queryFn: async () => {
       const data = await apiRequest<Record<string, unknown>>("/resident/statement", {});
       if (!data) return data;
-      return normalizeOwnerStatementResponse(data) as OwnerStatement;
+      return (normalizeOwnerStatementResponse(data) as unknown) as OwnerStatement;
     },
     enabled: enableStatement,
   });
@@ -344,17 +345,15 @@ export function useOwnerStore(options?: {
   const fetchOwnerUnitDetails = React.useCallback(async (unitId: string) => {
     const data = await apiRequest<Record<string, unknown>>(`/resident/owner-units/${unitId}`, {});
     if (data && data.financialSummary) {
-      data.financialSummary = {
-        ...normalizeTotalInvoiced(data.financialSummary as Record<string, unknown>),
-      };
+      data.financialSummary = normalizeFinancialSummaryRecord(data.financialSummary as Record<string, unknown>);
     }
-    return data as OwnerUnit & { financialSummary?: OwnerFinancialSummary };
+    return (data as unknown) as OwnerUnit & { financialSummary?: OwnerFinancialSummary };
   }, []);
 
   const fetchFinancialSummary = React.useCallback(async (unitId: string) => {
     const data = await apiRequest<Record<string, unknown>>(`/resident/owner-units/${unitId}/financial-summary`, {});
     if (data) {
-      return normalizeTotalInvoiced(data) as OwnerFinancialSummary;
+      return (normalizeFinancialSummaryRecord(data) as unknown) as OwnerFinancialSummary;
     }
     return data;
   }, []);
@@ -417,9 +416,11 @@ export function useOwnerStore(options?: {
     fetchClaims,
     fetchNextClaims,
     hasNextClaims: claimsQuery.hasNextPage,
+    isFetchingNextClaimsPage: claimsQuery.isFetchingNextPage,
     fetchServices,
     fetchNextServices,
     hasNextServices: servicesQuery.hasNextPage,
+    isFetchingNextServicesPage: servicesQuery.isFetchingNextPage,
     submitInquiry,
     removeTenant,
     clearError,

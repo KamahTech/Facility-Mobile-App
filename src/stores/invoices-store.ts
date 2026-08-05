@@ -27,6 +27,7 @@ export type Invoice = {
   unitId?: string | false;
   chargeType?: string;
   currencyCode?: string;
+  pdfUrl?: string;
   lineItems?: InvoiceLineItem[];
 };
 

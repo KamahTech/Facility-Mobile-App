@@ -21,6 +21,7 @@ export default function ServicesScreen() {
     fetchServices,
     fetchNextServices,
     hasNextServices,
+    isFetchingNextServicesPage,
     servicesLoading,
     servicesError,
   } = useOwnerStore({ enableServices: true });
@@ -36,6 +37,19 @@ export default function ServicesScreen() {
       setRefreshing(false);
     }
   };
+
+  const renderItem = React.useCallback(({ item }: { item: any }) => {
+    return <ServiceCostCard service={item} />;
+  }, []);
+
+  const renderFooter = React.useCallback(() => {
+    if (!isFetchingNextServicesPage) return null;
+    return (
+      <View className="py-4 items-center justify-center">
+        <AppActivityIndicator size="small" />
+      </View>
+    );
+  }, [isFetchingNextServicesPage]);
 
   return (
     <View
@@ -56,7 +70,7 @@ export default function ServicesScreen() {
 
       {servicesLoading && services.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          {isTransitionFinished && <AppActivityIndicator size="large"  />}
+          {isTransitionFinished && <AppActivityIndicator size="large" />}
         </View>
       ) : (
         <View className="flex-1 mt-2">
@@ -70,16 +84,15 @@ export default function ServicesScreen() {
             data={services}
             recycleItems={true}
             estimatedItemSize={180}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <ServiceCostCard service={item} />
-            )}
+            keyExtractor={(item, index) => item.id ? String(item.id) : `service_${index}`}
+            renderItem={renderItem}
+            ListFooterComponent={renderFooter}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#4F46E5" />
             }
             onEndReached={() => {
-              if (hasNextServices) {
+              if (hasNextServices && !isFetchingNextServicesPage) {
                 fetchNextServices();
               }
             }}

@@ -5,6 +5,7 @@ import type {
   RentalContract,
   RentalInstallment,
   RentalServiceBill,
+  InstallmentState,
   CursorPage,
   ContractType,
   GetContractsParams,
@@ -15,11 +16,40 @@ import type {
 // Helper to calculate days overdue
 export function calculateDaysOverdue(dueDate: string | false): number {
   if (!dueDate) return 0;
-  const due = new Date(dueDate).getTime();
-  const now = new Date().getTime();
-  const diffTime = now - due;
-  if (diffTime <= 0) return 0;
-  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const due = new Date(dueDate);
+  if (isNaN(due.getTime())) return 0;
+
+  // Set due time to end of due date (23:59:59.999) in local time
+  const dueEndOfDay = new Date(due);
+  dueEndOfDay.setHours(23, 59, 59, 999);
+
+  const now = new Date();
+  if (now <= dueEndOfDay) return 0;
+
+  const diffMs = now.getTime() - dueEndOfDay.getTime();
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+}
+
+// Helper to determine the accurate effective state of a rental installment
+export function getInstallmentEffectiveState(installment: RentalInstallment): InstallmentState {
+  if (installment.remainingAmount <= 0 || installment.state === "paid") {
+    return "paid";
+  }
+
+  const daysOverdue = calculateDaysOverdue(installment.dueDate);
+  if (installment.remainingAmount > 0 && (installment.state === "overdue" || daysOverdue > 0)) {
+    return "overdue";
+  }
+
+  if (installment.paidAmount > 0 && installment.remainingAmount > 0) {
+    return "partial_paid";
+  }
+
+  if (installment.state === "invoiced") {
+    return "invoiced";
+  }
+
+  return "due";
 }
 
 // 1. Rental Summary Query

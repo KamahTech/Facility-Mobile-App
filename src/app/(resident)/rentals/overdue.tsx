@@ -11,7 +11,7 @@ import { AppIcon } from "@/components/app-icon";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
-import { useOverdueInstallmentsQuery } from "@/hooks/use-rental";
+import { useOverdueInstallmentsQuery, getInstallmentEffectiveState } from "@/hooks/use-rental";
 import type { RentalInstallment } from "@/lib/rental-types";
 
 export default function OverduePaymentsScreen() {
@@ -33,7 +33,10 @@ export default function OverduePaymentsScreen() {
     router.back();
   };
 
-  const installments = React.useMemo(() => overdueQuery.data || [], [overdueQuery.data]);
+  const installments = React.useMemo(() => {
+    const raw = overdueQuery.data || [];
+    return raw.filter((item) => getInstallmentEffectiveState(item) === "overdue");
+  }, [overdueQuery.data]);
 
   const totalOverduePayable = React.useMemo(() => {
     return installments.reduce((sum, item) => sum + (item.remainingAmount || 0), 0);

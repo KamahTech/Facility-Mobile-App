@@ -9,7 +9,7 @@ import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { RentalInstallmentCard } from "@/components/rental-installment-card";
 import { useI18n } from "@/hooks/use-i18n";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
-import { useUpcomingInstallmentsQuery } from "@/hooks/use-rental";
+import { useUpcomingInstallmentsQuery, getInstallmentEffectiveState } from "@/hooks/use-rental";
 import type { RentalInstallment } from "@/lib/rental-types";
 
 export default function UpcomingPaymentsScreen() {
@@ -30,7 +30,13 @@ export default function UpcomingPaymentsScreen() {
     router.back();
   };
 
-  const installments = upcomingQuery.data || [];
+  const installments = React.useMemo(() => {
+    const raw = upcomingQuery.data || [];
+    return raw.filter((item) => {
+      const state = getInstallmentEffectiveState(item);
+      return state === "due" || state === "invoiced" || state === "partial_paid";
+    });
+  }, [upcomingQuery.data]);
 
   const renderItem = React.useCallback(({ item }: { item: RentalInstallment }) => {
     return <RentalInstallmentCard installment={item} />;

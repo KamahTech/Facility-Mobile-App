@@ -4,6 +4,7 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { router } from "@/lib/navigation";
 import { useAppInsets } from "@/hooks/use-app-insets";
 
+import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { AppText } from "@/components/app-text";
@@ -12,6 +13,8 @@ import { ScreenHeader } from "@/components/screen-header";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
 import { useInvoiceQuery } from "@/stores/invoices-store";
+import { useToastStore } from "@/stores/toast-store";
+import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 
 export default function InvoiceDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,6 +23,7 @@ export default function InvoiceDetailsScreen() {
   const insets = useAppInsets();
   const invoiceQuery = useInvoiceQuery(id);
   const invoice = invoiceQuery.data;
+  const [downloadingPdf, setDownloadingPdf] = React.useState(false);
 
   const handleBack = React.useCallback(() => {
     router.back();
@@ -37,9 +41,19 @@ export default function InvoiceDetailsScreen() {
     );
   }, [invoice, t]);
 
-  const handleComingSoon = React.useCallback(() => {
-    Alert.alert(t("invoices.detailsTitle"), t("invoices.comingSoon"));
-  }, [t]);
+  const handleDownloadReceipt = React.useCallback(async () => {
+    if (!invoice) return;
+    setDownloadingPdf(true);
+    try {
+      await downloadInvoicePdf(invoice);
+    } catch (err: any) {
+      useToastStore
+        .getState()
+        .showToast(err?.message || t("errors.invoiceDownloadFailed"), "error");
+    } finally {
+      setDownloadingPdf(false);
+    }
+  }, [invoice, t]);
 
   if (invoiceQuery.isLoading) {
     return <FullScreenLoader visible />;
@@ -242,31 +256,29 @@ export default function InvoiceDetailsScreen() {
                 </Pressable>
               </View>
             ) : (
-              <AppRow className="gap-3">
-                <Pressable
-                  onPress={handleComingSoon}
-                  className="flex-1 bg-card py-4 rounded-2xl items-center justify-center active:opacity-90"
-                >
-                  <AppRow className="items-center justify-center gap-2">
-                    <AppIcon name="invoices" size={16} colorToken="--foreground" />
-                    <AppText className="text-foreground font-bold text-sm">
-                      {t("invoices.downloadReceipt")}
-                    </AppText>
-                  </AppRow>
-                </Pressable>
-
-                <Pressable
-                  onPress={handleComingSoon}
-                  className="flex-1 bg-card py-4 rounded-2xl items-center justify-center active:opacity-90"
-                >
-                  <AppRow className="items-center justify-center gap-2">
-                    <AppIcon name="linkUnit" size={16} colorToken="--foreground" />
-                    <AppText className="text-foreground font-bold text-sm">
-                      {t("invoices.shareInvoice")}
-                    </AppText>
-                  </AppRow>
-                </Pressable>
-              </AppRow>
+              <Pressable
+                onPress={handleDownloadReceipt}
+                disabled={downloadingPdf}
+                className="w-full bg-card py-4 rounded-2xl items-center justify-center active:opacity-90 disabled:opacity-50"
+              >
+                <AppRow className="items-center justify-center gap-2">
+                  {downloadingPdf ? (
+                    <>
+                      <AppActivityIndicator size="small" colorToken="--foreground" />
+                      <AppText className="text-foreground font-bold text-sm">
+                        {t("invoices.downloadingReceipt")}
+                      </AppText>
+                    </>
+                  ) : (
+                    <>
+                      <AppIcon name="invoices" size={16} colorToken="--foreground" />
+                      <AppText className="text-foreground font-bold text-sm">
+                        {t("invoices.downloadReceipt")}
+                      </AppText>
+                    </>
+                  )}
+                </AppRow>
+              </Pressable>
             )}
           </View>
 

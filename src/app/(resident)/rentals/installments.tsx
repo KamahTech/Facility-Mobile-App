@@ -9,10 +9,10 @@ import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { RentalInstallmentCard } from "@/components/rental-installment-card";
 import { useI18n } from "@/hooks/use-i18n";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
-import { useRentalInstallmentsQuery } from "@/hooks/use-rental";
+import { useRentalInstallmentsQuery, getInstallmentEffectiveState } from "@/hooks/use-rental";
 import type { ContractType, RentalInstallment } from "@/lib/rental-types";
 
-type FilterKey = "all" | "rent" | "insurance" | "service" | "paid";
+type FilterKey = "all" | "due" | "overdue" | "partial" | "paid" | "rent" | "insurance" | "service";
 
 export default function InstallmentScheduleScreen() {
   const { isRTL, t } = useI18n();
@@ -48,8 +48,25 @@ export default function InstallmentScheduleScreen() {
   };
 
   const installments = React.useMemo(() => {
-    return installmentsQuery.data?.pages.flatMap((page) => page.items) || [];
-  }, [installmentsQuery.data]);
+    const rawItems = installmentsQuery.data?.pages.flatMap((page) => page.items) || [];
+    if (activeFilter === "all") return rawItems;
+    if (activeFilter === "due") {
+      return rawItems.filter((item) => getInstallmentEffectiveState(item) === "due");
+    }
+    if (activeFilter === "overdue") {
+      return rawItems.filter((item) => getInstallmentEffectiveState(item) === "overdue");
+    }
+    if (activeFilter === "partial") {
+      return rawItems.filter((item) => getInstallmentEffectiveState(item) === "partial_paid");
+    }
+    if (activeFilter === "paid") {
+      return rawItems.filter((item) => getInstallmentEffectiveState(item) === "paid");
+    }
+    if (activeFilter === "rent" || activeFilter === "insurance" || activeFilter === "service") {
+      return rawItems.filter((item) => item.type === activeFilter);
+    }
+    return rawItems;
+  }, [installmentsQuery.data, activeFilter]);
 
   const renderItem = React.useCallback(({ item }: { item: RentalInstallment }) => {
     return <RentalInstallmentCard installment={item} />;
@@ -58,10 +75,13 @@ export default function InstallmentScheduleScreen() {
   const renderFilters = () => {
     const filters: { key: FilterKey; labelKey: string }[] = [
       { key: "all", labelKey: "rental.filter.all" },
+      { key: "due", labelKey: "rental.filter.due" },
+      { key: "overdue", labelKey: "rental.filter.overdue" },
+      { key: "partial", labelKey: "rental.filter.partial" },
+      { key: "paid", labelKey: "rental.filter.paid" },
       { key: "rent", labelKey: "rental.installment.type.rent" },
       { key: "insurance", labelKey: "rental.installment.type.insurance" },
       { key: "service", labelKey: "rental.installment.type.service" },
-      { key: "paid", labelKey: "rental.filter.paid" },
     ];
 
     return (
