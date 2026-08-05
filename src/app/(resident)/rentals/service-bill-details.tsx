@@ -10,7 +10,7 @@ import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
 import { useServiceBillDetailQuery } from "@/hooks/use-rental";
-import type { ServiceType, ServiceBillState } from "@/lib/rental-types";
+import { type ServiceType, type ServiceBillState, isValidInvoiceId } from "@/lib/rental-types";
 
 export default function ServiceBillDetailsScreen() {
   const { isRTL, t } = useI18n();
@@ -26,7 +26,7 @@ export default function ServiceBillDetailsScreen() {
   };
 
   const handleInvoicePress = () => {
-    if (bill?.invoiceId) {
+    if (isValidInvoiceId(bill?.invoiceId)) {
       router.push(`/invoices/${bill.invoiceId}` as Href);
     }
   };
@@ -277,7 +277,7 @@ export default function ServiceBillDetailsScreen() {
             </View>
 
             {/* Invoice Link Button */}
-            {Boolean(bill.invoiceId) && (
+            {isValidInvoiceId(bill.invoiceId) && (
               <Pressable
                 accessibilityRole="button"
                 onPress={handleInvoicePress}

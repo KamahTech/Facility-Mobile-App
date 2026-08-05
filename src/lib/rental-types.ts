@@ -79,6 +79,10 @@ export interface RentalContract {
   notes: string;
 }
 
+export function isValidInvoiceId(invoiceId: unknown): invoiceId is string {
+  return typeof invoiceId === "string" && /^\d+$/.test(invoiceId);
+}
+
 export interface RentalInstallment {
   id: string;
   contractId: string;

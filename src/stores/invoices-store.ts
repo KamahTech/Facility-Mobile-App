@@ -46,16 +46,62 @@ export type PaginatedInvoices = {
 export function useInvoiceQuery(invoiceId: string) {
   const queryClient = useQueryClient();
 
-  return useQuery<Invoice>({
+  return useQuery<Invoice | null>({
     queryKey: ["invoice", invoiceId],
-    queryFn: () =>
-      apiRequest<Invoice>(`/resident/invoices/${invoiceId}`, {}),
+    queryFn: async () => {
+      if (!invoiceId || invoiceId === "false") {
+        return null;
+      }
+
+      // 1. Try direct detail endpoint (suppressing error toast if route is missing on backend)
+      try {
+        const directInvoice = await apiRequest<Invoice>(
+          `/resident/invoices/${invoiceId}`,
+          {},
+          { showErrorToast: false }
+        );
+        if (directInvoice && directInvoice.id) {
+          return directInvoice;
+        }
+      } catch {
+        // Detail endpoint not supported or returned error, fall back to list search
+      }
+
+      // 2. Check query cache for paginated invoices
+      const cached = queryClient
+        .getQueryData<InfiniteData<PaginatedInvoices>>(["invoices"])
+        ?.pages.flatMap((page) => page.items)
+        .find((invoice) => String(invoice.id) === String(invoiceId));
+
+      if (cached) {
+        return cached;
+      }
+
+      // 3. Fallback: Fetch /resident/invoices list endpoint and find item by ID
+      try {
+        const listData = await apiRequest<PaginatedInvoices>(
+          "/resident/invoices",
+          { limit: 100 },
+          { showErrorToast: false }
+        );
+        const found = listData?.items?.find(
+          (invoice) => String(invoice.id) === String(invoiceId)
+        );
+        if (found) {
+          return found;
+        }
+      } catch {
+        // Ignore fallback error
+      }
+
+      return null;
+    },
     initialData: () =>
       queryClient
         .getQueryData<InfiniteData<PaginatedInvoices>>(["invoices"])
         ?.pages.flatMap((page) => page.items)
         .find((invoice) => String(invoice.id) === String(invoiceId)),
-    enabled: Boolean(invoiceId),
+    enabled: Boolean(invoiceId && invoiceId !== "false"),
   });
 }
 

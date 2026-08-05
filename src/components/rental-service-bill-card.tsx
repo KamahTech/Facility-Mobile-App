@@ -6,7 +6,7 @@ import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
-import type { RentalServiceBill, ServiceType, ServiceBillState } from "@/lib/rental-types";
+import { type RentalServiceBill, type ServiceType, type ServiceBillState, isValidInvoiceId } from "@/lib/rental-types";
 
 type RentalServiceBillCardProps = {
   bill: RentalServiceBill;
@@ -90,7 +90,7 @@ export function RentalServiceBillCard({ bill, onPress }: RentalServiceBillCardPr
   };
 
   const handleInvoicePress = () => {
-    if (bill.invoiceId) {
+    if (isValidInvoiceId(bill.invoiceId)) {
       router.push(`/invoices/${bill.invoiceId}` as Href);
     }
   };
@@ -222,7 +222,7 @@ export function RentalServiceBillCard({ bill, onPress }: RentalServiceBillCardPr
       </AppRow>
 
       {/* Link to Invoice if available */}
-      {Boolean(bill.invoiceId) && (
+      {isValidInvoiceId(bill.invoiceId) && (
         <Pressable
           accessibilityRole="button"
           onPress={handleInvoicePress}

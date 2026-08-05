@@ -7,7 +7,7 @@ import { AppRow } from "@/components/app-row";
 import { useI18n } from "@/hooks/use-i18n";
 import { useFormatters } from "@/hooks/use-formatters";
 import { calculateDaysOverdue, getInstallmentEffectiveState } from "@/hooks/use-rental";
-import type { RentalInstallment, InstallmentType } from "@/lib/rental-types";
+import { type RentalInstallment, type InstallmentType, isValidInvoiceId } from "@/lib/rental-types";
 
 type RentalInstallmentCardProps = {
   installment: RentalInstallment;
@@ -73,7 +73,7 @@ export function RentalInstallmentCard({ installment }: RentalInstallmentCardProp
   }, [installment.type, t]);
 
   const handleInvoicePress = () => {
-    if (installment.invoiceId) {
+    if (isValidInvoiceId(installment.invoiceId)) {
       router.push(`/invoices/${installment.invoiceId}` as Href);
     }
   };
@@ -188,7 +188,7 @@ export function RentalInstallmentCard({ installment }: RentalInstallmentCardProp
       </AppRow>
 
       {/* Link to Invoice if invoiceId exists */}
-      {Boolean(installment.invoiceId) && (
+      {isValidInvoiceId(installment.invoiceId) && (
         <Pressable
           accessibilityRole="button"
           onPress={handleInvoicePress}
