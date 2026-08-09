@@ -259,6 +259,14 @@ export const appIcons = {
     ios: "camera.rotate.fill",
     android: "flip_camera_ios",
   },
+  wifiSlash: {
+    ios: "wifi.slash",
+    android: "wifi_off",
+  },
+  wifi: {
+    ios: "wifi",
+    android: "wifi",
+  },
 } as const;
 
 export type AppIconName = keyof typeof appIcons;

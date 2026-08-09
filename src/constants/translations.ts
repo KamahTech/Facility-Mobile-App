@@ -798,6 +798,10 @@ export const translations = {
     "inspection.ticketCreated": "Corrective Ticket Created",
     "inspection.ticketId": "Maintenance Ticket #{{id}}",
     "inspection.viewTicket": "View Corrective Ticket",
+    "network.offlineTitle": "You're Offline",
+    "network.offlineMessage": "Please check your internet connection. We will reconnect automatically once network is available.",
+    "network.onlineTitle": "Back Online",
+    "network.onlineMessage": "Your internet connection has been restored.",
   },
   ar: {
     "actions.getStarted": "ابدأ الآن",
@@ -1596,6 +1600,10 @@ export const translations = {
     "inspection.ticketCreated": "تم إنشاء تذكرة صيانة تصحيحية",
     "inspection.ticketId": "تذكرة صيانة #{{id}}",
     "inspection.viewTicket": "عرض تذكرة الصيانة",
+    "network.offlineTitle": "أنت غير متصل بالإنترنت",
+    "network.offlineMessage": "يرجى التحقق من اتصالك بالإنترنت. ستتم إعادة الاتصال تلقائياً بمجرد توفر الشبكة.",
+    "network.onlineTitle": "تمت استعادة الاتصال",
+    "network.onlineMessage": "تمت استعادة اتصالك بالإنترنت بنجاح.",
   },
 } as const;
 

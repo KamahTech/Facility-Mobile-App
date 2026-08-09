@@ -11,6 +11,7 @@ import { useThemeToken } from "@/hooks/use-theme-token";
 import { I18nProvider } from "@/providers/i18n-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { AppToast } from "@/components/app-toast";
+import { OfflineBottomSheet } from "@/components/offline-bottom-sheet";
 import { PushNotificationProvider } from "@/providers/push-notification-provider";
 import { queryClient } from "@/lib/query-client";
 
@@ -33,6 +34,7 @@ export default function RootLayout() {
                 <PushNotificationProvider>
                   <RootStack />
                   <AppToast />
+                  <OfflineBottomSheet />
                 </PushNotificationProvider>
               </I18nProvider>
             </ThemeProvider>
