@@ -80,8 +80,6 @@ export default function WorkerHomeScreen() {
     await fetchWorkerTasks();
   }, [fetchWorkerTasks, clearError]);
 
-
-
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadTasks();
