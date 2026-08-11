@@ -12,8 +12,8 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  runOnJS,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { runOnIdle } from "@/lib/idle";
 
@@ -75,7 +75,7 @@ export function MediaSourceSheet({
       { duration: 200 },
       (finished) => {
         if (finished) {
-          runOnJS(handleDismissCallback)();
+          scheduleOnRN(handleDismissCallback);
         }
       },
     );
@@ -121,7 +121,7 @@ export function MediaSourceSheet({
               { duration: 200 },
               (finished) => {
                 if (finished) {
-                  runOnJS(handleDismissCallback)();
+                  scheduleOnRN(handleDismissCallback);
                 }
               },
             );
