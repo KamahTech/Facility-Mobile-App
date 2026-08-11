@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { router } from "@/lib/navigation";
-import { type Href } from "expo-router";
 import { AppIcon } from "@/components/app-icon";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
@@ -29,7 +28,6 @@ import { InspectionStateBadge } from "@/components/assets/inspection-state-badge
 import { AssetDocumentCard } from "@/components/assets/asset-document-card";
 import { MaintenanceHistoryCard } from "@/components/assets/maintenance-history-card";
 import { SparePartCard } from "@/components/assets/spare-part-card";
-import type { ChecklistTemplateSummary, CompactInspection } from "@/lib/api/asset-inspection";
 
 import { ScreenHeader } from "@/components/screen-header";
 

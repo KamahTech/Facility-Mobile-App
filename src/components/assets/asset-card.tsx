@@ -4,7 +4,6 @@ import { AppIcon } from "@/components/app-icon";
 import { useI18n } from "@/hooks/use-i18n";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { router } from "@/lib/navigation";
-import { type Href } from "expo-router";
 import { AssetStatusBadge } from "./asset-status-badge";
 import type { WorkerAssetListItem } from "@/lib/api/asset-inspection";
 

@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text } from "react-native";
 import { AppIcon } from "@/components/app-icon";
 import { useI18n } from "@/hooks/use-i18n";
-import { useThemeToken } from "@/hooks/use-theme-token";
 import type { MaintenanceHistoryItem } from "@/lib/api/asset-inspection";
 
 interface MaintenanceHistoryCardProps {
@@ -11,7 +10,6 @@ interface MaintenanceHistoryCardProps {
 
 export function MaintenanceHistoryCard({ item }: MaintenanceHistoryCardProps) {
   const { isRTL } = useI18n();
-  const mutedForeground = useThemeToken("--muted-foreground");
 
   const isCorrective = item.type === "corrective";
 

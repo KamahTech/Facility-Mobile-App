@@ -34,7 +34,7 @@ export function ChecklistItemCard({
 
   const [showNotesInput, setShowNotesInput] = React.useState(Boolean(notes));
 
-  const options: Array<{ value: "pass" | "fail" | "na"; labelKey: string; activeColor: string; bgActive: string }> = [
+  const options: { value: "pass" | "fail" | "na"; labelKey: string; activeColor: string; bgActive: string }[] = [
     {
       value: "pass",
       labelKey: "inspection.itemResult.pass",

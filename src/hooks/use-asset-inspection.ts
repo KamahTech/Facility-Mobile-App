@@ -7,10 +7,6 @@ import {
   getInspectionDetail,
   saveInspectionDraft,
   submitInspection,
-  type WorkerAssetListItem,
-  type WorkerAssetDetail,
-  type CompactInspection,
-  type InspectionDetail,
   type InspectionSavePayload,
 } from "@/lib/api/asset-inspection";
 

@@ -30,7 +30,7 @@ interface AssetInspectionStore {
   initDraft: (inspectionId: string, initialData?: {
     notes?: string;
     finalResult?: FinalInspectionResult;
-    checklist?: Array<{ id: string; result: ChecklistItemResult; notes?: string }>;
+    checklist?: { id: string; result: ChecklistItemResult; notes?: string }[];
     photos?: InspectionPhoto[];
   }) => void;
   updateChecklistItem: (inspectionId: string, itemId: string, result: ChecklistItemResult, notes?: string) => void;
@@ -42,8 +42,8 @@ interface AssetInspectionStore {
   getDraftPayload: (inspectionId: string) => {
     notes?: string;
     finalResult?: "passed" | "failed";
-    checklist?: Array<{ id: string; result: "pass" | "fail" | "na"; notes?: string }>;
-    photos?: Array<{ name: string; mimetype: string; data: string }>;
+    checklist?: { id: string; result: "pass" | "fail" | "na"; notes?: string }[];
+    photos?: { name: string; mimetype: string; data: string }[];
   };
 }
 

@@ -12,8 +12,6 @@ import {
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { router } from "@/lib/navigation";
-import { type Href } from "expo-router";
-import { AppIcon } from "@/components/app-icon";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { useI18n } from "@/hooks/use-i18n";
@@ -31,7 +29,7 @@ import { ChecklistItemCard } from "@/components/assets/checklist-item-card";
 import { InspectionPhotoPicker } from "@/components/assets/inspection-photo-picker";
 import { InspectionStateBadge } from "@/components/assets/inspection-state-badge";
 import { ScreenHeader } from "@/components/screen-header";
-import type { ChecklistItemResult, FinalInspectionResult } from "@/lib/api/asset-inspection";
+import type { FinalInspectionResult } from "@/lib/api/asset-inspection";
 
 export default function InspectionEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -43,7 +41,6 @@ export default function InspectionEditorScreen() {
   const mutedForeground = useThemeToken("--muted-foreground");
   const foreground = useThemeToken("--foreground");
   const border = useThemeToken("--border");
-  const primaryColor = useThemeToken("--primary");
 
   const { data: inspection, isLoading } = useInspectionDetailQuery(inspectionId);
   const saveMutation = useSaveInspectionMutation();

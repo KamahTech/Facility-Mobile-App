@@ -110,16 +110,16 @@ export interface PaginatedResult<T> {
 export interface InspectionSavePayload {
   notes?: string;
   finalResult?: "passed" | "failed";
-  checklist?: Array<{
+  checklist?: {
     id: string;
     result: "pass" | "fail" | "na";
     notes?: string;
-  }>;
-  photos?: Array<{
+  }[];
+  photos?: {
     name: string;
     mimetype: string;
     data: string;
-  }>;
+  }[];
 }
 
 /**

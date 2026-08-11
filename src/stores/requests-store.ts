@@ -202,6 +202,18 @@ function normalizeMaintenanceRequest(item: MaintenanceRequest) {
   };
 }
 
+export type CreateTicketParams = {
+  category: string;
+  description: string;
+  unitId: string;
+  subject?: string;
+  warrantyType?: "in" | "out" | "other";
+  priority?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  attachments?: { name?: string; mimetype?: string; data: string }[];
+};
+
 export function useMaintenanceRequestQuery(
   requestId: string,
   accountType: "resident" | "worker",
@@ -214,7 +226,30 @@ export function useMaintenanceRequestQuery(
   return useQuery<MaintenanceRequest>({
     queryKey: detailQueryKey,
     queryFn: async () => {
-      // 1. Try to find in cached list query data first
+      if (!requestId || requestId === "false") {
+        throw new Error("Invalid request ID");
+      }
+
+      // 1. Try direct detail endpoint first (per BACKEND_API_REQUIREMENTS.md)
+      const detailRoute =
+        accountType === "resident"
+          ? `/resident/tickets/${requestId}`
+          : `/worker/tasks/${requestId}`;
+
+      try {
+        const directTicket = await apiRequest<MaintenanceRequest>(
+          detailRoute,
+          {},
+          { showErrorToast: false },
+        );
+        if (directTicket && directTicket.id) {
+          return normalizeMaintenanceRequest(directTicket);
+        }
+      } catch {
+        // Direct detail route not supported or returned error, fallback to cache/list lookup
+      }
+
+      // 2. Try to find in cached list query data
       const cachedList =
         queryClient.getQueryData<InfiniteData<PaginatedRequests>>(listQueryKey);
       const cachedItem = cachedList?.pages
@@ -225,12 +260,13 @@ export function useMaintenanceRequestQuery(
         return normalizeMaintenanceRequest(cachedItem);
       }
 
-      // 2. Fetch list from backend and locate matching ticket
+      // 3. Fallback: Fetch list from backend and locate matching ticket
       const listRoute =
         accountType === "resident" ? "/resident/tickets" : "/worker/tasks";
       const response = await apiRequest<PaginatedRequests | MaintenanceRequest[]>(
         listRoute,
         { limit: 100 },
+        { showErrorToast: false },
       );
       const items = Array.isArray(response)
         ? response
@@ -253,7 +289,7 @@ export function useMaintenanceRequestQuery(
         .find((candidate) => String(candidate.id) === String(requestId));
       return item ? normalizeMaintenanceRequest(item) : undefined;
     },
-    enabled: Boolean(requestId),
+    enabled: Boolean(requestId && requestId !== "false"),
   });
 }
 
@@ -303,20 +339,26 @@ export function useRequestsStore(options?: {
 
   // Mutations
   const createRequestMutation = useMutation({
-    mutationFn: (params: { category: string; description: string; unitId: string }) => {
+    mutationFn: (params: CreateTicketParams) => {
       const payload: Record<string, unknown> = {
         category: params.category,
         description: params.description,
         unitId: toPositiveIntegerId(params.unitId, "unitId"),
       };
+
+      if (params.subject) payload.subject = params.subject;
+      if (params.warrantyType) payload.warrantyType = params.warrantyType;
+      if (params.priority) payload.priority = params.priority;
+      if (params.contactEmail) payload.contactEmail = params.contactEmail;
+      if (params.contactPhone) payload.contactPhone = params.contactPhone;
+      if (params.attachments && params.attachments.length > 0) {
+        payload.attachments = params.attachments;
+      }
       
       return apiRequest("/resident/tickets/create", payload);
     },
-    onSuccess: (_, id) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resident-requests"] });
-      queryClient.invalidateQueries({
-        queryKey: ["maintenance-request", "resident", id],
-      });
     }
   });
 
@@ -608,11 +650,34 @@ export function useRequestsStore(options?: {
     isFetchingNextWorkerTasksPage,
   ]);
 
-  const createRequest = React.useCallback(async (category: string, description: string, unitId: string) => {
-    const unit = units.find((u) => u.id === unitId);
-    const realUnitId = unit?.source === "mobile_unit_link" ? unit.unitId : unit?.id;
-    return await createRequestMutateAsync({ category, description, unitId: realUnitId || unitId });
-  }, [createRequestMutateAsync, units]);
+  const createRequest = React.useCallback(
+    async (
+      categoryOrParams: string | CreateTicketParams,
+      description?: string,
+      unitId?: string,
+      extra?: Partial<CreateTicketParams>
+    ) => {
+      let finalParams: CreateTicketParams;
+      if (typeof categoryOrParams === "object") {
+        finalParams = categoryOrParams;
+      } else {
+        finalParams = {
+          category: categoryOrParams,
+          description: description || "",
+          unitId: unitId || "",
+          ...extra,
+        };
+      }
+
+      const unit = units.find((u) => u.id === finalParams.unitId);
+      const realUnitId = unit?.source === "mobile_unit_link" ? unit.unitId : unit?.id;
+      return await createRequestMutateAsync({
+        ...finalParams,
+        unitId: realUnitId || finalParams.unitId,
+      });
+    },
+    [createRequestMutateAsync, units]
+  );
 
   const cancelRequest = React.useCallback(async (id: string) => {
     await cancelRequestMutateAsync(id);

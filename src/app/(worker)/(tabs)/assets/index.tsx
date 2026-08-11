@@ -1,6 +1,6 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, View, ScrollView, RefreshControl, Text, TextInput } from "react-native";
+import { Pressable, View, RefreshControl, Text, TextInput } from "react-native";
 import { type Href, useNavigation } from "expo-router";
 import { router } from "@/lib/navigation";
 import { AnimatedLegendList } from "@legendapp/list/reanimated";
@@ -14,7 +14,6 @@ import { useTheme } from "@/hooks/use-theme";
 import { useThemeToken } from "@/hooks/use-theme-token";
 import { useUserStore } from "@/stores/user-store";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
-import { getDirectionalRowStyle } from "@/lib/i18n-layout";
 import { HomeHeader } from "@/components/home-header";
 import { getProfileImageSource } from "@/lib/image-source";
 import { LogoutBottomSheet } from "@/components/logout-bottom-sheet";
@@ -32,7 +31,7 @@ import { QrScannerModal } from "@/components/assets/qr-scanner-modal";
 import type { CompactInspection } from "@/lib/api/asset-inspection";
 
 export default function WorkerAssetsScreen() {
-  const { isRTL, t, direction } = useI18n();
+  const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
   const isTransitionFinished = useScreenTransition();

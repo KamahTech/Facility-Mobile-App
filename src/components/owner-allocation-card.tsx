@@ -12,7 +12,7 @@ type OwnerAllocationCardProps = {
 };
 
 export function OwnerAllocationCard({ item }: OwnerAllocationCardProps) {
-  const { isRTL, t } = useI18n();
+  const { t } = useI18n();
   const formatters = useFormatters();
   const formatCurrency = formatters?.formatCurrency;
   const formatDate = formatters?.formatDate;

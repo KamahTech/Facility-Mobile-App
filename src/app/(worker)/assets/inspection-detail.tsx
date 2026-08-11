@@ -3,13 +3,10 @@ import { StatusBar } from "expo-status-bar";
 import { Pressable, View, Text, ScrollView, RefreshControl } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { router } from "@/lib/navigation";
-import { type Href } from "expo-router";
-import { AppIcon } from "@/components/app-icon";
 import { AppActivityIndicator } from "@/components/app-activity-indicator";
 import { useAppInsets } from "@/hooks/use-app-insets";
 import { useI18n } from "@/hooks/use-i18n";
 import { useTheme } from "@/hooks/use-theme";
-import { useThemeToken } from "@/hooks/use-theme-token";
 import { useInspectionDetailQuery } from "@/hooks/use-asset-inspection";
 
 import { ChecklistItemCard } from "@/components/assets/checklist-item-card";
@@ -25,8 +22,6 @@ export default function ReadOnlyInspectionDetailScreen() {
   const { isRTL, t } = useI18n();
   const insets = useAppInsets();
   const { resolvedTheme } = useTheme();
-  const mutedForeground = useThemeToken("--muted-foreground");
-  const primaryColor = useThemeToken("--primary");
 
   const { data: inspection, isLoading, refetch, isRefetching } = useInspectionDetailQuery(
     inspectionId

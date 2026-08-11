@@ -24,7 +24,6 @@ export function InspectionPhotoPicker({
   onRemovePhoto,
 }: InspectionPhotoPickerProps) {
   const { t, isRTL } = useI18n();
-  const mutedForeground = useThemeToken("--muted-foreground");
   const primaryColor = useThemeToken("--primary");
 
   const [showMediaSheet, setShowMediaSheet] = React.useState(false);

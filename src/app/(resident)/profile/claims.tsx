@@ -58,7 +58,7 @@ export default function ClaimsScreen() {
         submitInquiry={submitInquiry}
       />
     );
-  }, [selectedClaimId, claimDetailsQuery.data, claimDetailsQuery.error, claimDetailsQuery.isLoading, claimDetailsQuery.refetch, submitInquiry]);
+  }, [selectedClaimId, claimDetailsQuery, submitInquiry]);
 
   const renderFooter = React.useCallback(() => {
     if (!isFetchingNextClaimsPage) return null;
