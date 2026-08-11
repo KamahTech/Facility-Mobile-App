@@ -15,6 +15,7 @@ import { allowsFamilyMembers } from "@/lib/family-member-eligibility";
 import { useScreenTransition } from "@/hooks/use-screen-transition";
 import { UnitTenantsCard } from "@/components/unit-tenants-card";
 import { UnitFamilyMembersCard } from "@/components/unit-family-members-card";
+import { UnitPropertyDetailsCard } from "@/components/unit-property-details-card";
 import { useToastStore } from "@/stores/toast-store";
 
 export default function UnitDetailScreen() {
@@ -245,167 +246,10 @@ export default function UnitDetailScreen() {
         )}
 
         {/* Property & Construction Details Card */}
-        {propertyQuery.data && (
-          <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm">
-            <Text
-              className="text-base font-bold text-foreground text-start"
-              style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-            >
-              {t("ownerUnits.propertyDetails")}
-            </Text>
-
-            <View className="flex-col gap-3">
-              {propertyQuery.data.propertyType && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.propertyType")}
-                  </Text>
-                  <Text
-                    className="text-sm font-semibold text-foreground text-end"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {propertyQuery.data.propertyType}
-                  </Text>
-                </AppRow>
-              )}
-              {propertyQuery.data.constructionState && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.constructionState")}
-                  </Text>
-                  <View className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/20">
-                    <Text
-                      className="text-[11px] font-bold text-blue-600 dark:text-blue-400 capitalize"
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {propertyQuery.data.constructionState.replace("_", " ")}
-                    </Text>
-                  </View>
-                </AppRow>
-              )}
-              {propertyQuery.data.deliveryState && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.deliveryState")}
-                  </Text>
-                  <View className={`px-2.5 py-0.5 rounded-full ${propertyQuery.data.deliveryState === "delivered" ? "bg-green-50 dark:bg-green-950/20" : "bg-amber-50 dark:bg-amber-950/20"}`}>
-                    <Text
-                      className={`text-[11px] font-bold capitalize ${propertyQuery.data.deliveryState === "delivered" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
-                      style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {propertyQuery.data.deliveryState.replace("_", " ")}
-                    </Text>
-                  </View>
-                </AppRow>
-              )}
-              {propertyQuery.data.saleContractDate && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.saleContractDate")}
-                  </Text>
-                  <Text
-                    className="text-sm font-semibold text-foreground text-end"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {propertyQuery.data.saleContractDate}
-                  </Text>
-                </AppRow>
-              )}
-              {propertyQuery.data.deliveryDate && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.deliveryDate")}
-                  </Text>
-                  <Text
-                    className="text-sm font-semibold text-foreground text-end"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {propertyQuery.data.deliveryDate}
-                  </Text>
-                </AppRow>
-              )}
-              {(propertyQuery.data.roomCount !== undefined || propertyQuery.data.bathroomCount !== undefined) && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.rooms")} / {t("ownerUnits.bathrooms")}
-                  </Text>
-                  <Text
-                    className="text-sm font-semibold text-foreground text-end"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {propertyQuery.data.roomCount ?? 0} / {propertyQuery.data.bathroomCount ?? 0}
-                  </Text>
-                </AppRow>
-              )}
-              {propertyQuery.data.location && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.location")}
-                  </Text>
-                  <Text
-                    className="text-sm font-semibold text-foreground text-end"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {propertyQuery.data.location}
-                  </Text>
-                </AppRow>
-              )}
-              {propertyQuery.data.publicLicensingState && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.licensingState")}
-                  </Text>
-                  <Text
-                    className="text-sm font-semibold text-foreground text-end capitalize"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {propertyQuery.data.publicLicensingState}
-                  </Text>
-                </AppRow>
-              )}
-              {propertyQuery.data.licenseNumber && (
-                <AppRow className="justify-between items-center gap-3">
-                  <Text
-                    className="text-sm text-muted-foreground text-start"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {t("ownerUnits.licenseNumber")}
-                  </Text>
-                  <Text
-                    className="text-sm font-semibold text-foreground text-end"
-                    style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
-                  >
-                    {propertyQuery.data.licenseNumber}
-                  </Text>
-                </AppRow>
-              )}
-            </View>
-          </View>
-        )}
+        <UnitPropertyDetailsCard
+          data={propertyQuery.data}
+          isLoading={propertyQuery.isLoading}
+        />
 
         {summary && (
           <View className="w-full bg-card rounded-3xl p-5 flex-col gap-4 shadow-sm">
