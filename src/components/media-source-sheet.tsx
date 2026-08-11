@@ -7,7 +7,6 @@ import {
   Pressable,
   PanResponder,
   Dimensions,
-  InteractionManager,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -16,6 +15,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { useAppInsets } from "@/hooks/use-app-insets";
+import { runOnIdle } from "@/lib/idle";
 
 import { AppIcon } from "@/components/app-icon";
 import { AppRow } from "@/components/app-row";
@@ -56,7 +56,7 @@ export function MediaSourceSheet({
     onDismissRef.current();
 
     if (pendingSelection) {
-      InteractionManager.runAfterInteractions(pendingSelection);
+      runOnIdle(pendingSelection);
     }
   }, []);
 
