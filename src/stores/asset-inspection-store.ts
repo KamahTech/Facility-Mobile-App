@@ -108,11 +108,15 @@ export const useAssetInspectionStore = create<AssetInspectionStore>((set, get) =
         },
       };
 
-      // Check if any checklist line fails. If so, automatically force finalResult = 'failed'
+      // Recompute finalResult: if any item fails -> "failed". If no items fail and previously failed -> recalculate
       let computedFinalResult = draft.finalResult;
-      const hasAnyFail = Object.values(updatedChecklist).some((item) => item.result === "fail");
+      const checklistValues = Object.values(updatedChecklist);
+      const hasAnyFail = checklistValues.some((item) => item.result === "fail");
       if (hasAnyFail) {
         computedFinalResult = "failed";
+      } else if (draft.finalResult === "failed") {
+        const hasPassed = checklistValues.some((item) => item.result === "pass");
+        computedFinalResult = hasPassed ? "passed" : false;
       }
 
       return {

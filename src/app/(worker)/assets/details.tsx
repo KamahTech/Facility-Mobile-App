@@ -261,7 +261,7 @@ export default function AssetDetailScreen() {
                 {tpl.name}
               </Text>
               <Text className="text-xs text-muted-foreground mt-0.5">
-                {tpl.itemCount} checklist items
+                {t("assets.checklistItemsCount").replace("{{count}}", String(tpl.itemCount))}
               </Text>
             </View>
             <AppIcon name="add" size={20} color={primaryColor} />
@@ -451,7 +451,7 @@ export default function AssetDetailScreen() {
               style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
             >
               {templates.length > 0
-                ? `${templates.length} template(s) available`
+                ? t("assets.templatesAvailable").replace("{{count}}", String(templates.length))
                 : t("assets.noTemplates")}
             </Text>
           </View>
@@ -575,7 +575,7 @@ export default function AssetDetailScreen() {
                     {tpl.name}
                   </Text>
                   <Text className="text-xs text-muted-foreground mt-0.5">
-                    {tpl.itemCount} items
+                    {t("assets.itemsCount").replace("{{count}}", String(tpl.itemCount))}
                   </Text>
                 </View>
                 <AppIcon name={isRTL ? "chevronLeft" : "chevronRight"} size={18} color={primaryColor} />

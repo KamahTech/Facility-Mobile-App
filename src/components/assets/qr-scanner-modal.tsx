@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, Pressable, View, Text, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { scanFromURLAsync } from "expo-camera";
 import { AppIcon } from "@/components/app-icon";
 import { LiveQrScannerView } from "@/components/assets/live-qr-scanner-view";
 import { useI18n } from "@/hooks/use-i18n";
@@ -43,14 +44,23 @@ export function QrScannerModal({ isPresented, onDismiss }: QrScannerModalProps) 
   };
 
   const handlePickFromLibrary = async () => {
-    const uri = await pickImage("library");
-    if (!uri) return;
+    try {
+      const uri = await pickImage("library");
+      if (!uri) return;
 
-    const matched = parseAssetIdFromQr(uri);
-    if (matched) {
-      handleNavigateToAsset(matched);
-    } else {
-      useToastStore.getState().showToast(t("assets.scanQrInstruction"), "info");
+      const scanResults = await scanFromURLAsync(uri, ["qr"]);
+      if (scanResults && scanResults.length > 0) {
+        for (const item of scanResults) {
+          const matched = parseAssetIdFromQr(item.data);
+          if (matched) {
+            handleNavigateToAsset(matched);
+            return;
+          }
+        }
+      }
+      useToastStore.getState().showToast(t("errors.invalidQrCode"), "error");
+    } catch {
+      useToastStore.getState().showToast(t("errors.invalidQrCode"), "error");
     }
   };
 

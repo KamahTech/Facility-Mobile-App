@@ -64,14 +64,14 @@ export function ChatView({
   const [isViewerVisible, setIsViewerVisible] = React.useState(false);
   const [sendLoading, setSendLoading] = React.useState(false);
   
-  const listRef = React.useRef<FlatList>(null);
+  const listRef = React.useRef<any>(null);
   const keyboardTranslateY = useSharedValue(0);
 
   // Re-scroll when comments length changes (realtime new messages)
   React.useEffect(() => {
     if (comments.length > 0) {
       requestAnimationFrame(() => {
-        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+        listRef.current?.scrollToOffset?.({ offset: 0, animated: true });
       });
     }
   }, [comments.length]);
@@ -97,12 +97,6 @@ export function ChatView({
     },
     [],
   );
-
-  const listKeyboardStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: keyboardTranslateY.value }],
-    };
-  });
 
   const composerKeyboardStyle = useAnimatedStyle(() => {
     return {
@@ -264,13 +258,17 @@ export function ChatView({
       <ScreenHeader title={t("tickets.comments")} onBack={onBack} />
 
       <View className="flex-1 w-full overflow-hidden">
-        <Animated.View className="flex-1 w-full max-w-xl self-center px-5" style={listKeyboardStyle}>
+        <View className="flex-1 w-full max-w-xl self-center px-5">
           <FlatList
             ref={listRef}
             data={comments}
             keyExtractor={(item) => item.id}
             renderItem={renderCommentItem}
             inverted={true}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            initialNumToRender={15}
             onEndReached={onLoadMore}
             onEndReachedThreshold={0.2}
             showsVerticalScrollIndicator={false}
@@ -281,7 +279,7 @@ export function ChatView({
             ListEmptyComponent={
               <View
                 className="w-full py-16 items-center justify-center rounded-3xl bg-card/50 shadow-3xs flex-col gap-3"
-                style={{ transform: [{ scaleY: -1 }, { scaleX: -1 }] }}
+                style={{ transform: [{ scaleY: -1 }] }}
               >
                 <AppIcon name="tickets" size={32} colorToken="--muted-foreground" className="opacity-40" />
                 <AppText className="text-sm font-semibold text-muted-foreground text-center">
@@ -301,7 +299,7 @@ export function ChatView({
             }
             className="flex-1 w-full"
           />
-        </Animated.View>
+        </View>
       </View>
 
       {/* Sticky Comment Input Box at the bottom */}

@@ -92,7 +92,9 @@ export default function WorkerHomeScreen() {
     switch (activeTab) {
       case "my_tasks":
         return requests.filter(
-          (req) => (req.assignedToCurrentUser ?? req.workerName === workerName) && req.status === "in_progress"
+          (req) =>
+            (req.assignedToCurrentUser ?? req.workerName === workerName) &&
+            (req.status === "in_progress" || req.status === "pending")
         );
       case "available":
         return requests.filter(
@@ -110,7 +112,9 @@ export default function WorkerHomeScreen() {
   // Compute number of active tasks assigned to the worker
   const activeTasksCount = React.useMemo(() => {
     return requests.filter(
-      (req) => (req.assignedToCurrentUser ?? req.workerName === workerName) && req.status === "in_progress"
+      (req) =>
+        (req.assignedToCurrentUser ?? req.workerName === workerName) &&
+        (req.status === "in_progress" || req.status === "pending")
     ).length;
   }, [requests, workerName]);
 

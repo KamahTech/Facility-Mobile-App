@@ -55,6 +55,7 @@ export default function InspectionEditorScreen() {
     addPhoto,
     removePhoto,
     getDraftPayload,
+    clearDraft,
   } = useAssetInspectionStore();
 
   const draft = activeDrafts[inspectionId];
@@ -131,6 +132,8 @@ export default function InspectionEditorScreen() {
                 payload,
               });
 
+              clearDraft(inspectionId);
+
               useToastStore
                 .getState()
                 .showToast(t("inspection.submitSuccess"), "success");
@@ -204,7 +207,7 @@ export default function InspectionEditorScreen() {
             className="text-sm font-bold text-foreground mb-3"
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
-            Checklist ({checklistItems.length} items)
+            {t("inspection.checklistCount").replace("{{count}}", String(checklistItems.length))}
           </Text>
 
           {checklistItems.map((item) => {

@@ -124,6 +124,7 @@ export type ApiParams = Record<string, unknown>;
 export type ApiResponse = unknown;
 export type ApiRequestOptions = {
   showErrorToast?: boolean;
+  timeoutMs?: number;
 };
 
 const PUBLIC_API_ROUTES = new Set([
@@ -229,7 +230,7 @@ export async function apiRequest<T = ApiResponse>(
   try {
     const response = await axios.post(url, payload, {
       headers,
-      timeout: 15000,
+      timeout: options.timeoutMs || 30000,
     });
     const result = response.data;
 

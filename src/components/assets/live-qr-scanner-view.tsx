@@ -134,10 +134,10 @@ export function LiveQrScannerView({ onScannedAsset, onClose }: LiveQrScannerView
         {/* Frame Box (No border-radius, no dark borders, sharp primary corners) */}
         <View className="w-[210px] h-[210px] relative" pointerEvents="none">
           {/* Corner Guides */}
-          <View className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-primary" style={cornerStyle} />
-          <View className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-primary" style={cornerStyle} />
-          <View className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-primary" style={cornerStyle} />
-          <View className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary" style={cornerStyle} />
+          <View className="absolute top-0 start-0 w-6 h-6 border-t-4 border-s-4 border-primary" style={cornerStyle} />
+          <View className="absolute top-0 end-0 w-6 h-6 border-t-4 border-e-4 border-primary" style={cornerStyle} />
+          <View className="absolute bottom-0 start-0 w-6 h-6 border-b-4 border-s-4 border-primary" style={cornerStyle} />
+          <View className="absolute bottom-0 end-0 w-6 h-6 border-b-4 border-e-4 border-primary" style={cornerStyle} />
 
           {/* Animated Scanning Line */}
           <Animated.View
@@ -149,7 +149,7 @@ export function LiveQrScannerView({ onScannedAsset, onClose }: LiveQrScannerView
 
       {/* Floating Controls Bar */}
       <View
-        className="absolute top-3 left-3 right-3 flex-row items-center justify-between px-2"
+        className="absolute top-3 start-3 end-3 flex-row items-center justify-between px-2"
         pointerEvents="box-none"
       >
         {/* Torch Toggle */}

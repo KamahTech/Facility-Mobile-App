@@ -46,7 +46,14 @@ export default function ReadOnlyInspectionDetailScreen() {
     isExisting: true,
   }));
 
-  const ticketId = inspection?.maintenanceRequestId;
+  const rawTicketId = inspection?.maintenanceRequestId;
+  const ticketId =
+    rawTicketId &&
+    String(rawTicketId) !== "false" &&
+    String(rawTicketId) !== "0" &&
+    String(rawTicketId).trim() !== ""
+      ? String(rawTicketId)
+      : null;
 
   return (
     <View
@@ -83,7 +90,7 @@ export default function ReadOnlyInspectionDetailScreen() {
                 className="text-xs text-muted-foreground"
                 style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
               >
-                Maintenance request generated
+                {t("inspection.maintenanceRequestGenerated")}
               </Text>
             </View>
 
@@ -162,7 +169,7 @@ export default function ReadOnlyInspectionDetailScreen() {
             className="text-sm font-bold text-foreground mb-3"
             style={{ writingDirection: isRTL ? "rtl" : "ltr" }}
           >
-            Checklist ({checklistItems.length} items)
+            {t("inspection.checklistCount").replace("{{count}}", String(checklistItems.length))}
           </Text>
 
           {checklistItems.map((item) => (

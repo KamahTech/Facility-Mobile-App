@@ -10,7 +10,7 @@ interface SparePartCardProps {
 }
 
 export function SparePartCard({ item }: SparePartCardProps) {
-  const { isRTL } = useI18n();
+  const { isRTL, t } = useI18n();
   const primaryColor = useThemeToken("--primary");
 
   return (
@@ -39,7 +39,7 @@ export function SparePartCard({ item }: SparePartCardProps) {
 
       <View className="bg-secondary px-3 py-1.5 rounded-lg border border-border">
         <Text className="text-xs font-bold text-foreground">
-          {item.quantity} {item.uom || "Units"}
+          {item.quantity} {item.uom || t("assets.defaultUom")}
         </Text>
       </View>
     </View>

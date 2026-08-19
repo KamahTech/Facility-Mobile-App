@@ -41,6 +41,8 @@ export type PaginatedInvoices = {
   items: Invoice[];
   nextCursor: string | false;
   hasMore: boolean;
+  totalDueBalance?: number;
+  totalUnpaidCount?: number;
 };
 
 export function useInvoiceQuery(invoiceId: string) {
@@ -125,6 +127,12 @@ export function useInvoicesStore() {
       queryClient.invalidateQueries({ queryKey: ["owner-statement"] });
       queryClient.invalidateQueries({ queryKey: ["owner-units"] });
       queryClient.invalidateQueries({ queryKey: ["connected-units-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["rental-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["rental-contracts"] });
+      queryClient.invalidateQueries({ queryKey: ["rental-installments"] });
+      queryClient.invalidateQueries({ queryKey: ["rental-overdue"] });
+      queryClient.invalidateQueries({ queryKey: ["rental-upcoming"] });
+      queryClient.invalidateQueries({ queryKey: ["rental-service-bills"] });
     }
   });
 
@@ -148,11 +156,19 @@ export function useInvoicesStore() {
     return await payMutateAsync({ id });
   }, [payMutateAsync]);
 
-  const getTotalDueBalance = React.useCallback(() => {
+  const totalDueBalance = React.useMemo(() => {
+    const serverTotal = query.data?.pages[0]?.totalDueBalance;
+    if (typeof serverTotal === "number" && !isNaN(serverTotal)) {
+      return serverTotal;
+    }
     return invoices
       .filter((inv) => inv.status === "pending" || inv.status === "overdue")
       .reduce((sum, inv) => sum + inv.amount, 0);
-  }, [invoices]);
+  }, [query.data?.pages, invoices]);
+
+  const getTotalDueBalance = React.useCallback(() => {
+    return totalDueBalance;
+  }, [totalDueBalance]);
 
   const clearError = React.useCallback(() => {
     resetPayMutation();

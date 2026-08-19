@@ -39,15 +39,17 @@ type UserState = {
     name: string,
     email: string,
     password: string,
+    cardNumber: string,
     phone?: string,
   ) => Promise<SignupOtpResponse>;
   signup: (
     name: string,
     email: string,
     password: string,
+    cardNumber: string,
     otp: string,
     phone?: string,
-  ) => Promise<void>;
+  ) => Promise<SignupPendingResponse>;
   logout: () => Promise<void>;
   updateProfile: (updated: Partial<UserProfile>) => Promise<void>;
   updateProfileImage: (image: string | false) => Promise<void>;
@@ -65,10 +67,20 @@ type AuthResponse = {
   accountType: "resident" | "worker";
 };
 
-type SignupOtpResponse = {
+export type SignupOtpResponse = {
   email: string;
   expiresInSeconds: number;
   deliveryMethod: "email";
+};
+
+export type SignupPendingResponse = {
+  status: "pending" | string;
+  message: string;
+  requestId?: number;
+  email: string;
+  name: string;
+  cardNumber: string;
+  accountType?: "resident" | string;
 };
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -77,6 +89,28 @@ function getErrorMessage(error: unknown, fallback: string) {
 
 function isAccountType(value: string | null): value is "resident" | "worker" {
   return value === "resident" || value === "worker";
+}
+
+function sanitizeProfileForSecureStore(profile: UserProfile): UserProfile {
+  if (!profile) return profile;
+  const img = profile.profileImageUrl;
+  const isHeavyBase64 =
+    typeof img === "string" &&
+    img.length > 500 &&
+    !img.startsWith("http://") &&
+    !img.startsWith("https://") &&
+    !img.startsWith("/");
+  if (isHeavyBase64) {
+    return {
+      ...profile,
+      profileImageUrl: undefined,
+    };
+  }
+  return profile;
+}
+
+function serializeProfileForSecureStore(profile: UserProfile): string {
+  return JSON.stringify(sanitizeProfileForSecureStore(profile));
 }
 
 async function clearLocalSession() {
@@ -165,7 +199,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       clearAuthenticatedQueryCache();
       await setSessionId(accessToken, expiresIn);
       await SecureStore.setItemAsync("account_type", accountType);
-      await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
+      await SecureStore.setItemAsync("profile_data", serializeProfileForSecureStore(profile));
       await SecureStore.deleteItemAsync("logged_out");
 
       set({
@@ -181,12 +215,12 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
-  requestOtp: async (name, email, password, phone) => {
+  requestOtp: async (name, email, password, cardNumber, phone) => {
     set({ loading: true, error: null });
     try {
       const response = await apiRequest<SignupOtpResponse>(
         "/auth/signup/request-otp",
-        { name, email, password, phone },
+        { name, email, password, cardNumber, phone },
       );
       set({ loading: false, error: null });
       return response;
@@ -199,34 +233,23 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
-  signup: async (name, email, password, otp, phone) => {
+  signup: async (name, email, password, cardNumber, otp, phone) => {
     set({ loading: true, error: null });
     try {
-      const response = await apiRequest<AuthResponse>("/auth/signup", {
+      const response = await apiRequest<SignupPendingResponse>("/auth/signup", {
         name,
         email,
         password,
+        cardNumber,
         otp,
         phone,
       });
-      const { accessToken, expiresIn, profile } = response;
-      if (response.accountType !== "resident") {
-        throw new Error(translateRuntime("errors.accountTypeMismatch"));
-      }
-
-      clearAuthenticatedQueryCache();
-      await setSessionId(accessToken, expiresIn);
-      await SecureStore.setItemAsync("account_type", "resident");
-      await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
-      await SecureStore.deleteItemAsync("logged_out");
 
       set({
-        sessionId: accessToken,
-        accountType: "resident",
-        profile,
         loading: false,
         error: null,
       });
+      return response;
     } catch (e: unknown) {
       set({ loading: false, error: getErrorMessage(e, "Signup failed") });
       throw e;
@@ -265,7 +288,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
       await SecureStore.setItemAsync(
         "profile_data",
-        JSON.stringify(updatedProfile),
+        serializeProfileForSecureStore(updatedProfile),
       );
       set({
         profile: updatedProfile,
@@ -290,7 +313,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
       await SecureStore.setItemAsync(
         "profile_data",
-        JSON.stringify(updatedProfile),
+        serializeProfileForSecureStore(updatedProfile),
       );
       set({
         profile: updatedProfile,
@@ -309,7 +332,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const profile = await apiRequest<UserProfile>("/me", {});
-      await SecureStore.setItemAsync("profile_data", JSON.stringify(profile));
+      await SecureStore.setItemAsync("profile_data", serializeProfileForSecureStore(profile));
       set({
         profile,
         loading: false,

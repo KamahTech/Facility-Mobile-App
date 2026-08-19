@@ -132,23 +132,22 @@ export default function WorkerDetailsScreen() {
   const [isPropertyDetailsVisible, setIsPropertyDetailsVisible] = React.useState(false);
   const propertyQuery = useWorkerPropertyDetailsQuery(task?.id, isTransitionFinished && isPropertyDetailsVisible && !!task?.id);
 
-  const [draftMaterials, setDraftMaterials] = React.useState<TaskMaterial[]>([]);
-  const [prevMaterials, setPrevMaterials] = React.useState(task?.materials);
-
-  if (task?.materials !== prevMaterials) {
-    setPrevMaterials(task?.materials);
-    setDraftMaterials(task?.materials || []);
-  }
+  const [localDraftMaterials, setLocalDraftMaterials] = React.useState<TaskMaterial[] | null>(null);
+  const draftMaterials = React.useMemo(
+    () => localDraftMaterials ?? task?.materials ?? [],
+    [localDraftMaterials, task?.materials]
+  );
 
   const isWorking = task?.workerPhase === "working";
 
   const handleAddMaterial = async (product: Product) => {
     if (!task) return;
     if (!isWorking && !isCompleted && task.status !== "cancelled") {
-      setDraftMaterials((prev) => {
-        const existingIndex = prev.findIndex((m) => String(m.productId) === String(product.id));
+      setLocalDraftMaterials((prev) => {
+        const base = prev ?? task?.materials ?? [];
+        const existingIndex = base.findIndex((m) => String(m.productId) === String(product.id));
         if (existingIndex >= 0) {
-          const updated = [...prev];
+          const updated = [...base];
           updated[existingIndex] = {
             ...updated[existingIndex],
             quantity: updated[existingIndex].quantity + 1,
@@ -157,7 +156,7 @@ export default function WorkerDetailsScreen() {
           return updated;
         }
         return [
-          ...prev,
+          ...base,
           {
             id: `temp-${Date.now()}-${Math.random()}`,
             productId: product.id,
@@ -188,8 +187,8 @@ export default function WorkerDetailsScreen() {
       return;
     }
     if (!isWorking && !isCompleted && task.status !== "cancelled") {
-      setDraftMaterials((prev) =>
-        prev.map((m) =>
+      setLocalDraftMaterials((prev) =>
+        (prev ?? task?.materials ?? []).map((m) =>
           String(m.id) === String(lineId)
             ? { ...m, quantity, selected: selected ?? m.selected }
             : m
@@ -207,8 +206,8 @@ export default function WorkerDetailsScreen() {
   const handleToggleSelected = async (lineId: string, quantity: number, selected: boolean) => {
     if (!task) return;
     if (!isWorking && !isCompleted && task.status !== "cancelled") {
-      setDraftMaterials((prev) =>
-        prev.map((m) =>
+      setLocalDraftMaterials((prev) =>
+        (prev ?? task?.materials ?? []).map((m) =>
           String(m.id) === String(lineId) ? { ...m, selected } : m
         )
       );
@@ -233,7 +232,9 @@ export default function WorkerDetailsScreen() {
           style: "destructive",
           onPress: async () => {
             if (!isWorking && !isCompleted && task.status !== "cancelled") {
-              setDraftMaterials((prev) => prev.filter((m) => String(m.id) !== String(lineId)));
+              setLocalDraftMaterials((prev) =>
+                (prev ?? task?.materials ?? []).filter((m) => String(m.id) !== String(lineId))
+              );
               useToastStore.getState().showToast(t("worker.materialRemoved"), "success");
               return;
             }
@@ -249,8 +250,16 @@ export default function WorkerDetailsScreen() {
     );
   };
 
+  const hasUnsavedDraftMaterials = React.useMemo(() => {
+    return draftMaterials.some((m) => String(m.id).startsWith("temp-"));
+  }, [draftMaterials]);
+
   const handleCreatePicking = async () => {
     if (!task) return;
+    if (hasUnsavedDraftMaterials) {
+      Alert.alert(t("common.error"), t("worker.saveMaterialsFirst"));
+      return;
+    }
     setActionLoading(true);
     try {
       await createPicking(task.id);
@@ -264,6 +273,10 @@ export default function WorkerDetailsScreen() {
 
   const handleCreateRFQs = async () => {
     if (!task) return;
+    if (hasUnsavedDraftMaterials) {
+      Alert.alert(t("common.error"), t("worker.saveMaterialsFirst"));
+      return;
+    }
     setActionLoading(true);
     try {
       await createRFQs(task.id);
@@ -277,6 +290,10 @@ export default function WorkerDetailsScreen() {
 
   const handleCreateQuotation = async () => {
     if (!task) return;
+    if (hasUnsavedDraftMaterials) {
+      Alert.alert(t("common.error"), t("worker.saveMaterialsFirst"));
+      return;
+    }
     setActionLoading(true);
     try {
       await createQuotation(task.id);
@@ -521,6 +538,8 @@ export default function WorkerDetailsScreen() {
           .getState()
           .showToast(t("errors.workflowCommentFailed"), "error");
       }
+
+      setLocalDraftMaterials(null);
 
       Alert.alert(
         t("worker.status.inspected"),
@@ -1020,7 +1039,9 @@ export default function WorkerDetailsScreen() {
                             )}
                             {typeof material.alreadyIssued === "number" && material.alreadyIssued > 0 && (
                               <Text className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">
-                                📦 Issued: {material.alreadyIssued} / {material.quantity}
+                                {t("worker.issuedCount")
+                                  .replace("{{issued}}", String(material.alreadyIssued))
+                                  .replace("{{total}}", String(material.quantity))}
                               </Text>
                             )}
                           </View>

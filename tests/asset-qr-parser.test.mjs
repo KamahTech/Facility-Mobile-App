@@ -51,6 +51,24 @@ test("parseAssetIdFromQr - JSON payload", () => {
   );
 });
 
+test("parseAssetIdFromQr - alphanumeric asset codes", () => {
+  assert.equal(parseAssetIdFromQr("AST-001"), "AST-001");
+  assert.equal(parseAssetIdFromQr("AST/2026/00018"), "AST/2026/00018");
+  assert.equal(parseAssetIdFromQr("HVAC-01"), "HVAC-01");
+  assert.equal(
+    parseAssetIdFromQr("https://example.odoo.com/asset_inspection/asset/AST-001"),
+    "AST-001"
+  );
+  assert.equal(
+    parseAssetIdFromQr("https://facility.app/scan?asset_code=HVAC-01"),
+    "HVAC-01"
+  );
+  assert.equal(
+    parseAssetIdFromQr(JSON.stringify({ assetCode: "EQ-992" })),
+    "EQ-992"
+  );
+});
+
 test("parseAssetIdFromQr - invalid formats return null", () => {
   assert.equal(parseAssetIdFromQr(""), null);
   assert.equal(parseAssetIdFromQr("hello world"), null);

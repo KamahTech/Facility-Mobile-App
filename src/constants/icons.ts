@@ -31,6 +31,14 @@ export const appIcons = {
     ios: "checkmark",
     android: "check",
   },
+  idCard: {
+    ios: "person.text.rectangle.fill",
+    android: "badge",
+  },
+  clock: {
+    ios: "clock.fill",
+    android: "schedule",
+  },
   themeSystem: {
     ios: "circle.lefthalf.filled",
     android: "contrast",
